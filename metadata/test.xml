@@ -59,7 +59,7 @@
 	</option>
 	<option name="bool_opt" type="bool">
 		<_short>Bool Option</_short>
-		<default>1</default>
+		<default>true</default>
 	</option>
 	<option name="button_opt" type="button">
 		<_short>Button Option</_short>
