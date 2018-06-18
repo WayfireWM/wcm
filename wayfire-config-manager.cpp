@@ -243,7 +243,6 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
 			} else if (string((char *) cur_node->name) == "desc") {
 				if (o->type != OPTION_TYPE_INT && o->type != OPTION_TYPE_STRING)
 					printf("WARN: [%s] desc defined for option type !int && !string\n", p->name);
-				printf("desc:\n");
 				xmlNode *node;
 				LabeledInt *li = NULL;
 				LabeledString *ls = NULL;
