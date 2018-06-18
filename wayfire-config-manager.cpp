@@ -265,8 +265,13 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
 								ls = new LabeledString();
 								o->str_labels.push_back(ls);
 							}
-							if (is_value)
+							if (is_value) {
 								ls->value = strdup((char *) node->children->content);
+								if (string(o->default_value.s) == "" && o->str_labels.size() == 1) {
+									free(o->default_value.s);
+									o->default_value.s = strdup(ls->value);
+								}
+							}
 							if (is_name)
 								ls->name = strdup((char *) node->children->content);
 						}
