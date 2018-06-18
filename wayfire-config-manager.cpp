@@ -583,17 +583,40 @@ static void
 add_option_widget(GtkWidget *widget, Option *o)
 {
 	WCM *wcm = o->plugin->wcm;
+	GtkWidget *option_layout, *label, *reset_button;
         wayfire_config_section *section;
         wf_option option;
+
+	switch (o->type) {
+		case OPTION_TYPE_INT:
+		case OPTION_TYPE_BOOL:
+		case OPTION_TYPE_DOUBLE:
+		case OPTION_TYPE_BUTTON:
+		case OPTION_TYPE_KEY:
+		case OPTION_TYPE_STRING:
+		case OPTION_TYPE_COLOR:
+			option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+			label = gtk_label_new(o->disp_name);
+			gtk_widget_set_size_request(label, 200, 1);
+			gtk_label_set_xalign(GTK_LABEL(label), 0);
+			reset_button = gtk_button_new();
+			gtk_widget_set_margin_start(reset_button, 10);
+			gtk_widget_set_margin_end(reset_button, 10);
+			gtk_widget_set_margin_top(reset_button, 10);
+			gtk_widget_set_tooltip_text(reset_button, "Reset to default");
+			g_signal_connect(reset_button, "button-release-event",
+					 G_CALLBACK(reset_button_cb), o);
+			gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
+			gtk_box_pack_end(GTK_BOX(option_layout), reset_button, false, false, 0);
+			break;
+		default:
+			break;
+	}
 
 	switch (o->type) {
 		case OPTION_TYPE_INT: {
 			int i;
 			LabeledInt *li;
-			GtkWidget *option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-			GtkWidget *label = gtk_label_new(o->disp_name);
-			gtk_widget_set_size_request(label, 200, 1);
-			gtk_label_set_xalign(GTK_LABEL(label), 0);
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.i));
 			GtkWidget *combo_box;
@@ -616,15 +639,6 @@ add_option_widget(GtkWidget *widget, Option *o)
 				g_signal_connect(spin_button, "changed",
 						 G_CALLBACK(set_int_spin_button_option_cb), o);
 			}
-			GtkWidget *reset_button = gtk_button_new();
-			gtk_widget_set_margin_start(reset_button, 10);
-			gtk_widget_set_margin_end(reset_button, 10);
-			gtk_widget_set_margin_top(reset_button, 10);
-			gtk_widget_set_tooltip_text(reset_button, "Reset to default");
-			g_signal_connect(reset_button, "button-release-event",
-					 G_CALLBACK(reset_button_cb), o);
-			gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
-			gtk_box_pack_end(GTK_BOX(option_layout), reset_button, false, false, 0);
 			if (o->int_labels.size())
 				gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
 			else
@@ -633,10 +647,6 @@ add_option_widget(GtkWidget *widget, Option *o)
 		}
 			break;
 		case OPTION_TYPE_BOOL: {
-			GtkWidget *option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-			GtkWidget *label = gtk_label_new(o->disp_name);
-			gtk_widget_set_size_request(label, 200, 1);
-			gtk_label_set_xalign(GTK_LABEL(label), 0);
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.i));
 			GtkWidget *check_button = gtk_check_button_new();
@@ -644,72 +654,37 @@ add_option_widget(GtkWidget *widget, Option *o)
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.i));
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), o->default_value.i ? 1 : 0);
-			GtkWidget *reset_button = gtk_button_new();
-			gtk_widget_set_margin_start(reset_button, 10);
-			gtk_widget_set_margin_end(reset_button, 10);
-			gtk_widget_set_margin_top(reset_button, 10);
-			gtk_widget_set_tooltip_text(reset_button, "Reset to default");
 			o->data_widget = check_button;
 			g_signal_connect(check_button, "toggled",
 					 G_CALLBACK(set_bool_check_button_option_cb), o);
-			g_signal_connect(reset_button, "button-release-event",
-					 G_CALLBACK(reset_button_cb), o);
-			gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
-			gtk_box_pack_end(GTK_BOX(option_layout), reset_button, false, false, 0);
 			gtk_box_pack_end(GTK_BOX(option_layout), check_button, false, true, 0);
 			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
 		}
 			break;
 		case OPTION_TYPE_DOUBLE: {
-			GtkWidget *option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-			GtkWidget *label = gtk_label_new(o->disp_name);
-			gtk_widget_set_size_request(label, 200, 1);
-			gtk_label_set_xalign(GTK_LABEL(label), 0);
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.d));
 			GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(option->as_double(), o->data.min, o->data.max, o->data.precision, o->data.precision * 10, o->data.precision * 10), o->data.precision, 3);
 			gtk_widget_set_margin_top(spin_button, 10);
-			GtkWidget *reset_button = gtk_button_new();
-			gtk_widget_set_margin_start(reset_button, 10);
-			gtk_widget_set_margin_end(reset_button, 10);
-			gtk_widget_set_margin_top(reset_button, 10);
-			gtk_widget_set_tooltip_text(reset_button, "Reset to default");
 			o->data_widget = spin_button;
 			g_signal_connect(spin_button, "changed",
 					 G_CALLBACK(set_double_spin_button_option_cb), o);
-			g_signal_connect(reset_button, "button-release-event",
-					 G_CALLBACK(reset_button_cb), o);
-			gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
-			gtk_box_pack_end(GTK_BOX(option_layout), reset_button, false, false, 0);
 			gtk_box_pack_end(GTK_BOX(option_layout), spin_button, false, true, 0);
 			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
 		}
 			break;
 		case OPTION_TYPE_BUTTON:
 		case OPTION_TYPE_KEY: {
-			GtkWidget *option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-			GtkWidget *label = gtk_label_new(o->disp_name);
-			gtk_widget_set_size_request(label, 200, 1);
-			gtk_label_set_xalign(GTK_LABEL(label), 0);
 			GtkWidget *entry = gtk_entry_new();
 			gtk_widget_set_margin_top(entry, 10);
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, o->default_value.s);
 			gtk_entry_set_text(GTK_ENTRY(entry), option->as_string().c_str());
-			GtkWidget *reset_button = gtk_button_new();
-			gtk_widget_set_margin_start(reset_button, 10);
-			gtk_widget_set_margin_end(reset_button, 10);
-			gtk_widget_set_margin_top(reset_button, 10);
-			gtk_widget_set_tooltip_text(reset_button, "Reset to default");
 			o->data_widget = entry;
 			g_signal_connect(entry, "activate",
 					 G_CALLBACK(set_string_option_cb), o);
 			g_signal_connect(entry, "focus-out-event",
 					 G_CALLBACK(entry_focus_out_cb), o);
-			g_signal_connect(reset_button, "button-release-event",
-					 G_CALLBACK(reset_button_cb), o);
-			gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
-			gtk_box_pack_end(GTK_BOX(option_layout), reset_button, false, false, 0);
 			gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
 			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
 		}
@@ -717,10 +692,6 @@ add_option_widget(GtkWidget *widget, Option *o)
 		case OPTION_TYPE_STRING: {
 			int i;
 			LabeledString *ls;
-			GtkWidget *option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-			GtkWidget *label = gtk_label_new(o->disp_name);
-			gtk_widget_set_size_request(label, 200, 1);
-			gtk_label_set_xalign(GTK_LABEL(label), 0);
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, o->default_value.s);
 			GtkWidget *combo_box;
@@ -748,15 +719,6 @@ add_option_widget(GtkWidget *widget, Option *o)
 				g_signal_connect(entry, "focus-out-event",
 						 G_CALLBACK(entry_focus_out_cb), o);
 			}
-			GtkWidget *reset_button = gtk_button_new();
-			gtk_widget_set_margin_start(reset_button, 10);
-			gtk_widget_set_margin_end(reset_button, 10);
-			gtk_widget_set_margin_top(reset_button, 10);
-			gtk_widget_set_tooltip_text(reset_button, "Reset to default");
-			g_signal_connect(reset_button, "button-release-event",
-					 G_CALLBACK(reset_button_cb), o);
-			gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
-			gtk_box_pack_end(GTK_BOX(option_layout), reset_button, false, false, 0);
 			if (o->str_labels.size())
 				gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
 			else
@@ -765,10 +727,6 @@ add_option_widget(GtkWidget *widget, Option *o)
 		}
 			break;
 		case OPTION_TYPE_COLOR: {
-			GtkWidget *option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-			GtkWidget *label = gtk_label_new(o->disp_name);
-			gtk_widget_set_size_request(label, 200, 1);
-			gtk_label_set_xalign(GTK_LABEL(label), 0);
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, o->default_value.s);
 			wf_color c = option->as_color();
@@ -779,24 +737,14 @@ add_option_widget(GtkWidget *widget, Option *o)
 			color.alpha = c.a;
 			GtkWidget *color_button = gtk_color_button_new_with_rgba(&color);
 			gtk_widget_set_margin_top(color_button, 10);
-			GtkWidget *reset_button = gtk_button_new();
-			gtk_widget_set_margin_start(reset_button, 10);
-			gtk_widget_set_margin_end(reset_button, 10);
-			gtk_widget_set_margin_top(reset_button, 10);
-			gtk_widget_set_tooltip_text(reset_button, "Reset to default");
 			o->data_widget = color_button;
 			g_signal_connect(color_button, "button-release-event",
 					 G_CALLBACK(spawn_color_chooser_cb), o);
-			g_signal_connect(reset_button, "button-release-event",
-					 G_CALLBACK(reset_button_cb), o);
-			gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
-			gtk_box_pack_end(GTK_BOX(option_layout), reset_button, false, false, 0);
 			gtk_box_pack_end(GTK_BOX(option_layout), color_button, false, false, 0);
 			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
 		}
 			break;
 		default:
-			printf("TODO: add option: %s\n", o->name);
 			break;
 	}
 }
