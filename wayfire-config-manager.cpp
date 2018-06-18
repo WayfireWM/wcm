@@ -48,8 +48,8 @@ class LabeledString
 class var_data
 {
 	public:
-	int min;
-	int max;
+	double min;
+	double max;
 	double precision;
 };
 
@@ -227,13 +227,13 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
 					break;
 				if (o->type != OPTION_TYPE_INT && o->type != OPTION_TYPE_DOUBLE)
 					printf("WARN: [%s] min defined for option type !int && !double\n", p->name);
-				o->data.min = atoi((char *) cur_node->children->content);
+				o->data.min = atof((char *) cur_node->children->content);
 			} else if (string((char *) cur_node->name) == "max") {
 				if (!cur_node->children)
 					break;
 				if (o->type != OPTION_TYPE_INT && o->type != OPTION_TYPE_DOUBLE)
 					printf("WARN: [%s] max defined for option type !int && !double\n", p->name);
-				o->data.max = atoi((char *) cur_node->children->content);
+				o->data.max = atof((char *) cur_node->children->content);
 			} else if (string((char *) cur_node->name) == "precision") {
 				if (!cur_node->children)
 					break;
