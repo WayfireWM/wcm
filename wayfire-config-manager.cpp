@@ -785,9 +785,18 @@ plugin_button_cb(GtkWidget *widget,
 	gtk_widget_set_margin_end(enabled_cb, 15);
         g_signal_connect(enabled_cb, "toggled",
                          G_CALLBACK(toggle_enabled_cb), p);
-        GtkWidget *back_button = gtk_button_new_with_label("Back");
+        GtkWidget *back_button = gtk_button_new();
+	GtkWidget *back_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	GtkWidget *back_image = gtk_image_new_from_icon_name("back", GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image(GTK_BUTTON(back_button), back_image);
+        GtkWidget *back_spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        gtk_widget_set_size_request(back_spacer, 5, 1);
+	GtkWidget *back_label = gtk_label_new("Back");
+	gtk_widget_set_margin_start(back_layout, 100);
+	gtk_widget_set_margin_end(back_layout, 100);
+	gtk_box_pack_start(GTK_BOX(back_layout), back_image, true, false, 0);
+	gtk_box_pack_end(GTK_BOX(back_layout), back_label, true, false, 0);
+	gtk_box_pack_end(GTK_BOX(back_layout), back_spacer, true, false, 0);
+	gtk_container_add(GTK_CONTAINER(back_button), back_layout);
 	g_object_set(back_button, "margin", 10, NULL);
         g_signal_connect(back_button, "button-release-event",
                          G_CALLBACK(back_button_cb), wcm);
@@ -824,7 +833,7 @@ create_main_layout(WCM *wcm)
 
 	GtkWidget *main_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	GtkWidget *left_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-        gtk_widget_set_size_request(left_panel_layout, 250, 0);
+        gtk_widget_set_size_request(left_panel_layout, 250, 1);
 	GtkWidget *main_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
 	GtkCssProvider* provider = gtk_css_provider_new();
@@ -846,9 +855,18 @@ create_main_layout(WCM *wcm)
 		g_signal_connect(plugin_button, "button-release-event",
 				 G_CALLBACK(plugin_button_cb), p);
 	}
-	GtkWidget *close_button = gtk_button_new_with_label("Close");
+	GtkWidget *close_button = gtk_button_new();
+	GtkWidget *close_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	GtkWidget *close_image = gtk_image_new_from_icon_name("window-close", GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image(GTK_BUTTON(close_button), close_image);
+        GtkWidget *close_spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        gtk_widget_set_size_request(close_spacer, 5, 1);
+	GtkWidget *close_label = gtk_label_new("Close");
+	gtk_widget_set_margin_start(close_layout, 100);
+	gtk_widget_set_margin_end(close_layout, 100);
+	gtk_box_pack_start(GTK_BOX(close_layout), close_image, true, false, 0);
+	gtk_box_pack_end(GTK_BOX(close_layout), close_label, true, false, 0);
+	gtk_box_pack_end(GTK_BOX(close_layout), close_spacer, true, false, 0);
+	gtk_container_add(GTK_CONTAINER(close_button), close_layout);
 	g_object_set(close_button, "margin", 10, NULL);
         g_signal_connect(close_button, "button-release-event",
                          G_CALLBACK(close_button_cb), NULL);
