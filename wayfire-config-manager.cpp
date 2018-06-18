@@ -583,7 +583,7 @@ static void
 add_option_widget(GtkWidget *widget, Option *o)
 {
 	WCM *wcm = o->plugin->wcm;
-	GtkWidget *option_layout, *label, *reset_button;
+	GtkWidget *option_layout, *label, *reset_button, *reset_image;
         wayfire_config_section *section;
         wf_option option;
 
@@ -606,6 +606,8 @@ add_option_widget(GtkWidget *widget, Option *o)
 			gtk_widget_set_tooltip_text(reset_button, "Reset to default");
 			g_signal_connect(reset_button, "button-release-event",
 					 G_CALLBACK(reset_button_cb), o);
+			reset_image = gtk_image_new_from_icon_name("edit-clear", GTK_ICON_SIZE_BUTTON);
+			gtk_button_set_image(GTK_BUTTON(reset_button), reset_image);
 			gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
 			gtk_box_pack_end(GTK_BOX(option_layout), reset_button, false, false, 0);
 			break;
@@ -787,6 +789,8 @@ plugin_button_cb(GtkWidget *widget,
         g_signal_connect(enabled_cb, "toggled",
                          G_CALLBACK(toggle_enabled_cb), p);
         GtkWidget *back_button = gtk_button_new_with_label("Back");
+	GtkWidget *back_image = gtk_image_new_from_icon_name("back", GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(back_button), back_image);
 	g_object_set(back_button, "margin", 10, NULL);
         g_signal_connect(back_button, "button-release-event",
                          G_CALLBACK(back_button_cb), wcm);
@@ -846,6 +850,8 @@ create_main_layout(WCM *wcm)
 				 G_CALLBACK(plugin_button_cb), p);
 	}
 	GtkWidget *close_button = gtk_button_new_with_label("Close");
+	GtkWidget *close_image = gtk_image_new_from_icon_name("window-close", GTK_ICON_SIZE_BUTTON);
+	gtk_button_set_image(GTK_BUTTON(close_button), close_image);
 	g_object_set(close_button, "margin", 10, NULL);
         g_signal_connect(close_button, "button-release-event",
                          G_CALLBACK(close_button_cb), NULL);
