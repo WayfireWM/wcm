@@ -376,7 +376,7 @@ reset_button_cb(GtkWidget *widget,
 
 	switch (o->type) {
 		case OPTION_TYPE_INT:
-			if (o->int_labels.size()) {printf("setting: %d\n", o->default_value.i);
+			if (o->int_labels.size()) {
 				gtk_combo_box_set_active(GTK_COMBO_BOX(o->data_widget), o->default_value.i);
 			} else
 				gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.i);
