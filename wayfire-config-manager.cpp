@@ -413,7 +413,7 @@ reset_button_cb(GtkWidget *widget,
 				int i;
 				for (i = 0; i < int(o->str_labels.size()); i++) {
 					ls = o->str_labels[i];
-					if (string(ls->value) == o->default_value.s)
+					if (string(ls->value) == o->default_value.s) {
 						gtk_combo_box_set_active(GTK_COMBO_BOX(o->data_widget), ls->id);
 						break;
 					}
