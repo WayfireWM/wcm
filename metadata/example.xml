@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <wayfire>
-	<plugin name="test">
-	<_short>Test Plugin</_short>
+	<plugin name="example">
+	<_short>Example Plugin</_short>
 	<category>Window Management</category>
 	<option name="string_opt" type="string">
 		<_short>String Option</_short>
