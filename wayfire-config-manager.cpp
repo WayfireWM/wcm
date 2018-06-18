@@ -161,7 +161,6 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
 						o->type = OPTION_TYPE_INT;
 						o->data.min = DBL_MIN;
 						o->data.max = DBL_MAX;
-						o->data.precision = 0.1;
 					} else if (string((char *) prop) == "double") {
 						o->type = OPTION_TYPE_DOUBLE;
 						o->data.min = DBL_MIN;
