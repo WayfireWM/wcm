@@ -595,6 +595,7 @@ add_option_widget(GtkWidget *widget, Option *o)
 		case OPTION_TYPE_KEY:
 		case OPTION_TYPE_STRING:
 		case OPTION_TYPE_COLOR:
+			section = wcm->wf_config->get_section(o->plugin->name);
 			option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 			label = gtk_label_new(o->disp_name);
 			gtk_widget_set_size_request(label, 200, 1);
@@ -619,7 +620,6 @@ add_option_widget(GtkWidget *widget, Option *o)
 		case OPTION_TYPE_INT: {
 			int i;
 			LabeledInt *li;
-			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.i));
 			GtkWidget *combo_box;
 			GtkWidget *spin_button;
@@ -647,7 +647,6 @@ add_option_widget(GtkWidget *widget, Option *o)
 		}
 			break;
 		case OPTION_TYPE_BOOL: {
-			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.i));
 			GtkWidget *check_button = gtk_check_button_new();
 			gtk_widget_set_margin_top(check_button, 10);
@@ -662,7 +661,6 @@ add_option_widget(GtkWidget *widget, Option *o)
 		}
 			break;
 		case OPTION_TYPE_DOUBLE: {
-			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.d));
 			GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(option->as_double(), o->data.min, o->data.max, o->data.precision, o->data.precision * 10, o->data.precision * 10), o->data.precision, 3);
 			gtk_widget_set_margin_top(spin_button, 10);
@@ -675,10 +673,9 @@ add_option_widget(GtkWidget *widget, Option *o)
 			break;
 		case OPTION_TYPE_BUTTON:
 		case OPTION_TYPE_KEY: {
+			option = section->get_option(o->name, o->default_value.s);
 			GtkWidget *entry = gtk_entry_new();
 			gtk_widget_set_margin_top(entry, 10);
-			section = wcm->wf_config->get_section(o->plugin->name);
-			option = section->get_option(o->name, o->default_value.s);
 			gtk_entry_set_text(GTK_ENTRY(entry), option->as_string().c_str());
 			o->data_widget = entry;
 			g_signal_connect(entry, "activate",
@@ -692,10 +689,9 @@ add_option_widget(GtkWidget *widget, Option *o)
 		case OPTION_TYPE_STRING: {
 			int i;
 			LabeledString *ls;
-			section = wcm->wf_config->get_section(o->plugin->name);
-			option = section->get_option(o->name, o->default_value.s);
 			GtkWidget *combo_box;
 			GtkWidget *entry;
+			option = section->get_option(o->name, o->default_value.s);
 			if (o->str_labels.size()) {
 				combo_box = gtk_combo_box_text_new();
 				gtk_widget_set_margin_top(combo_box, 10);
@@ -725,10 +721,10 @@ add_option_widget(GtkWidget *widget, Option *o)
 		}
 			break;
 		case OPTION_TYPE_COLOR: {
-			section = wcm->wf_config->get_section(o->plugin->name);
-			option = section->get_option(o->name, o->default_value.s);
-			wf_color c = option->as_color();
+			wf_color c;
 			GdkRGBA color;
+			option = section->get_option(o->name, o->default_value.s);
+			c = option->as_color();
 			color.red = c.r;
 			color.green = c.g;
 			color.blue = c.b;
