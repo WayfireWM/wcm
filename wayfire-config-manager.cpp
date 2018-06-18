@@ -732,7 +732,7 @@ add_option_widget(GtkWidget *widget, Option *o)
 					ls = o->str_labels[i];
 					ls->id = i;
 					gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), ls->name);
-					if (string(ls->value) == o->default_value.s)
+					if (ls->value == option->as_string())
 						gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), i);
 				}
 				o->data_widget = combo_box;
