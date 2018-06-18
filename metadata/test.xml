@@ -67,7 +67,7 @@
 	</option>
 	<option name="color_opt" type="color">
 		<_short>Color Option</_short>
-		<default></default>
+		<default>0.1 0.3 0.7 1.0</default>
 	</option>
 	</plugin>
 </wayfire>
