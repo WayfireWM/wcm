@@ -376,9 +376,9 @@ reset_button_cb(GtkWidget *widget,
 
 	switch (o->type) {
 		case OPTION_TYPE_INT:
-			if (o->int_labels.size()) {
+			if (o->int_labels.size())
 				gtk_combo_box_set_active(GTK_COMBO_BOX(o->data_widget), o->default_value.i);
-			} else
+			else
 				gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.i);
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.i));
