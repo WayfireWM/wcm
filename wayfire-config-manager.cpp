@@ -591,6 +591,8 @@ add_option_widget(GtkWidget *widget, Option *o)
         wayfire_config_section *section;
         wf_option option;
 
+	reset_image = gtk_image_new_from_icon_name("edit-clear", GTK_ICON_SIZE_BUTTON);
+
 	switch (o->type) {
 		case OPTION_TYPE_INT:
 		case OPTION_TYPE_BOOL:
@@ -611,7 +613,6 @@ add_option_widget(GtkWidget *widget, Option *o)
 			gtk_widget_set_tooltip_text(reset_button, "Reset to default");
 			g_signal_connect(reset_button, "button-release-event",
 					 G_CALLBACK(reset_button_cb), o);
-			reset_image = gtk_image_new_from_icon_name("edit-clear", GTK_ICON_SIZE_BUTTON);
 			gtk_button_set_image(GTK_BUTTON(reset_button), reset_image);
 			gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
 			gtk_box_pack_end(GTK_BOX(option_layout), reset_button, false, false, 0);
