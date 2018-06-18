@@ -634,17 +634,15 @@ add_option_widget(GtkWidget *widget, Option *o)
 				o->data_widget = combo_box;
 				g_signal_connect(combo_box, "changed",
 						 G_CALLBACK(set_int_combo_box_option_cb), o);
+				gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
 			} else {
 				spin_button = gtk_spin_button_new(gtk_adjustment_new(option->as_int(), o->data.min, o->data.max, 1, 10, 10), 1, 0);
 				gtk_widget_set_margin_top(spin_button, 10);
 				o->data_widget = spin_button;
 				g_signal_connect(spin_button, "changed",
 						 G_CALLBACK(set_int_spin_button_option_cb), o);
-			}
-			if (o->int_labels.size())
-				gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
-			else
 				gtk_box_pack_end(GTK_BOX(option_layout), spin_button, false, true, 0);
+			}
 			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
 		}
 			break;
@@ -711,6 +709,7 @@ add_option_widget(GtkWidget *widget, Option *o)
 				o->data_widget = combo_box;
 				g_signal_connect(combo_box, "changed",
 						 G_CALLBACK(set_string_combo_box_option_cb), o);
+				gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
 			} else {
 				entry = gtk_entry_new();
 				gtk_widget_set_margin_top(entry, 10);
@@ -720,11 +719,8 @@ add_option_widget(GtkWidget *widget, Option *o)
 						 G_CALLBACK(set_string_option_cb), o);
 				g_signal_connect(entry, "focus-out-event",
 						 G_CALLBACK(entry_focus_out_cb), o);
-			}
-			if (o->str_labels.size())
-				gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
-			else
 				gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
+			}
 			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
 		}
 			break;
