@@ -1,5 +1,5 @@
 /*
- * g++ $(pkg-config --cflags gtk+-3.0 libxml-2.0 wf-config) -o wcm wayfire-config-manager.cpp $(pkg-config --libs gtk+-3.0 libxml-2.0 wf-config)
+ * meson build --prefix=/usr && ninja -C build && sudo ninja -C build install
  */
 
 #include <stdio.h>
