@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="move">
+	<_short>Move Window</_short>
+	<category>Window Management</category>
+	<option name="activate" type="button">
+		<_short>Activate</_short>
+		<default>&lt;alt&gt; BTN_LEFT</default>
+	</option>
+	<option name="enable_snap" type="bool">
+		<_short>Snap</_short>
+		<default>true</default>
+	</option>
+	<option name="snap_threshold" type="int">
+		<_short>Snap Threshold</_short>
+		<default>2</default>
+	</option>
+	</plugin>
+</wayfire>

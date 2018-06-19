@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="animate">
+	<_short>Animations</_short>
+	<category>Effects</category>
+	<option name="open_animation" type="string">
+		<_short>Open Animation</_short>
+		<default>zoom</default>
+		<desc>
+			<value>none</value>
+			<_name>None</_name>
+		</desc>
+		<desc>
+			<value>fade</value>
+			<_name>Fade</_name>
+		</desc>
+		<desc>
+			<value>zoom</value>
+			<_name>Zoom</_name>
+		</desc>
+		<desc>
+			<value>fire</value>
+			<_name>Fire</_name>
+		</desc>
+	</option>
+	<option name="close_animation" type="string">
+		<_short>Close Animation</_short>
+		<default>zoom</default>
+		<desc>
+			<value>none</value>
+			<_name>None</_name>
+		</desc>
+		<desc>
+			<value>fade</value>
+			<_name>Fade</_name>
+		</desc>
+		<desc>
+			<value>zoom</value>
+			<_name>Zoom</_name>
+		</desc>
+		<desc>
+			<value>fire</value>
+			<_name>Fire</_name>
+		</desc>
+	</option>
+	<option name="duration" type="int">
+		<_short>Duration</_short>
+		<default>300</default>
+	</option>
+	<option name="startup_duration" type="int">
+		<_short>Startup Duration</_short>
+		<default>600</default>
+	</option>
+	</plugin>
+</wayfire>

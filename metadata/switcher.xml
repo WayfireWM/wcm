@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="switcher">
+	<_short>Application Switcher</_short>
+	<category>Window Management</category>
+	<option name="fast_switch" type="key">
+		<_short>Fast Switch</_short>
+		<default>&lt;alt&gt; KEY_ESC</default>
+	</option>
+	<option name="duration" type="int">
+		<_short>Duration</_short>
+		<default>250</default>
+	</option>
+	<option name="initial_animation" type="int">
+		<_short>Initial Animation</_short>
+		<default>150</default>
+	</option>
+	<option name="view_thumbnail_size" type="double">
+		<_short>Thumbnail Size</_short>
+		<default>0.4</default>
+	</option>
+	<option name="activate" type="key">
+		<_short>Activate</_short>
+		<default>&lt;alt&gt; KEY_TAB</default>
+	</option>
+	<option name="next" type="key">
+		<_short>Next</_short>
+		<default>KEY_RIGHT</default>
+	</option>
+	<option name="prev" type="key">
+		<_short>Previous</_short>
+		<default>KEY_LEFT</default>
+	</option>
+	<option name="exit" type="key">
+		<_short>Exit</_short>
+		<default>KEY_ENTER</default>
+	</option>
+	</plugin>
+</wayfire>

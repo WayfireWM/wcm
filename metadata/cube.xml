@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="cube">
+	<_short>Desktop Cube</_short>
+	<category>Desktop</category>
+	<option name="speed_spin_horiz" type="double">
+		<_short>Horizontal Spin Speed</_short>
+		<default>0.01</default>
+		<precision>0.01</precision>
+	</option>
+	<option name="speed_spin_vert" type="double">
+		<_short>Vertical Spin Speed</_short>
+		<default>0.01</default>
+		<precision>0.01</precision>
+	</option>
+	<option name="speed_zoom" type="double">
+		<_short>Zoom Speed</_short>
+		<default>0.05</default>
+		<precision>0.01</precision>
+	</option>
+	<option name="initial_animation" type="int">
+		<_short>Initial Animation</_short>
+		<default>350</default>
+	</option>
+	<option name="background" type="color">
+		<_short>Background Color</_short>
+		<default>0 0 0 1</default>
+	</option>
+	<option name="activate" type="button">
+		<_short>Activate Button</_short>
+		<default>&lt;alt&gt; &lt;ctrl&gt; BTN_LEFT</default>
+	</option>
+	<option name="light" type="bool">
+		<_short>Use Lighting</_short>
+		<default>true</default>
+	</option>
+	<option name="deform" type="bool">
+		<_short>Use Deformation</_short>
+		<default>true</default>
+	</option>
+	</plugin>
+</wayfire>

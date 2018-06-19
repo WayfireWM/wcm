@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="core">
+	<_short>General Options</_short>
+	<category>General</category>
+	<option name="view_close" type="key">
+		<_short>Close Window</_short>
+		<default>&lt;super&gt; KEY_Q</default>
+	</option>
+	<option name="drm_device" type="string">
+		<_short>DRM Device</_short>
+		<default>default</default>
+	</option>
+	<option name="vwidth" type="int">
+		<_short>Horizontal Virtual Size</_short>
+		<default>3</default>
+	</option>
+	<option name="vheight" type="int">
+		<_short>Vertical Virtual Size</_short>
+		<default>3</default>
+	</option>
+	<option name="run_panel" type="bool">
+		<_short>Run Panel</_short>
+		<default>true</default>
+	</option>
+	</plugin>
+</wayfire>

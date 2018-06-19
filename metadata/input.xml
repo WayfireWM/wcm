@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="input">
+	<_short>Input Options</_short>
+	<category>General</category>
+	<option name="tap_to_click" type="bool">
+		<_short>Tap to Click</_short>
+		<default>true</default>
+	</option>
+	<option name="disable_while_typing" type="bool">
+		<_short>Disable while Typing</_short>
+		<default>false</default>
+	</option>
+	<option name="naturall_scroll" type="bool">
+		<_short>Natural Scroll</_short>
+		<default>false</default>
+	</option>
+	<option name="xkb_model" type="string">
+		<_short>XKB Model</_short>
+		<default></default>
+	</option>
+	<option name="xkb_variant" type="string">
+		<_short>XKB Variant</_short>
+		<default></default>
+	</option>
+	<option name="xkb_layout" type="string">
+		<_short>XKB Layout</_short>
+		<default></default>
+	</option>
+	<option name="xkb_option" type="string">
+		<_short>XKB Option</_short>
+		<default></default>
+	</option>
+	<option name="xkb_rule" type="string">
+		<_short>XKB Rule</_short>
+		<default></default>
+	</option>
+	<option name="kb_repeat_rate" type="int">
+		<_short>Key Repeat Rate</_short>
+		<default>40</default>
+	</option>
+	<option name="kb_repeat_delay" type="int">
+		<_short>Key Repeat Delay</_short>
+		<default>400</default>
+	</option>
+	</plugin>
+</wayfire>

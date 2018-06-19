@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="vswitch">
+	<_short>Viewport Switcher</_short>
+	<category>Desktop</category>
+	<option name="binding_left" type="key">
+		<_short>Left</_short>
+		<default>&lt;super&gt; KEY_LEFT</default>
+	</option>
+	<option name="binding_right" type="key">
+		<_short>Right</_short>
+		<default>&lt;super&gt; KEY_RIGHT</default>
+	</option>
+	<option name="binding_up" type="key">
+		<_short>Up</_short>
+		<default>&lt;super&gt; KEY_UP</default>
+	</option>
+	<option name="binding_down" type="key">
+		<_short>Down</_short>
+		<default>&lt;super&gt; KEY_DOWN</default>
+	</option>
+	<option name="binding_win_left" type="key">
+		<_short>Left with Window</_short>
+		<default>&lt;super&gt; &lt;shift&gt; KEY_LEFT</default>
+	</option>
+	<option name="binding_win_right" type="key">
+		<_short>Right with Window</_short>
+		<default>&lt;super&gt; &lt;shift&gt; KEY_RIGHT</default>
+	</option>
+	<option name="binding_win_up" type="key">
+		<_short>Up with Window</_short>
+		<default>&lt;super&gt; &lt;shift&gt; KEY_UP</default>
+	</option>
+	<option name="binding_win_down" type="key">
+		<_short>Down with Window</_short>
+		<default>&lt;super&gt; &lt;shift&gt; KEY_DOWN</default>
+	</option>
+	<option name="duration" type="int">
+		<_short>Duration</_short>
+		<default>180</default>
+	</option>
+	</plugin>
+</wayfire>
