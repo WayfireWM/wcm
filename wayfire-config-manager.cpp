@@ -909,7 +909,7 @@ main(int argc, char **argv)
 
 	wcm = new WCM();
 
-	if (parse_xml_files(wcm, "./metadata"))
+	if (parse_xml_files(wcm, METADATADIR))
 		return -1;
 
 	if (load_config_file(wcm))
