@@ -11,8 +11,6 @@
 #include <gtk/gtk.h>
 #include <vector>
 #include <string>
-#include <iomanip>
-#include <sstream>
 #include <config.hpp>
 
 using namespace std;
@@ -385,21 +383,21 @@ reset_button_cb(GtkWidget *widget,
 				gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.i);
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.i));
-			option->set_value(to_string(o->default_value.i));
+			option->set_value(o->default_value.i);
 			wcm->wf_config->save_config(config_file);
 			break;
 		case OPTION_TYPE_BOOL:
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(o->data_widget), o->default_value.i);
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.i));
-			option->set_value(to_string(o->default_value.i));
+			option->set_value(o->default_value.i);
 			wcm->wf_config->save_config(config_file);
 			break;
 		case OPTION_TYPE_DOUBLE:
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.d);
 			section = wcm->wf_config->get_section(o->plugin->name);
 			option = section->get_option(o->name, to_string(o->default_value.d));
-			option->set_value(to_string(o->default_value.d));
+			option->set_value(o->default_value.d);
 			wcm->wf_config->save_config(config_file);
 			break;
 		case OPTION_TYPE_BUTTON:
@@ -479,7 +477,7 @@ set_int_combo_box_option_cb(GtkWidget *widget,
 
         section = wcm->wf_config->get_section(o->plugin->name);
         option = section->get_option(o->name, to_string(o->default_value.i));
-        option->set_value(to_string(int(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)))));
+        option->set_value(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)));
         wcm->wf_config->save_config(config_file);
 }
 
@@ -493,6 +491,7 @@ spawn_color_chooser_cb(GtkWidget *widget,
         wayfire_config_section *section;
         wf_option option;
 	GdkRGBA color;
+	wf_color c;
 
 	GtkWidget *chooser = gtk_color_chooser_dialog_new("Pick a Color", GTK_WINDOW(o->plugin->wcm->window));
 	gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &color);
@@ -502,11 +501,12 @@ spawn_color_chooser_cb(GtkWidget *widget,
 		gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(chooser), &color);
 		gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(widget), &color);
 		section = wcm->wf_config->get_section(o->plugin->name);
-		option = section->get_option(o->name, to_string(o->default_value.d));
-                stringstream stream;
-                stream << fixed << setprecision(1) << color.red << " " << color.green << " " << color.blue << " " << color.alpha;
-                string color_str = stream.str();
-		option->set_value(color_str);
+		option = section->get_option(o->name, o->default_value.s);
+		c.r = color.red;
+		c.g = color.green;
+		c.b = color.blue;
+		c.a = color.alpha;
+		option->set_value(c);
 		wcm->wf_config->save_config(config_file);
 	}
 
@@ -524,7 +524,7 @@ set_double_spin_button_option_cb(GtkWidget *widget,
 
         section = wcm->wf_config->get_section(o->plugin->name);
         option = section->get_option(o->name, to_string(o->default_value.d));
-        option->set_value(to_string(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))));
+        option->set_value(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
         wcm->wf_config->save_config(config_file);
 }
 
@@ -539,7 +539,7 @@ set_int_spin_button_option_cb(GtkWidget *widget,
 
         section = wcm->wf_config->get_section(o->plugin->name);
         option = section->get_option(o->name, to_string(o->default_value.i));
-        option->set_value(to_string(int(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)))));
+        option->set_value(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
         wcm->wf_config->save_config(config_file);
 }
 
@@ -554,7 +554,7 @@ set_bool_check_button_option_cb(GtkWidget *widget,
 
         section = wcm->wf_config->get_section(o->plugin->name);
         option = section->get_option(o->name, to_string(o->default_value.i));
-        option->set_value(to_string(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ? 1 : 0));
+        option->set_value(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ? 1 : 0);
         wcm->wf_config->save_config(config_file);
 }
 
