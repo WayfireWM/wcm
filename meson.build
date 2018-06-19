@@ -1,7 +1,8 @@
 project('wcm', 'cpp', version : '0.1')
 
 share_dir = join_paths(get_option('prefix'), 'share', 'wayfire')
-add_global_arguments('-DMETADATADIR="' + share_dir + '"', language : 'cpp')
+metadata_dir = join_paths(share_dir, 'metadata')
+add_global_arguments('-DMETADATADIR="' + metadata_dir + '"', language : 'cpp')
 
 dependency('pkg-config', required : true)
 xml_dep = dependency('libxml-2.0', required : true)
