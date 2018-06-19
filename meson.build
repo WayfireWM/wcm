@@ -14,6 +14,4 @@ executable(meson.project_name(), 'wayfire-config-manager.cpp',
                      install : true,
                      dependencies : dep_list)
 
-install_data('metadata/place.xml', install_dir: share_dir)
-
 subdir('metadata')
