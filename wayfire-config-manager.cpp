@@ -781,6 +781,7 @@ plugin_button_cb(GtkWidget *widget,
         GtkWidget *enable_label = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(enable_label), "<span size=\"10000\"><b>Use This Plugin</b></span>");
 	GtkWidget *enabled_cb = gtk_check_button_new();
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(enabled_cb), true);
 	gtk_widget_set_margin_start(enabled_cb, 50);
 	gtk_widget_set_margin_end(enabled_cb, 15);
         g_signal_connect(enabled_cb, "toggled",
