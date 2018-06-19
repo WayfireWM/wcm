@@ -648,7 +648,7 @@ add_option_widget(GtkWidget *widget, Option *o)
 						 G_CALLBACK(set_int_spin_button_option_cb), o);
 				gtk_box_pack_end(GTK_BOX(option_layout), spin_button, false, true, 0);
 			}
-			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
+			gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
 		}
 			break;
 		case OPTION_TYPE_BOOL: {
@@ -662,7 +662,7 @@ add_option_widget(GtkWidget *widget, Option *o)
 			g_signal_connect(check_button, "toggled",
 					 G_CALLBACK(set_bool_check_button_option_cb), o);
 			gtk_box_pack_end(GTK_BOX(option_layout), check_button, false, true, 0);
-			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
+			gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
 		}
 			break;
 		case OPTION_TYPE_DOUBLE: {
@@ -673,7 +673,7 @@ add_option_widget(GtkWidget *widget, Option *o)
 			g_signal_connect(spin_button, "changed",
 					 G_CALLBACK(set_double_spin_button_option_cb), o);
 			gtk_box_pack_end(GTK_BOX(option_layout), spin_button, false, true, 0);
-			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
+			gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
 		}
 			break;
 		case OPTION_TYPE_BUTTON:
@@ -688,7 +688,7 @@ add_option_widget(GtkWidget *widget, Option *o)
 			g_signal_connect(entry, "focus-out-event",
 					 G_CALLBACK(entry_focus_out_cb), o);
 			gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
-			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
+			gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
 		}
 			break;
 		case OPTION_TYPE_STRING: {
@@ -722,7 +722,7 @@ add_option_widget(GtkWidget *widget, Option *o)
 						 G_CALLBACK(entry_focus_out_cb), o);
 				gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
 			}
-			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
+			gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
 		}
 			break;
 		case OPTION_TYPE_COLOR: {
@@ -740,7 +740,7 @@ add_option_widget(GtkWidget *widget, Option *o)
 			g_signal_connect(color_button, "button-release-event",
 					 G_CALLBACK(spawn_color_chooser_cb), o);
 			gtk_box_pack_end(GTK_BOX(option_layout), color_button, false, false, 0);
-			gtk_box_pack_end(GTK_BOX(widget), option_layout, true, true, 0);
+			gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
 		}
 			break;
 		default:
@@ -803,10 +803,13 @@ plugin_button_cb(GtkWidget *widget,
 	GtkWidget *notebook = gtk_notebook_new();
 	gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_TOP);
 	GtkWidget *options_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	for (i = int(p->options.size()) - 1; i >= 0; i--) {
+	GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+	gtk_widget_set_vexpand(scrolled_window, true);
+	for (i = 0; i < int(p->options.size()); i++) {
 		add_option_widget(options_layout, p->options[i]);
 	}
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), options_layout, gtk_label_new("General"));
+	gtk_container_add(GTK_CONTAINER(scrolled_window), options_layout);
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), scrolled_window, gtk_label_new("General"));
 	gtk_box_pack_start(GTK_BOX(main_panel_layout), notebook, false, true, 10);
 	gtk_box_pack_start(GTK_BOX(left_panel_layout), label, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(enable_layout), enabled_cb, false, false, 0);
@@ -835,6 +838,7 @@ create_main_layout(WCM *wcm)
 	GtkWidget *left_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         gtk_widget_set_size_request(left_panel_layout, 250, 1);
 	GtkWidget *main_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 
 	GtkCssProvider* provider = gtk_css_provider_new();
 	GdkDisplay* display = gdk_display_get_default();
@@ -872,7 +876,8 @@ create_main_layout(WCM *wcm)
                          G_CALLBACK(close_button_cb), NULL);
 	gtk_box_pack_end(GTK_BOX(left_panel_layout), close_button, false, false, 0);
 	gtk_box_pack_start(GTK_BOX(main_layout), left_panel_layout, false, true, 0);
-	gtk_box_pack_end(GTK_BOX(main_layout), main_panel_layout, true, true, 0);
+	gtk_container_add(GTK_CONTAINER(scrolled_window), main_panel_layout);
+	gtk_box_pack_end(GTK_BOX(main_layout), scrolled_window, true, true, 0);
         gtk_container_add(GTK_CONTAINER(window), main_layout);
 
         return main_layout;
