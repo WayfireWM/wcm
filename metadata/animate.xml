@@ -5,7 +5,7 @@
 	<category>Effects</category>
 	<option name="open_animation" type="string">
 		<_short>Open Animation</_short>
-		<default>zoom</default>
+		<default>fade</default>
 		<desc>
 			<value>none</value>
 			<_name>None</_name>
@@ -25,7 +25,7 @@
 	</option>
 	<option name="close_animation" type="string">
 		<_short>Close Animation</_short>
-		<default>zoom</default>
+		<default>fade</default>
 		<desc>
 			<value>none</value>
 			<_name>None</_name>
