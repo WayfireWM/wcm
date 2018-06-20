@@ -847,7 +847,7 @@ create_main_layout(WCM *wcm)
         g_object_unref(provider);
         gtk_widget_set_name(main_panel_layout, "main_panel_layout");
 
-        for (i = int(wcm->plugins.size()) - 1; i >= 0; i--) {
+        for (i = 0; i < int(wcm->plugins.size()); i++) {
                 p = wcm->plugins[i];
                 GtkWidget *plugin_button = gtk_button_new_with_label(p->disp_name);
                 g_object_set(plugin_button, "margin", 10, NULL);
