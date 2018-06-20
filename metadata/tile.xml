@@ -60,7 +60,7 @@
 		<default>&lt;super&gt; BTN_LEFT</default>
 	</option>
 	<option name="selection-color" type="color">
-		<_short>Resize</_short>
+		<_short>Selection Color</_short>
 		<default>0.5 0.5 1.0 0.5</default>
 	</option>
 	</plugin>
