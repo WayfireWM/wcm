@@ -901,16 +901,7 @@ create_main_layout(WCM *wcm)
         GtkWidget *main_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 
-        GtkCssProvider* provider = gtk_css_provider_new();
-        GdkDisplay* display = gdk_display_get_default();
-        GdkScreen* screen = gdk_display_get_default_screen(display);
-        gtk_style_context_add_provider_for_screen(screen,
-                                                  GTK_STYLE_PROVIDER(provider),
-                                                  GTK_STYLE_PROVIDER_PRIORITY_USER);
-        gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider),
-                                        "#main_panel_layout { background-color: white; }", -1, NULL);
-        g_object_unref(provider);
-        gtk_widget_set_name(main_panel_layout, "main_panel_layout");
+        gtk_style_context_add_class(gtk_widget_get_style_context(main_panel_layout), GTK_STYLE_CLASS_VIEW);
 
         GtkWidget *categories[NUM_CATEGORIES] = {};
         GtkWidget *layout[NUM_CATEGORIES] = {};
