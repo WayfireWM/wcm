@@ -104,9 +104,6 @@ load_config_file(WCM *wcm)
 
         config_dir = g_get_user_config_dir();
 
-        if (!config_dir)
-		return -1;
-
         config_file = strdup((string(config_dir) + "/wayfire.ini").c_str());
 
         wcm->wf_config = new wayfire_config(config_file);
