@@ -2,7 +2,9 @@ project('wcm', 'cpp', version : '0.1')
 
 share_dir = join_paths(get_option('prefix'), 'share', 'wayfire')
 metadata_dir = join_paths(share_dir, 'metadata')
+icon_dir = join_paths(share_dir, 'icons')
 add_global_arguments('-DMETADATADIR="' + metadata_dir + '"', language : 'cpp')
+add_global_arguments('-DICONDIR="' + icon_dir + '"', language : 'cpp')
 
 dependency('pkg-config', required : true)
 xml_dep = dependency('libxml-2.0', required : true)
@@ -16,3 +18,4 @@ executable(meson.project_name(), 'wayfire-config-manager.cpp',
                      dependencies : dep_list)
 
 subdir('metadata')
+subdir('icons')

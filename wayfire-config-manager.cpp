@@ -83,6 +83,7 @@ class Plugin
         char *name;
         char *disp_name;
         char *category;
+        int x, y;
         vector<Option *> options;
 };
 
@@ -138,6 +139,10 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
                                 else
                                         o->disp_name = strdup((char *) cur_node->children->content);
                         } else if (string((char *) cur_node->name) == "category") {
+                                if (!cur_node->children) {
+                                        p->category = strdup("");
+                                        continue;
+                                }
                                 printf("plugin category: ");
                                 printf("%s\n", cur_node->children->content);
                                 p->category = strdup((char *) cur_node->children->content);
@@ -190,7 +195,7 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
                                 p->options.push_back(o);
                         } else if (string((char *) cur_node->name) == "default") {
                                 if (!cur_node->children)
-                                        break;
+                                        continue;
                                 printf("default: %s\n", cur_node->children->content);
                                 switch (o->type) {
                                         case OPTION_TYPE_INT:
@@ -221,19 +226,19 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
                                 }
                         } else if (string((char *) cur_node->name) == "min") {
                                 if (!cur_node->children)
-                                        break;
+                                        continue;
                                 if (o->type != OPTION_TYPE_INT && o->type != OPTION_TYPE_DOUBLE)
                                         printf("WARN: [%s] min defined for option type !int && !double\n", p->name);
                                 o->data.min = atof((char *) cur_node->children->content);
                         } else if (string((char *) cur_node->name) == "max") {
                                 if (!cur_node->children)
-                                        break;
+                                        continue;
                                 if (o->type != OPTION_TYPE_INT && o->type != OPTION_TYPE_DOUBLE)
                                         printf("WARN: [%s] max defined for option type !int && !double\n", p->name);
                                 o->data.max = atof((char *) cur_node->children->content);
                         } else if (string((char *) cur_node->name) == "precision") {
                                 if (!cur_node->children)
-                                        break;
+                                        continue;
                                 if (o->type != OPTION_TYPE_DOUBLE)
                                         printf("WARN: [%s] precision defined for option type !double\n", p->name);
                                 o->data.precision = atof((char *) cur_node->children->content);
@@ -823,6 +828,67 @@ plugin_button_cb(GtkWidget *widget,
         return true;
 }
 
+static const char *
+get_icon_name_from_category(string category)
+{
+        if (category == "General")
+                return "preferences-system";
+        else if (category == "Desktop")
+                return "preferences-desktop";
+        else if (category == "Effects")
+                return "applications-graphics";
+        else if (category == "Window Management")
+                return "applications-office";
+        else
+                return "applications-other";
+}
+
+static void
+add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
+{
+        if (!*category) {
+                *layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+                GtkWidget *header_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+                *category = gtk_grid_new();
+                gtk_grid_set_row_homogeneous(GTK_GRID(*category), true);
+                GtkWidget *icon = gtk_image_new_from_icon_name(get_icon_name_from_category(string(p->category)), GTK_ICON_SIZE_DND);
+                GtkWidget *label = gtk_label_new(NULL);
+                gtk_label_set_markup(GTK_LABEL(label), ("<span size=\"14000\" color=\"#AAA\"><b>" + string(p->category) + "</b></span>").c_str());
+                g_object_set(icon, "margin", 10, NULL);
+                gtk_box_pack_start(GTK_BOX(header_layout), icon, false, false, 0);
+                gtk_box_pack_start(GTK_BOX(header_layout), label, false, false, 0);
+                gtk_container_add(GTK_CONTAINER(*layout), header_layout);
+                gtk_container_add(GTK_CONTAINER(*layout), *category);
+        }
+        GtkWidget *button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        GtkWidget *plugin_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        GtkWidget *check_button;
+        if (string(p->name) != "core") {
+                check_button = gtk_check_button_new();
+                g_object_set(check_button, "margin", 5, NULL);
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), true);
+        }
+        GtkWidget *plugin_button = gtk_button_new();
+        gtk_button_set_relief(GTK_BUTTON(plugin_button), GTK_RELIEF_NONE);
+        gtk_widget_set_size_request(plugin_button, 200, 1);
+        GtkWidget *button_icon = gtk_image_new_from_file((ICONDIR "/plugin-" + string(p->name) + ".svg").c_str());
+        GtkWidget *button_label = gtk_label_new(p->disp_name);
+        gtk_box_pack_start(GTK_BOX(button_layout), button_icon, false, false, 0);
+        gtk_box_pack_start(GTK_BOX(button_layout), button_label, false, false, 0);
+        gtk_container_add(GTK_CONTAINER(plugin_button), button_layout);
+        if (string(p->name) != "core")
+                gtk_box_pack_start(GTK_BOX(plugin_layout), check_button, false, false, 0);
+        else
+                gtk_widget_set_margin_start(plugin_button, 25);
+        gtk_box_pack_start(GTK_BOX(plugin_layout), plugin_button, false, false, 0);
+        g_object_set(plugin_layout, "margin", 5, NULL);
+        gtk_grid_attach(GTK_GRID(*category), plugin_layout, p->x, p->y, 1, 1);
+        g_signal_connect(plugin_button, "button-release-event",
+                         G_CALLBACK(plugin_button_cb), p);
+}
+
+#define NUM_CATEGORIES 5
+
 static GtkWidget *
 create_main_layout(WCM *wcm)
 {
@@ -832,7 +898,6 @@ create_main_layout(WCM *wcm)
 
         GtkWidget *main_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *left_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-        gtk_widget_set_size_request(left_panel_layout, 250, 1);
         GtkWidget *main_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 
@@ -847,22 +912,48 @@ create_main_layout(WCM *wcm)
         g_object_unref(provider);
         gtk_widget_set_name(main_panel_layout, "main_panel_layout");
 
+        GtkWidget *categories[NUM_CATEGORIES] = {};
+        GtkWidget *layout[NUM_CATEGORIES] = {};
+
         for (i = 0; i < int(wcm->plugins.size()); i++) {
                 p = wcm->plugins[i];
-                GtkWidget *plugin_button = gtk_button_new_with_label(p->disp_name);
-                g_object_set(plugin_button, "margin", 10, NULL);
-                gtk_box_pack_start(GTK_BOX(main_panel_layout), plugin_button, false, true, 0);
-                g_signal_connect(plugin_button, "button-release-event",
-                                 G_CALLBACK(plugin_button_cb), p);
+                if (string(p->category) == "General")
+                        add_plugin_to_category(p, &categories[0], &layout[0]);
+                else if (string(p->category) == "Desktop")
+                        add_plugin_to_category(p, &categories[1], &layout[1]);
+                else if (string(p->category) == "Effects")
+                        add_plugin_to_category(p, &categories[2], &layout[2]);
+                else if (string(p->category) == "Window Management")
+                        add_plugin_to_category(p, &categories[3], &layout[3]);
+                else
+                        add_plugin_to_category(p, &categories[4], &layout[4]);
         }
+        for (i = 0; i < NUM_CATEGORIES; i++) {
+                int add_separator = 0;
+                int j;
+                if (layout[i])
+                        gtk_container_add(GTK_CONTAINER(main_panel_layout), layout[i]);
+                for (j = i + 1; j < NUM_CATEGORIES; j++)
+                        add_separator |= layout[j] ? 1 : 0;
+                if (add_separator) {
+                        GtkWidget *separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+                        g_object_set(separator, "margin", 25, NULL);
+                        gtk_container_add(GTK_CONTAINER(main_panel_layout), separator);
+                }
+        }
+
+        GtkWidget *bottom_spacer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+        gtk_widget_set_size_request(bottom_spacer, 1, 25);
+        gtk_container_add(GTK_CONTAINER(main_panel_layout), bottom_spacer);
+
         GtkWidget *close_button = gtk_button_new();
         GtkWidget *close_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *close_image = gtk_image_new_from_icon_name("window-close", GTK_ICON_SIZE_BUTTON);
         GtkWidget *close_spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         gtk_widget_set_size_request(close_spacer, 5, 1);
         GtkWidget *close_label = gtk_label_new("Close");
-        gtk_widget_set_margin_start(close_layout, 100);
-        gtk_widget_set_margin_end(close_layout, 100);
+        gtk_widget_set_margin_start(close_layout, 75);
+        gtk_widget_set_margin_end(close_layout, 75);
         gtk_box_pack_start(GTK_BOX(close_layout), close_image, true, false, 0);
         gtk_box_pack_end(GTK_BOX(close_layout), close_label, true, false, 0);
         gtk_box_pack_end(GTK_BOX(close_layout), close_spacer, true, false, 0);
@@ -898,15 +989,27 @@ activate(GtkApplication* app,
         gtk_widget_show_all(window);
 }
 
+static void
+get_button_position(Plugin *p, int *x, int *y)
+{
+        p->x = (*x)++;
+        p->y = *y;
+        if (*x > 2) {
+                *x = 0;
+                (*y)++;
+        }
+}
+
 int
 main(int argc, char **argv)
 {
         GtkApplication *app;
         int status;
         WCM *wcm;
-        int i, j;
+        int i;
         Plugin *p;
-        Option *o;
+        int x[5] = {};
+        int y[5] = {};
 
         wcm = new WCM();
 
@@ -916,17 +1019,18 @@ main(int argc, char **argv)
         if (load_config_file(wcm))
                 return -1;
 
-        printf("*******************************\n");
-
         for (i = 0; i < int(wcm->plugins.size()); i++) {
                 p = wcm->plugins[i];
-                printf("Plugin:\n");
-                printf("%s: %s\n", p->name, p->disp_name);
-                printf("Options:\n");
-                for (j = 0; j < int(p->options.size()); j++) {
-                        o = p->options[j];
-                        printf("%s: %s\n", o->name, o->disp_name);
-                }
+                if (string(p->category) == "General")
+                        get_button_position(p, &x[0], &y[0]);
+                else if (string(p->category) == "Desktop")
+                        get_button_position(p, &x[1], &y[1]);
+                else if (string(p->category) == "Effects")
+                        get_button_position(p, &x[2], &y[2]);
+                else if (string(p->category) == "Window Management")
+                        get_button_position(p, &x[3], &y[3]);
+                else
+                        get_button_position(p, &x[4], &y[4]);
         }
 
         app = gtk_application_new("org.gtk.wayfire-config-manager", G_APPLICATION_FLAGS_NONE);
