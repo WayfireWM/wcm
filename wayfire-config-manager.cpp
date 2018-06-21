@@ -901,7 +901,7 @@ create_main_layout(WCM *wcm)
         GtkWidget *main_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 
-        gtk_style_context_add_class(gtk_widget_get_style_context(main_panel_layout), GTK_STYLE_CLASS_VIEW);
+        gtk_style_context_add_class(gtk_widget_get_style_context(scrolled_window), GTK_STYLE_CLASS_VIEW);
 
         GtkWidget *categories[NUM_CATEGORIES] = {};
         GtkWidget *layout[NUM_CATEGORIES] = {};
