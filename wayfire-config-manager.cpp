@@ -769,7 +769,6 @@ plugin_button_cb(GtkWidget *widget,
 
         GtkWidget *plugin_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *left_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-        gtk_widget_set_size_request(left_panel_layout, 250, 1);
         GtkWidget *main_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         GtkWidget *label = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(label), ("<span size=\"12000\"><b>" + string(p->disp_name) + "</b></span>").c_str());
@@ -789,8 +788,8 @@ plugin_button_cb(GtkWidget *widget,
         GtkWidget *back_spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         gtk_widget_set_size_request(back_spacer, 5, 1);
         GtkWidget *back_label = gtk_label_new("Back");
-        gtk_widget_set_margin_start(back_layout, 100);
-        gtk_widget_set_margin_end(back_layout, 100);
+        gtk_widget_set_margin_start(back_layout, 75);
+        gtk_widget_set_margin_end(back_layout, 75);
         gtk_box_pack_start(GTK_BOX(back_layout), back_image, true, false, 0);
         gtk_box_pack_end(GTK_BOX(back_layout), back_label, true, false, 0);
         gtk_box_pack_end(GTK_BOX(back_layout), back_spacer, true, false, 0);
