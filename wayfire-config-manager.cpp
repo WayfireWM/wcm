@@ -100,13 +100,14 @@ class WCM
 static int
 load_config_file(WCM *wcm)
 {
-        char *home;
+        const gchar *config_dir;
 
-        home = getenv("HOME");
-        if (!home)
-                return -1;
+        config_dir = g_get_user_config_dir();
 
-        config_file = strdup((string(home) + "/.config/wayfire.ini").c_str());
+        if (!config_dir)
+		return -1;
+
+        config_file = strdup((string(config_dir) + "/wayfire.ini").c_str());
 
         wcm->wf_config = new wayfire_config(config_file);
 
