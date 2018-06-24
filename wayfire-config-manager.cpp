@@ -462,7 +462,7 @@ string_combo_box_focus_out_cb(GtkWidget *widget,
 {
         set_string_combo_box_option_cb(widget, user_data);
 
-        return true;
+        return GDK_EVENT_PROPAGATE;
 }
 
 static void
@@ -487,7 +487,7 @@ int_combo_box_focus_out_cb(GtkWidget *widget,
 {
         set_int_combo_box_option_cb(widget, user_data);
 
-        return true;
+        return GDK_EVENT_PROPAGATE;
 }
 
 static void
@@ -544,7 +544,7 @@ double_spin_button_focus_out_cb(GtkWidget *widget,
 {
         set_double_spin_button_option_cb(widget, user_data);
 
-        return true;
+        return GDK_EVENT_PROPAGATE;
 }
 
 static void
@@ -569,7 +569,7 @@ int_spin_button_focus_out_cb(GtkWidget *widget,
 {
         set_int_spin_button_option_cb(widget, user_data);
 
-        return true;
+        return GDK_EVENT_PROPAGATE;
 }
 
 static void
@@ -594,7 +594,7 @@ bool_check_button_focus_out_cb(GtkWidget *widget,
 {
         set_bool_check_button_option_cb(widget, user_data);
 
-        return true;
+        return GDK_EVENT_PROPAGATE;
 }
 
 static void
@@ -619,7 +619,7 @@ entry_focus_out_cb(GtkWidget *widget,
 {
         set_string_option_cb(widget, user_data);
 
-        return true;
+        return GDK_EVENT_PROPAGATE;
 }
 
 static void
