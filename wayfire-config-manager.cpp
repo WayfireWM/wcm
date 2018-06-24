@@ -120,18 +120,12 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
 
         for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
                 if (cur_node->type == XML_ELEMENT_NODE) {
-                        printf("element: %s\n", cur_node->name);
                         if (string((char *) cur_node->name) == "plugin") {
-                                printf("plugin name: ");
                                 prop = xmlGetProp(cur_node, (xmlChar *) "name");
-                                if (prop) {
-                                        printf("%s\n", prop);
+                                if (prop)
                                         p->name = strdup((char *) prop);
-                                }
                                 free(prop);
                         } else if (string((char *) cur_node->name) == "_short") {
-                                printf("plugin _short: ");
-                                printf("%s\n", cur_node->children->content);
                                 if (!o)
                                         p->disp_name = strdup((char *) cur_node->children->content);
                                 else
@@ -141,23 +135,16 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
                                         p->category = strdup("");
                                         continue;
                                 }
-                                printf("plugin category: ");
-                                printf("%s\n", cur_node->children->content);
                                 p->category = strdup((char *) cur_node->children->content);
                         } else if (string((char *) cur_node->name) == "option") {
                                 o = new Option();
                                 o->plugin = p;
-                                printf("option name: ");
                                 prop = xmlGetProp(cur_node, (xmlChar *) "name");
-                                if (prop) {
-                                        printf("%s\n", prop);
+                                if (prop)
                                         o->name = strdup((char *) prop);
-                                }
                                 free(prop);
-                                printf("option type: ");
                                 prop = xmlGetProp(cur_node, (xmlChar *) "type");
                                 if (prop) {
-                                        printf("%s\n", prop);
                                         if (string((char *) prop) == "int") {
                                                 o->type = OPTION_TYPE_INT;
                                                 o->data.min = -DBL_MAX;
@@ -194,7 +181,6 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
                         } else if (string((char *) cur_node->name) == "default") {
                                 if (!cur_node->children)
                                         continue;
-                                printf("default: %s\n", cur_node->children->content);
                                 switch (o->type) {
                                         case OPTION_TYPE_INT:
                                                 o->default_value.i = atoi((char *) cur_node->children->content);
@@ -315,7 +301,7 @@ parse_xml_files(WCM *wcm, const char *dir_name)
                         root_element = xmlDocGetRootElement(doc);
 
                         if (root_element->type == XML_ELEMENT_NODE && string((char *) root_element->name) == "wayfire") {
-                                printf("adding plugin: %s\n", name);
+                                printf("Loading plugin: %s\n", name);
                                 Plugin *p = new Plugin();
                                 p->wcm = wcm;
                                 get_plugin_data(p, NULL, doc, root_element);
@@ -1067,10 +1053,10 @@ main(int argc, char **argv)
 
         wcm = new WCM();
 
-        if (parse_xml_files(wcm, METADATADIR))
+        if (load_config_file(wcm))
                 return -1;
 
-        if (load_config_file(wcm))
+        if (parse_xml_files(wcm, METADATADIR))
                 return -1;
 
         for (i = 0; i < int(wcm->plugins.size()); i++) {
