@@ -4,7 +4,7 @@
 	<_short>Desktop Zoom</_short>
 	<category>Desktop</category>
 	<option name="modifier" type="key">
-		<_short>Modifier to be used with scroll to zoom in/out</_short>
+		<_short>Scroll using this modifier to zoom in/out</_short>
 		<default>&lt;super&gt;</default>
 	</option>
 	<option name="speed" type="double">
