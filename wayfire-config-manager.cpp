@@ -607,6 +607,8 @@ add_option_widget(GtkWidget *widget, Option *o)
                         section = wcm->wf_config->get_section(o->plugin->name);
                         option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
                         label = gtk_label_new(o->disp_name);
+                        gtk_widget_set_margin_start(label, 10);
+                        gtk_widget_set_margin_end(label, 10);
                         gtk_widget_set_tooltip_text(label, o->name);
                         gtk_widget_set_size_request(label, 200, 1);
                         gtk_label_set_xalign(GTK_LABEL(label), 0);
