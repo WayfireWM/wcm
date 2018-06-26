@@ -1,0 +1,112 @@
+/*
+ * Copyright © 2018 Scott Moreau
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial
+ * portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#include <vector>
+#include <gtk/gtk.h>
+#include <config.hpp>
+
+enum option_type
+{
+        OPTION_TYPE_INT,
+        OPTION_TYPE_BOOL,
+        OPTION_TYPE_DOUBLE,
+        OPTION_TYPE_STRING,
+        OPTION_TYPE_BUTTON,
+        OPTION_TYPE_KEY,
+        OPTION_TYPE_COLOR
+};
+
+class LabeledInt
+{
+        public:
+        int value;
+        char *name;
+};
+
+class LabeledString
+{
+        public:
+        int id;
+        char *value;
+        char *name;
+};
+
+class var_data
+{
+        public:
+        double min;
+        double max;
+        double precision;
+};
+
+union opt_data
+{
+        int i;
+        char *s;
+        double d;
+};
+
+class Plugin;
+
+class Option
+{
+        public:
+        Plugin *plugin;
+        char *name;
+        char *disp_name;
+        option_type type;
+        opt_data default_value;
+        var_data data;
+        std::vector<LabeledInt *> int_labels;
+        std::vector<LabeledString *> str_labels;
+        GtkWidget *data_widget;
+};
+
+class WCM;
+
+class Plugin
+{
+        public:
+        WCM *wcm;
+        char *name;
+        char *disp_name;
+        char *category;
+        int x, y;
+        int enabled;
+        std::vector<Option *> options;
+};
+
+class WCM
+{
+        public:
+        GtkWidget *window;
+        GtkWidget *main_layout;
+        GtkWidget *plugin_layout;
+        std::vector<Plugin *> plugins;
+        wayfire_config *wf_config;
+};
+
+int
+parse_xml_files(WCM *wcm, const char *dir_name);

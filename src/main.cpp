@@ -1,102 +1,34 @@
 /*
+ * Copyright © 2018 Scott Moreau
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial
+ * portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
  * meson build --prefix=/usr && ninja -C build && sudo ninja -C build install
+ * 
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-#include <gtk/gtk.h>
-#include <vector>
-#include <string>
-#include <config.hpp>
-
-using namespace std;
+#include "wcm.h"
 
 static const char *config_file;
-
-enum option_type
-{
-        OPTION_TYPE_INT,
-        OPTION_TYPE_BOOL,
-        OPTION_TYPE_DOUBLE,
-        OPTION_TYPE_STRING,
-        OPTION_TYPE_BUTTON,
-        OPTION_TYPE_KEY,
-        OPTION_TYPE_COLOR
-};
-
-class LabeledInt
-{
-        public:
-        int value;
-        char *name;
-};
-
-class LabeledString
-{
-        public:
-        int id;
-        char *value;
-        char *name;
-};
-
-class var_data
-{
-        public:
-        double min;
-        double max;
-        double precision;
-};
-
-union opt_data
-{
-        int i;
-        char *s;
-        double d;
-};
-
-class Plugin;
-
-class Option
-{
-        public:
-        Plugin *plugin;
-        char *name;
-        char *disp_name;
-        option_type type;
-        opt_data default_value;
-        var_data data;
-        vector<LabeledInt *> int_labels;
-        vector<LabeledString *> str_labels;
-        GtkWidget *data_widget;
-};
-
-class WCM;
-
-class Plugin
-{
-        public:
-        WCM *wcm;
-        char *name;
-        char *disp_name;
-        char *category;
-        int x, y;
-        int enabled;
-        vector<Option *> options;
-};
-
-class WCM
-{
-        public:
-        GtkWidget *window;
-        GtkWidget *main_layout;
-        GtkWidget *plugin_layout;
-        vector<Plugin *> plugins;
-        wayfire_config *wf_config;
-};
 
 static int
 load_config_file(WCM *wcm)
@@ -105,216 +37,9 @@ load_config_file(WCM *wcm)
 
         config_dir = g_get_user_config_dir();
 
-        config_file = strdup((string(config_dir) + "/wayfire.ini").c_str());
+        config_file = strdup((std::string(config_dir) + "/wayfire.ini").c_str());
 
         wcm->wf_config = new wayfire_config(config_file);
-
-        return 0;
-}
-
-static void
-get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
-{
-        Option *o = opt;
-        xmlNode *cur_node = NULL;
-        xmlChar *prop;
-
-        for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
-                if (cur_node->type == XML_ELEMENT_NODE) {
-                        if (string((char *) cur_node->name) == "plugin") {
-                                prop = xmlGetProp(cur_node, (xmlChar *) "name");
-                                if (prop)
-                                        p->name = strdup((char *) prop);
-                                free(prop);
-                        } else if (string((char *) cur_node->name) == "_short") {
-                                if (!o)
-                                        p->disp_name = strdup((char *) cur_node->children->content);
-                                else
-                                        o->disp_name = strdup((char *) cur_node->children->content);
-                        } else if (string((char *) cur_node->name) == "category") {
-                                if (!cur_node->children) {
-                                        p->category = strdup("");
-                                        continue;
-                                }
-                                p->category = strdup((char *) cur_node->children->content);
-                        } else if (string((char *) cur_node->name) == "option") {
-                                o = new Option();
-                                o->plugin = p;
-                                prop = xmlGetProp(cur_node, (xmlChar *) "name");
-                                if (prop)
-                                        o->name = strdup((char *) prop);
-                                free(prop);
-                                prop = xmlGetProp(cur_node, (xmlChar *) "type");
-                                if (prop) {
-                                        if (string((char *) prop) == "int") {
-                                                o->type = OPTION_TYPE_INT;
-                                                o->data.min = -DBL_MAX;
-                                                o->data.max = DBL_MAX;
-                                        } else if (string((char *) prop) == "double") {
-                                                o->type = OPTION_TYPE_DOUBLE;
-                                                o->data.min = -DBL_MAX;
-                                                o->data.max = DBL_MAX;
-                                                o->data.precision = 0.1;
-                                        } else if (string((char *) prop) == "bool") {
-                                                o->type = OPTION_TYPE_BOOL;
-                                        } else if (string((char *) prop) == "string") {
-                                                o->type = OPTION_TYPE_STRING;
-                                                o->default_value.s = strdup("");
-                                        } else if (string((char *) prop) == "button") {
-                                                o->type = OPTION_TYPE_BUTTON;
-                                                o->default_value.s = strdup("");
-                                        } else if (string((char *) prop) == "color") {
-                                                o->type = OPTION_TYPE_COLOR;
-                                                o->default_value.s = strdup("");
-                                        } else if (string((char *) prop) == "key") {
-                                                o->type = OPTION_TYPE_KEY;
-                                                o->default_value.s = strdup("");
-                                        } else {
-                                                printf("WARN: [%s] unknown option type\n", p->name);
-                                                o->type = (option_type) -1;
-                                        }
-                                } else {
-                                        printf("WARN: [%s] no option type found\n", p->name);
-                                        o->type = (option_type) -1;
-                                }
-                                free(prop);
-                                p->options.push_back(o);
-                        } else if (string((char *) cur_node->name) == "default") {
-                                if (!cur_node->children)
-                                        continue;
-                                switch (o->type) {
-                                        case OPTION_TYPE_INT:
-                                                o->default_value.i = atoi((char *) cur_node->children->content);
-                                                break;
-                                        case OPTION_TYPE_BOOL:
-                                                if (string((char *) cur_node->children->content) == "true")
-                                                        o->default_value.i = 1;
-                                                else if (string((char *) cur_node->children->content) == "false")
-                                                        o->default_value.i = 0;
-                                                else
-                                                        o->default_value.i = atoi((char *) cur_node->children->content);
-                                                if (o->default_value.i < 0 && o->default_value.i > 1)
-                                                        printf("WARN: [%s] unknown bool option default\n", p->name);
-                                                break;
-                                        case OPTION_TYPE_STRING:
-                                        case OPTION_TYPE_BUTTON:
-                                        case OPTION_TYPE_COLOR:
-                                        case OPTION_TYPE_KEY:
-                                                free(o->default_value.s);
-                                                o->default_value.s = strdup((char *) cur_node->children->content);
-                                                break;
-                                        case OPTION_TYPE_DOUBLE:
-                                                o->default_value.d = atof((char *) cur_node->children->content);
-                                                break;
-                                        default:
-                                                break;
-                                }
-                        } else if (string((char *) cur_node->name) == "min") {
-                                if (!cur_node->children)
-                                        continue;
-                                if (o->type != OPTION_TYPE_INT && o->type != OPTION_TYPE_DOUBLE)
-                                        printf("WARN: [%s] min defined for option type !int && !double\n", p->name);
-                                o->data.min = atof((char *) cur_node->children->content);
-                        } else if (string((char *) cur_node->name) == "max") {
-                                if (!cur_node->children)
-                                        continue;
-                                if (o->type != OPTION_TYPE_INT && o->type != OPTION_TYPE_DOUBLE)
-                                        printf("WARN: [%s] max defined for option type !int && !double\n", p->name);
-                                o->data.max = atof((char *) cur_node->children->content);
-                        } else if (string((char *) cur_node->name) == "precision") {
-                                if (!cur_node->children)
-                                        continue;
-                                if (o->type != OPTION_TYPE_DOUBLE)
-                                        printf("WARN: [%s] precision defined for option type !double\n", p->name);
-                                o->data.precision = atof((char *) cur_node->children->content);
-                        } else if (string((char *) cur_node->name) == "desc") {
-                                if (o->type != OPTION_TYPE_INT && o->type != OPTION_TYPE_STRING)
-                                        printf("WARN: [%s] desc defined for option type !int && !string\n", p->name);
-                                xmlNode *node;
-                                LabeledInt *li = NULL;
-                                LabeledString *ls = NULL;
-                                for (node = cur_node->children; node; node = node->next) {
-                                        if (node->type == XML_ELEMENT_NODE) {
-                                                if (o->type == OPTION_TYPE_INT) {
-                                                        int is_value = (string((char *) node->name) == "value");
-                                                        int is_name = (string((char *) node->name) == "_name");
-                                                        if (!li && (is_value || is_name)) {
-                                                                li = new LabeledInt();
-                                                                o->int_labels.push_back(li);
-                                                        }
-                                                        if (is_value)
-                                                                li->value = atoi((char *) node->children->content);
-                                                        if (is_name)
-                                                                li->name = strdup((char *) node->children->content);
-                                                } else if (o->type == OPTION_TYPE_STRING) {
-                                                        int is_value = (string((char *) node->name) == "value");
-                                                        int is_name = (string((char *) node->name) == "_name");
-                                                        if (!ls && (is_value || is_name)) {
-                                                                ls = new LabeledString();
-                                                                o->str_labels.push_back(ls);
-                                                        }
-                                                        if (is_value) {
-                                                                ls->value = strdup((char *) node->children->content);
-                                                                if (string(o->default_value.s) == "" && o->str_labels.size() == 1) {
-                                                                        free(o->default_value.s);
-                                                                        o->default_value.s = strdup(ls->value);
-                                                                }
-                                                        }
-                                                        if (is_name)
-                                                                ls->name = strdup((char *) node->children->content);
-                                                }
-                                        }
-                                }
-                        }
-                }
-                get_plugin_data(p, o, doc, cur_node->children);
-        }
-}
-
-static int
-parse_xml_files(WCM *wcm, const char *dir_name)
-{
-        int len;
-        DIR *dir;
-        char *name;
-        struct dirent *file;
-        string path, filename;
-        xmlDoc *doc = NULL;
-        xmlNode *root_element = NULL;
-
-        path = string(dir_name);
-        dir = opendir((path).c_str());
-        if (!dir) {
-                printf("Error: Could not open %s\n", (path).c_str());
-                return -1;
-        }
-        while ((file = readdir(dir))) {
-                name = file->d_name;
-                len = string(name).length();
-                if (len > 3 && string(&name[len - 4]) == ".xml") {
-                        filename = path + "/" + string(name);
-                        doc = xmlReadFile(filename.c_str(), NULL, 0);
-                        if (!doc) {
-                                printf("Error: Could not parse file %s\n", filename.c_str());
-                                continue;
-                        }
-
-                        root_element = xmlDocGetRootElement(doc);
-
-                        if (root_element->type == XML_ELEMENT_NODE && string((char *) root_element->name) == "wayfire") {
-                                printf("Loading plugin: %s\n", name);
-                                Plugin *p = new Plugin();
-                                p->wcm = wcm;
-                                get_plugin_data(p, NULL, doc, root_element);
-                                wcm->plugins.push_back(p);
-                        }
-
-                        xmlFreeDoc(doc);
-                        xmlCleanupParser();
-                }
-        }
-
-        closedir(dir);
 
         return 0;
 }
@@ -372,21 +97,21 @@ reset_button_cb(GtkWidget *widget,
                         else
                                 gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.i);
                         section = wcm->wf_config->get_section(o->plugin->name);
-                        option = section->get_option(o->name, to_string(o->default_value.i));
+                        option = section->get_option(o->name, std::to_string(o->default_value.i));
                         option->set_value(o->default_value.i);
                         wcm->wf_config->save_config(config_file);
                         break;
                 case OPTION_TYPE_BOOL:
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(o->data_widget), o->default_value.i);
                         section = wcm->wf_config->get_section(o->plugin->name);
-                        option = section->get_option(o->name, to_string(o->default_value.i));
+                        option = section->get_option(o->name, std::to_string(o->default_value.i));
                         option->set_value(o->default_value.i);
                         wcm->wf_config->save_config(config_file);
                         break;
                 case OPTION_TYPE_DOUBLE:
                         gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.d);
                         section = wcm->wf_config->get_section(o->plugin->name);
-                        option = section->get_option(o->name, to_string(o->default_value.d));
+                        option = section->get_option(o->name, std::to_string(o->default_value.d));
                         option->set_value(o->default_value.d);
                         wcm->wf_config->save_config(config_file);
                         break;
@@ -404,7 +129,7 @@ reset_button_cb(GtkWidget *widget,
                                 int i;
                                 for (i = 0; i < int(o->str_labels.size()); i++) {
                                         ls = o->str_labels[i];
-                                        if (string(ls->value) == o->default_value.s) {
+                                        if (std::string(ls->value) == o->default_value.s) {
                                                 gtk_combo_box_set_active(GTK_COMBO_BOX(o->data_widget), ls->id);
                                                 break;
                                         }
@@ -476,7 +201,7 @@ set_int_combo_box_option_cb(GtkWidget *widget,
         wf_option option;
 
         section = wcm->wf_config->get_section(o->plugin->name);
-        option = section->get_option(o->name, to_string(o->default_value.i));
+        option = section->get_option(o->name, std::to_string(o->default_value.i));
         option->set_value(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)));
         wcm->wf_config->save_config(config_file);
 }
@@ -533,7 +258,7 @@ set_double_spin_button_option_cb(GtkWidget *widget,
         wf_option option;
 
         section = wcm->wf_config->get_section(o->plugin->name);
-        option = section->get_option(o->name, to_string(o->default_value.d));
+        option = section->get_option(o->name, std::to_string(o->default_value.d));
         option->set_value(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
         wcm->wf_config->save_config(config_file);
 }
@@ -558,7 +283,7 @@ set_int_spin_button_option_cb(GtkWidget *widget,
         wf_option option;
 
         section = wcm->wf_config->get_section(o->plugin->name);
-        option = section->get_option(o->name, to_string(o->default_value.i));
+        option = section->get_option(o->name, std::to_string(o->default_value.i));
         option->set_value(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
         wcm->wf_config->save_config(config_file);
 }
@@ -583,7 +308,7 @@ set_bool_check_button_option_cb(GtkWidget *widget,
         wf_option option;
 
         section = wcm->wf_config->get_section(o->plugin->name);
-        option = section->get_option(o->name, to_string(o->default_value.i));
+        option = section->get_option(o->name, std::to_string(o->default_value.i));
         option->set_value(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ? 1 : 0);
         wcm->wf_config->save_config(config_file);
 }
@@ -667,7 +392,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 case OPTION_TYPE_INT: {
                         int i;
                         LabeledInt *li;
-                        option = section->get_option(o->name, to_string(o->default_value.i));
+                        option = section->get_option(o->name, std::to_string(o->default_value.i));
                         GtkWidget *combo_box;
                         GtkWidget *spin_button;
                         if (o->int_labels.size()) {
@@ -698,10 +423,10 @@ add_option_widget(GtkWidget *widget, Option *o)
                 }
                         break;
                 case OPTION_TYPE_BOOL: {
-                        option = section->get_option(o->name, to_string(o->default_value.i));
+                        option = section->get_option(o->name, std::to_string(o->default_value.i));
                         GtkWidget *check_button = gtk_check_button_new();
                         section = wcm->wf_config->get_section(o->plugin->name);
-                        option = section->get_option(o->name, to_string(o->default_value.i));
+                        option = section->get_option(o->name, std::to_string(o->default_value.i));
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), option->as_int() ? 1 : 0);
                         o->data_widget = check_button;
                         g_signal_connect(check_button, "toggled",
@@ -713,7 +438,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 }
                         break;
                 case OPTION_TYPE_DOUBLE: {
-                        option = section->get_option(o->name, to_string(o->default_value.d));
+                        option = section->get_option(o->name, std::to_string(o->default_value.d));
                         GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(option->as_double(), o->data.min, o->data.max, o->data.precision, o->data.precision * 10, o->data.precision * 10), o->data.precision, 3);
                         o->data_widget = spin_button;
                         g_signal_connect(spin_button, "activate",
@@ -811,19 +536,19 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
         p->enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
         if (p->enabled) {
-                option->set_value(option->as_string() + " " + string(p->name));
+                option->set_value(option->as_string() + " " + std::string(p->name));
                 wcm->wf_config->save_config(config_file);
         } else {
-                string plugins = option->as_string();
+                std::string plugins = option->as_string();
                 size_t pos;
                 int i;
-                /* Remove plugin string */
-                pos = plugins.find(string(p->name));
-                if (pos != string::npos)
-                        plugins.erase(pos, string(p->name).length());
+                /* Remove plugin std::string */
+                pos = plugins.find(std::string(p->name));
+                if (pos != std::string::npos)
+                        plugins.erase(pos, std::string(p->name).length());
                 /* Remove trailing spaces */
                 pos = plugins.find_last_not_of(" ");
-                if (pos != string::npos)
+                if (pos != std::string::npos)
                         plugins.substr(0, pos + 1);
                 /* Remove duplicate spaces */
                 for (i = plugins.size() - 1; i >= 0; i--)
@@ -852,7 +577,7 @@ plugin_button_cb(GtkWidget *widget,
         GtkWidget *left_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         GtkWidget *main_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         GtkWidget *label = gtk_label_new(NULL);
-        gtk_label_set_markup(GTK_LABEL(label), ("<span size=\"12000\"><b>" + string(p->disp_name) + "</b></span>").c_str());
+        gtk_label_set_markup(GTK_LABEL(label), ("<span size=\"12000\"><b>" + std::string(p->disp_name) + "</b></span>").c_str());
         g_object_set(label, "margin", 50, NULL);
         GtkWidget *enable_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *enable_label = gtk_label_new(NULL);
@@ -909,7 +634,7 @@ plugin_button_cb(GtkWidget *widget,
 }
 
 static const char *
-get_icon_name_from_category(string category)
+get_icon_name_from_category(std::string category)
 {
         if (category == "General")
                 return "preferences-system";
@@ -931,9 +656,9 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
                 GtkWidget *header_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
                 *category = gtk_grid_new();
                 gtk_grid_set_row_homogeneous(GTK_GRID(*category), true);
-                GtkWidget *icon = gtk_image_new_from_icon_name(get_icon_name_from_category(string(p->category)), GTK_ICON_SIZE_DND);
+                GtkWidget *icon = gtk_image_new_from_icon_name(get_icon_name_from_category(std::string(p->category)), GTK_ICON_SIZE_DND);
                 GtkWidget *label = gtk_label_new(NULL);
-                gtk_label_set_markup(GTK_LABEL(label), ("<span size=\"14000\" color=\"#AAA\"><b>" + string(p->category) + "</b></span>").c_str());
+                gtk_label_set_markup(GTK_LABEL(label), ("<span size=\"14000\" color=\"#AAA\"><b>" + std::string(p->category) + "</b></span>").c_str());
                 g_object_set(icon, "margin", 10, NULL);
                 gtk_box_pack_start(GTK_BOX(header_layout), icon, false, false, 0);
                 gtk_box_pack_start(GTK_BOX(header_layout), label, false, false, 0);
@@ -943,7 +668,7 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
         GtkWidget *button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *plugin_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *check_button;
-        if (string(p->name) != "core" && string(p->name) != "input") {
+        if (std::string(p->name) != "core" && std::string(p->name) != "input") {
                 check_button = gtk_check_button_new();
                 g_object_set(check_button, "margin", 5, NULL);
                 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), p->enabled ? true : false);
@@ -953,12 +678,12 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
         GtkWidget *plugin_button = gtk_button_new();
         gtk_button_set_relief(GTK_BUTTON(plugin_button), GTK_RELIEF_NONE);
         gtk_widget_set_size_request(plugin_button, 200, 1);
-        GtkWidget *button_icon = gtk_image_new_from_file((ICONDIR "/plugin-" + string(p->name) + ".svg").c_str());
+        GtkWidget *button_icon = gtk_image_new_from_file((ICONDIR "/plugin-" + std::string(p->name) + ".svg").c_str());
         GtkWidget *button_label = gtk_label_new(p->disp_name);
         gtk_box_pack_start(GTK_BOX(button_layout), button_icon, false, false, 0);
         gtk_box_pack_start(GTK_BOX(button_layout), button_label, false, false, 0);
         gtk_container_add(GTK_CONTAINER(plugin_button), button_layout);
-        if (string(p->name) != "core" && string(p->name) != "input")
+        if (std::string(p->name) != "core" && std::string(p->name) != "input")
                 gtk_box_pack_start(GTK_BOX(plugin_layout), check_button, false, false, 0);
         else
                 gtk_widget_set_margin_start(plugin_button, 25);
@@ -990,13 +715,13 @@ create_main_layout(WCM *wcm)
 
         for (i = 0; i < int(wcm->plugins.size()); i++) {
                 p = wcm->plugins[i];
-                if (string(p->category) == "General")
+                if (std::string(p->category) == "General")
                         add_plugin_to_category(p, &categories[0], &layout[0]);
-                else if (string(p->category) == "Desktop")
+                else if (std::string(p->category) == "Desktop")
                         add_plugin_to_category(p, &categories[1], &layout[1]);
-                else if (string(p->category) == "Effects")
+                else if (std::string(p->category) == "Effects")
                         add_plugin_to_category(p, &categories[2], &layout[2]);
-                else if (string(p->category) == "Window Management")
+                else if (std::string(p->category) == "Window Management")
                         add_plugin_to_category(p, &categories[3], &layout[3]);
                 else
                         add_plugin_to_category(p, &categories[4], &layout[4]);
@@ -1074,9 +799,9 @@ get_button_position(Plugin *p, int *x, int *y)
 }
 
 static int
-plugin_enabled(Plugin *p, string plugins)
+plugin_enabled(Plugin *p, std::string plugins)
 {
-        return plugins.find(string(p->name)) != string::npos;
+        return plugins.find(std::string(p->name)) != std::string::npos;
 }
 
 int
@@ -1106,13 +831,13 @@ main(int argc, char **argv)
 
         for (i = 0; i < int(wcm->plugins.size()); i++) {
                 p = wcm->plugins[i];
-                if (string(p->category) == "General")
+                if (std::string(p->category) == "General")
                         get_button_position(p, &x[0], &y[0]);
-                else if (string(p->category) == "Desktop")
+                else if (std::string(p->category) == "Desktop")
                         get_button_position(p, &x[1], &y[1]);
-                else if (string(p->category) == "Effects")
+                else if (std::string(p->category) == "Effects")
                         get_button_position(p, &x[2], &y[2]);
-                else if (string(p->category) == "Window Management")
+                else if (std::string(p->category) == "Window Management")
                         get_button_position(p, &x[3], &y[3]);
                 else
                         get_button_position(p, &x[4], &y[4]);
