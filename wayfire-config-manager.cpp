@@ -675,7 +675,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                                         li = o->int_labels[i];
                                         gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), li->name);
                                 }
-                                gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), o->default_value.i);
+                                gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), option->as_int());
                                 o->data_widget = combo_box;
                                 g_signal_connect(combo_box, "changed",
                                                  G_CALLBACK(set_int_combo_box_option_cb), o);
@@ -701,7 +701,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                         GtkWidget *check_button = gtk_check_button_new();
                         section = wcm->wf_config->get_section(o->plugin->name);
                         option = section->get_option(o->name, to_string(o->default_value.i));
-                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), o->default_value.i ? 1 : 0);
+                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), option->as_int() ? 1 : 0);
                         o->data_widget = check_button;
                         g_signal_connect(check_button, "toggled",
                                          G_CALLBACK(set_bool_check_button_option_cb), o);
