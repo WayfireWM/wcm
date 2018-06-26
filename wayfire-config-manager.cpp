@@ -84,6 +84,7 @@ class Plugin
         char *disp_name;
         char *category;
         int x, y;
+        int enabled;
         vector<Option *> options;
 };
 
@@ -757,8 +758,8 @@ add_option_widget(GtkWidget *widget, Option *o)
                                 o->data_widget = combo_box;
                                 g_signal_connect(combo_box, "changed",
                                                  G_CALLBACK(set_string_combo_box_option_cb), o);
-				g_signal_connect(combo_box, "focus-out-event",
-						 G_CALLBACK(string_combo_box_focus_out_cb), o);
+                                g_signal_connect(combo_box, "focus-out-event",
+                                                 G_CALLBACK(string_combo_box_focus_out_cb), o);
                                 gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
                         } else {
                                 entry = gtk_entry_new();
@@ -796,11 +797,41 @@ add_option_widget(GtkWidget *widget, Option *o)
 }
 
 static void
-toggle_enabled_cb(GtkWidget *widget,
-                  gpointer user_data)
+toggle_plugin_enabled_cb(GtkWidget *widget,
+                         gpointer user_data)
 {
         Plugin *p = (Plugin *) user_data;
-        printf("%s plugin %s\n", p->name, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ? "enabled" : "disabled");
+        WCM *wcm = p->wcm;
+        wayfire_config_section *section;
+        wf_option option;
+
+        section = wcm->wf_config->get_section("core");
+        option = section->get_option("plugins", "default");
+
+        p->enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
+        if (p->enabled) {
+                option->set_value(option->as_string() + " " + string(p->name));
+                wcm->wf_config->save_config(config_file);
+        } else {
+                string plugins = option->as_string();
+                size_t pos;
+                int i;
+                /* Remove plugin string */
+                pos = plugins.find(string(p->name));
+                if (pos != string::npos)
+                        plugins.erase(pos, string(p->name).length());
+                /* Remove trailing spaces */
+                pos = plugins.find_last_not_of(" ");
+                if (pos != string::npos)
+                        plugins.substr(0, pos + 1);
+                /* Remove duplicate spaces */
+                for (i = plugins.size() - 1; i >= 0; i--)
+                        if(plugins[i] == ' ' && plugins[i] == plugins[i - 1])
+                                plugins.erase(plugins.begin() + i);
+                option->set_value(plugins);
+                wcm->wf_config->save_config(config_file);
+        }
 }
 
 static gboolean
@@ -827,11 +858,11 @@ plugin_button_cb(GtkWidget *widget,
         GtkWidget *enable_label = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(enable_label), "<span size=\"10000\"><b>Use This Plugin</b></span>");
         GtkWidget *enabled_cb = gtk_check_button_new();
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(enabled_cb), true);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(enabled_cb), p->enabled ? true : false);
         gtk_widget_set_margin_start(enabled_cb, 50);
         gtk_widget_set_margin_end(enabled_cb, 15);
         g_signal_connect(enabled_cb, "toggled",
-                         G_CALLBACK(toggle_enabled_cb), p);
+                         G_CALLBACK(toggle_plugin_enabled_cb), p);
         GtkWidget *back_button = gtk_button_new();
         GtkWidget *back_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *back_image = gtk_image_new_from_icon_name("back", GTK_ICON_SIZE_BUTTON);
@@ -912,10 +943,12 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
         GtkWidget *button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *plugin_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *check_button;
-        if (string(p->name) != "core") {
+        if (string(p->name) != "core" && string(p->name) != "input") {
                 check_button = gtk_check_button_new();
                 g_object_set(check_button, "margin", 5, NULL);
-                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), true);
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), p->enabled ? true : false);
+                g_signal_connect(check_button, "toggled",
+                                 G_CALLBACK(toggle_plugin_enabled_cb), p);
         }
         GtkWidget *plugin_button = gtk_button_new();
         gtk_button_set_relief(GTK_BUTTON(plugin_button), GTK_RELIEF_NONE);
@@ -925,7 +958,7 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
         gtk_box_pack_start(GTK_BOX(button_layout), button_icon, false, false, 0);
         gtk_box_pack_start(GTK_BOX(button_layout), button_label, false, false, 0);
         gtk_container_add(GTK_CONTAINER(plugin_button), button_layout);
-        if (string(p->name) != "core")
+        if (string(p->name) != "core" && string(p->name) != "input")
                 gtk_box_pack_start(GTK_BOX(plugin_layout), check_button, false, false, 0);
         else
                 gtk_widget_set_margin_start(plugin_button, 25);
@@ -1040,6 +1073,12 @@ get_button_position(Plugin *p, int *x, int *y)
         }
 }
 
+static int
+plugin_enabled(Plugin *p, string plugins)
+{
+        return plugins.find(string(p->name)) != string::npos;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -1059,6 +1098,12 @@ main(int argc, char **argv)
         if (parse_xml_files(wcm, METADATADIR))
                 return -1;
 
+        wayfire_config_section *section;
+        wf_option option;
+
+        section = wcm->wf_config->get_section("core");
+        option = section->get_option("plugins", "default");
+
         for (i = 0; i < int(wcm->plugins.size()); i++) {
                 p = wcm->plugins[i];
                 if (string(p->category) == "General")
@@ -1071,6 +1116,7 @@ main(int argc, char **argv)
                         get_button_position(p, &x[3], &y[3]);
                 else
                         get_button_position(p, &x[4], &y[4]);
+                p->enabled = plugin_enabled(p, option->as_string());
         }
 
         app = gtk_application_new("org.gtk.wayfire-config-manager", G_APPLICATION_FLAGS_NONE);
