@@ -34,9 +34,23 @@
 		<_short>Use Lighting</_short>
 		<default>true</default>
 	</option>
-	<option name="deform" type="bool">
-		<_short>Use Deformation</_short>
-		<default>true</default>
+	<option name="deform" type="int">
+		<_short>Deformation</_short>
+		<default>0</default>
+		<min>0</min>
+		<max>2</max>
+		<desc>
+			<value>0</value>
+			<_name>None</_name>
+		</desc>
+		<desc>
+			<value>1</value>
+			<_name>Cylinder</_name>
+		</desc>
+		<desc>
+			<value>2</value>
+			<_name>Star</_name>
+		</desc>
 	</option>
 	</plugin>
 </wayfire>
