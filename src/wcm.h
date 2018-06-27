@@ -104,6 +104,8 @@ class WCM
         GtkWidget *window;
         GtkWidget *main_layout;
         GtkWidget *plugin_layout;
+        GtkWidget *left_panel_layout;
+        GtkWidget *scrolled_plugin_layout;
         std::vector<Plugin *> plugins;
         wayfire_config *wf_config;
 };
