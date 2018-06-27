@@ -6,6 +6,8 @@
 		<_short>String Option</_short>
 		<default>this is a string.</default>
 	</option>
+	<group>
+	<_short>Options</_short>
 	<option name="str_list_opt" type="string">
 		<_short>String List Option</_short>
 		<default>two</default>
@@ -48,6 +50,11 @@
 			<_name>Four</_name>
 		</desc>
 	</option>
+	</group>
+	<group>
+	<_short>More Options</_short>
+	<subgroup>
+	<_short>Click Me</_short>
 	<option name="double_opt" type="double">
 		<_short>Double Option</_short>
 		<default>4.5</default>
@@ -56,6 +63,9 @@
 		<_short>Key Option</_short>
 		<default>&lt;Super&gt;&lt;Alt&gt;t</default>
 	</option>
+	</subgroup>
+	<subgroup>
+	<_short>Click Me</_short>
 	<option name="bool_opt" type="bool">
 		<_short>Bool Option</_short>
 		<default>true</default>
@@ -64,9 +74,11 @@
 		<_short>Button Option</_short>
 		<default>&lt;Super&gt;Button1</default>
 	</option>
+	</subgroup>
 	<option name="color_opt" type="color">
 		<_short>Color Option</_short>
 		<default>0.1 0.3 0.7 1.0</default>
 	</option>
+	</group>
 	</plugin>
 </wayfire>

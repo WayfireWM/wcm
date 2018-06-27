@@ -35,7 +35,9 @@ enum option_type
         OPTION_TYPE_STRING,
         OPTION_TYPE_BUTTON,
         OPTION_TYPE_KEY,
-        OPTION_TYPE_COLOR
+        OPTION_TYPE_COLOR,
+        OPTION_TYPE_GROUP,
+        OPTION_TYPE_SUBGROUP
 };
 
 class LabeledInt
@@ -79,6 +81,7 @@ class Option
         option_type type;
         opt_data default_value;
         var_data data;
+        std::vector<Option *> options;
         std::vector<LabeledInt *> int_labels;
         std::vector<LabeledString *> str_labels;
         GtkWidget *data_widget;

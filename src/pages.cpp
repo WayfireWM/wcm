@@ -606,11 +606,12 @@ plugin_button_cb(GtkWidget *widget,
                  GdkEventButton *event,
                  gpointer user_data)
 {
-        int i;
         Plugin *p = (Plugin *) user_data;
+        Option *g, *s, *o;
         WCM *wcm = p->wcm;
         GtkWidget *window = wcm->window;
         GtkWidget *main_layout = wcm->main_layout;
+        int i, j, k;
 
         g_object_ref(main_layout);
         gtk_container_remove(GTK_CONTAINER(window), main_layout);
@@ -647,17 +648,39 @@ plugin_button_cb(GtkWidget *widget,
                          G_CALLBACK(back_button_cb), wcm);
         GtkWidget *notebook = gtk_notebook_new();
         gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_TOP);
-        GtkWidget *options_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-        GtkWidget *top_spacer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-        gtk_widget_set_size_request(top_spacer, 1, 5);
-        gtk_box_pack_start(GTK_BOX(options_layout), top_spacer, false, false, 0);
-        GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-        gtk_widget_set_vexpand(scrolled_window, true);
+        GtkWidget *scrolled_window;
+        GtkWidget *options_layout;
+        GtkWidget *top_spacer;
         for (i = 0; i < int(p->options.size()); i++) {
-                add_option_widget(options_layout, p->options[i]);
-        }
-        gtk_container_add(GTK_CONTAINER(scrolled_window), options_layout);
-        gtk_notebook_append_page(GTK_NOTEBOOK(notebook), scrolled_window, gtk_label_new("General"));
+		g = p->options[i];
+		if (g->type != OPTION_TYPE_GROUP)
+			continue;
+		options_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+		top_spacer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+		gtk_widget_set_size_request(top_spacer, 1, 5);
+		gtk_box_pack_start(GTK_BOX(options_layout), top_spacer, false, false, 0);
+		for (j = 0; j < int(g->options.size()); j++) {
+			o = g->options[j];
+			if (o->type == OPTION_TYPE_SUBGROUP && int(o->options.size())) {
+				GtkWidget *frame = gtk_frame_new(NULL);
+				GtkWidget *expander = gtk_expander_new(o->name);
+				GtkWidget *expander_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+				for (k = 0; k < int(o->options.size()); k++) {
+					s = o->options[k];
+					add_option_widget(expander_layout, s);
+				}
+				gtk_container_add(GTK_CONTAINER(expander), expander_layout);
+				gtk_container_add(GTK_CONTAINER(frame), expander);
+				gtk_container_add(GTK_CONTAINER(options_layout), frame);
+			} else {
+				add_option_widget(options_layout, o);
+			}
+		}
+		scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+		gtk_widget_set_vexpand(scrolled_window, true);
+		gtk_container_add(GTK_CONTAINER(scrolled_window), options_layout);
+		gtk_notebook_append_page(GTK_NOTEBOOK(notebook), scrolled_window, gtk_label_new(g->name));
+	}
         gtk_box_pack_start(GTK_BOX(plugin_buttons_layout), notebook, false, true, 10);
         gtk_box_pack_start(GTK_BOX(left_panel_layout), label, false, false, 0);
         gtk_box_pack_start(GTK_BOX(enable_layout), enabled_cb, false, false, 0);
