@@ -108,7 +108,14 @@ class WCM
         GtkWidget *scrolled_plugin_layout;
         std::vector<Plugin *> plugins;
         wayfire_config *wf_config;
+        const char *config_file;
 };
 
 int
 parse_xml_files(WCM *wcm, const char *dir_name);
+
+GtkWidget *
+create_main_layout(WCM *wcm);
+
+void
+init(WCM *wcm);
