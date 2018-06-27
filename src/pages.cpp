@@ -636,14 +636,12 @@ plugin_button_cb(GtkWidget *widget,
         GtkWidget *back_button = gtk_button_new();
         GtkWidget *back_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *back_image = gtk_image_new_from_icon_name("back", GTK_ICON_SIZE_BUTTON);
-        GtkWidget *back_spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        gtk_widget_set_size_request(back_spacer, 5, 1);
         GtkWidget *back_label = gtk_label_new("Back");
-        gtk_widget_set_margin_start(back_layout, 75);
-        gtk_widget_set_margin_end(back_layout, 75);
+        gtk_widget_set_size_request(back_layout, 70, -1);
+        gtk_widget_set_margin_start(back_layout, 70);
+        gtk_widget_set_margin_end(back_layout, 70);
         gtk_box_pack_start(GTK_BOX(back_layout), back_image, true, false, 0);
         gtk_box_pack_end(GTK_BOX(back_layout), back_label, true, false, 0);
-        gtk_box_pack_end(GTK_BOX(back_layout), back_spacer, true, false, 0);
         gtk_container_add(GTK_CONTAINER(back_button), back_layout);
         g_object_set(back_button, "margin", 10, NULL);
         g_signal_connect(back_button, "button-release-event",
@@ -821,14 +819,12 @@ create_main_layout(WCM *wcm)
         GtkWidget *close_button = gtk_button_new();
         GtkWidget *close_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *close_image = gtk_image_new_from_icon_name("window-close", GTK_ICON_SIZE_BUTTON);
-        GtkWidget *close_spacer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        gtk_widget_set_size_request(close_spacer, 5, 1);
         GtkWidget *close_label = gtk_label_new("Close");
-        gtk_widget_set_margin_start(close_layout, 75);
-        gtk_widget_set_margin_end(close_layout, 75);
+        gtk_widget_set_size_request(close_layout, 70, -1);
+        gtk_widget_set_margin_start(close_layout, 70);
+        gtk_widget_set_margin_end(close_layout, 70);
         gtk_box_pack_start(GTK_BOX(close_layout), close_image, true, false, 0);
         gtk_box_pack_end(GTK_BOX(close_layout), close_label, true, false, 0);
-        gtk_box_pack_end(GTK_BOX(close_layout), close_spacer, true, false, 0);
         gtk_container_add(GTK_CONTAINER(close_button), close_layout);
         g_object_set(close_button, "margin", 10, NULL);
         g_signal_connect(close_button, "button-release-event",
