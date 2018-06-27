@@ -21,12 +21,13 @@
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
  */
 
 #include "wcm.h"
 
 static int num_button_columns;
+
+#define NUM_CATEGORIES 5
 
 static void
 get_button_position(Plugin *p, int *x, int *y)
@@ -44,8 +45,8 @@ position_plugin_buttons(WCM *wcm)
 {
 	int i;
 	Plugin *p;
-        int x[5] = {};
-        int y[5] = {};
+        int x[NUM_CATEGORIES] = {};
+        int y[NUM_CATEGORIES] = {};
 
         for (i = 0; i < int(wcm->plugins.size()); i++) {
                 p = wcm->plugins[i];
@@ -734,8 +735,6 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
         g_signal_connect(plugin_button, "button-release-event",
                          G_CALLBACK(plugin_button_cb), p);
 }
-
-#define NUM_CATEGORIES 5
 
 static GtkWidget *
 create_plugins_layout(WCM *wcm)
