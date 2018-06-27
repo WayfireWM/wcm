@@ -2,7 +2,6 @@
 <wayfire>
 	<plugin name="example">
 	<_short>Example Plugin</_short>
-	<category>Window Management</category>
 	<option name="string_opt" type="string">
 		<_short>String Option</_short>
 		<default>this is a string.</default>

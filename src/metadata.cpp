@@ -49,10 +49,9 @@ get_plugin_data(Plugin *p, Option *opt, xmlDoc *doc, xmlNode * a_node)
                                 else
                                         o->disp_name = strdup((char *) cur_node->children->content);
                         } else if (std::string((char *) cur_node->name) == "category") {
-                                if (!cur_node->children) {
-                                        p->category = strdup("");
+                                if (!cur_node->children)
                                         continue;
-                                }
+                                free(p->category);
                                 p->category = strdup((char *) cur_node->children->content);
                         } else if (std::string((char *) cur_node->name) == "option") {
                                 o = new Option();
@@ -221,6 +220,7 @@ parse_xml_files(WCM *wcm, const char *dir_name)
                         if (root_element->type == XML_ELEMENT_NODE && std::string((char *) root_element->name) == "wayfire") {
                                 printf("Loading plugin: %s\n", name);
                                 Plugin *p = new Plugin();
+                                p->category = strdup("Uncategorized");
                                 p->wcm = wcm;
                                 get_plugin_data(p, NULL, doc, root_element);
                                 wcm->plugins.push_back(p);
