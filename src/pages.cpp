@@ -622,6 +622,8 @@ plugin_button_cb(GtkWidget *widget,
         GtkWidget *label = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(label), ("<span size=\"12000\"><b>" + std::string(p->disp_name) + "</b></span>").c_str());
         g_object_set(label, "margin", 50, NULL);
+        gtk_label_set_line_wrap(GTK_LABEL(label), true);
+        gtk_label_set_max_width_chars(GTK_LABEL(label), 15);
         GtkWidget *enable_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *enable_label = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(enable_label), "<span size=\"10000\"><b>Use This Plugin</b></span>");
