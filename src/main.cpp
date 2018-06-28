@@ -26,7 +26,6 @@
  * 
  */
 
-#include <string.h>
 #include "wcm.h"
 
 static int
