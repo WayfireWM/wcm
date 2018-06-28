@@ -26,16 +26,19 @@
  * 
  */
 
+#include <wordexp.h>
 #include "wcm.h"
 
 static int
 load_config_file(WCM *wcm)
 {
-        const gchar *config_dir;
+        wordexp_t exp;
 
-        config_dir = g_get_user_config_dir();
+        wordexp(CONFIG_FILE_PATH, &exp, 0);
 
-        wcm->config_file = strdup((std::string(config_dir) + "/wayfire.ini").c_str());
+        wcm->config_file = strdup(exp.we_wordv[0]);
+
+        wordfree(&exp);
 
         wcm->wf_config = new wayfire_config(wcm->config_file);
 
