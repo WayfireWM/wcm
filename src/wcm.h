@@ -24,6 +24,7 @@
  */
 
 #include <vector>
+#include <string.h>
 #include <gtk/gtk.h>
 #include <config.hpp>
 
