@@ -859,8 +859,6 @@ init(WCM *wcm)
         section = wcm->wf_config->get_section("core");
         option = section->get_option("plugins", "default");
 
-        position_plugin_buttons(wcm);
-
         for (i = 0; i < int(wcm->plugins.size()); i++) {
                 p = wcm->plugins[i];
                 p->enabled = plugin_enabled(p, option->as_string());
