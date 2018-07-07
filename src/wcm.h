@@ -120,6 +120,3 @@ parse_xml_files(WCM *wcm, const char *dir_name);
 
 GtkWidget *
 create_main_layout(WCM *wcm);
-
-void
-init(WCM *wcm);

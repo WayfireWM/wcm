@@ -64,6 +64,30 @@ activate(GtkApplication* app,
         gtk_widget_show_all(window);
 }
 
+static int
+plugin_enabled(Plugin *p, std::string plugins)
+{
+        return plugins.find(std::string(p->name)) != std::string::npos;
+}
+
+static void
+init(WCM *wcm)
+{
+        Plugin *p;
+        int i;
+
+        wayfire_config_section *section;
+        wf_option option;
+
+        section = wcm->wf_config->get_section("core");
+        option = section->get_option("plugins", "default");
+
+        for (i = 0; i < int(wcm->plugins.size()); i++) {
+                p = wcm->plugins[i];
+                p->enabled = plugin_enabled(p, option->as_string());
+        }
+}
+
 int
 main(int argc, char **argv)
 {
