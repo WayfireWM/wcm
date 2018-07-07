@@ -584,7 +584,7 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
                 std::string plugins = option->as_string();
                 size_t pos;
                 int i;
-                /* Remove plugin std::string */
+                /* Remove plugin name string */
                 pos = plugins.find(std::string(p->name));
                 if (pos != std::string::npos)
                         plugins.erase(pos, std::string(p->name).length());
