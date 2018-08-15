@@ -3,10 +3,6 @@
 	<plugin name="switcher">
 	<_short>Application Switcher</_short>
 	<category>Window Management</category>
-	<option name="fast_switch" type="key">
-		<_short>Fast Switch</_short>
-		<default>&lt;alt&gt; KEY_ESC</default>
-	</option>
 	<option name="duration" type="int">
 		<_short>Duration</_short>
 		<default>250</default>
