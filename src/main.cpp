@@ -67,7 +67,21 @@ activate(GtkApplication* app,
 static int
 plugin_enabled(Plugin *p, std::string plugins)
 {
-        return plugins.find(std::string(p->name)) != std::string::npos;
+        char c1, c2;
+        std::string::size_type pos;
+
+        if (!strcmp(p->name, "core") || !strcmp(p->name, "input"))
+                return 1;
+
+        pos = plugins.find(std::string(p->name));
+
+        if (pos == std::string::npos)
+                return 0;
+
+        c1 = plugins[pos - 1];
+        c2 = plugins[pos + strlen(p->name)];
+
+        return c1 == ' ' && (c2 == ' ' || c2 == 0);
 }
 
 static void
