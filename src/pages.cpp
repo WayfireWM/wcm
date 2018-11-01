@@ -451,7 +451,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                                                  G_CALLBACK(int_combo_box_focus_out_cb), o);
                                 gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
                         } else {
-                                spin_button = gtk_spin_button_new(gtk_adjustment_new(option->as_int(), o->data.min, o->data.max, 1, 10, 10), 1, 0);
+                                spin_button = gtk_spin_button_new(gtk_adjustment_new(option->as_int(), o->data.min, o->data.max, 1, 10, 0), 1, 0);
                                 o->data_widget = spin_button;
                                 g_signal_connect(spin_button, "activate",
                                                  G_CALLBACK(set_int_spin_button_option_cb), o);
@@ -481,7 +481,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                         break;
                 case OPTION_TYPE_DOUBLE: {
                         option = section->get_option(o->name, std::to_string(o->default_value.d));
-                        GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(option->as_double(), o->data.min, o->data.max, o->data.precision, o->data.precision * 10, o->data.precision * 10), o->data.precision, 3);
+                        GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(option->as_double(), o->data.min, o->data.max, o->data.precision, o->data.precision * 10, 0), o->data.precision, 3);
                         o->data_widget = spin_button;
                         g_signal_connect(spin_button, "activate",
                                          G_CALLBACK(set_double_spin_button_option_cb), o);
