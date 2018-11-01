@@ -66,7 +66,7 @@ create_option(xmlNode *cur_node, Plugin *p)
                         o->type = OPTION_TYPE_KEY;
                         o->default_value.s = strdup("");
                 } else {
-                        printf("WARN: [%s] unknown option type\n", p->name);
+                        printf("WARN: [%s] unknown option type: %s\n", p->name, prop);
                         o->type = (option_type) -1;
                 }
         } else {
