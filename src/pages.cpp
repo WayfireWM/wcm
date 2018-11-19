@@ -303,7 +303,7 @@ set_int_spin_button_option_cb(GtkWidget *widget,
 
         section = wcm->wf_config->get_section(o->plugin->name);
         option = section->get_option(o->name, std::to_string(o->default_value.i));
-        option->set_value(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+        option->set_value((int)gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
         wcm->wf_config->save_config(wcm->config_file);
 }
 
