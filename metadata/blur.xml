@@ -5,7 +5,7 @@
 	<category>Effects</category>
 	<option name="method" type="string">
 		<_short>Blur Method</_short>
-		<default>kawase</default>
+		<default>dual_kawase</default>
 		<desc>
 			<value>box</value>
 			<_name>Box</_name>
@@ -15,7 +15,7 @@
 			<_name>Gaussian</_name>
 		</desc>
 		<desc>
-			<value>kawase</value>
+			<value>dual_kawase</value>
 			<_name>Dual Kawase</_name>
 		</desc>
 		<desc>
@@ -59,20 +59,20 @@
 		<min>1</min>
 		<max>5</max>
 	</option>
-	<option name="kawase_iterations" type="int">
-		<_short>Kawase Iterations</_short>
-		<default>2</default>
+	<option name="dual_kawase_iterations" type="int">
+		<_short>Dual Kawase Iterations</_short>
+		<default>4</default>
 		<min>0</min>
 		<max>25</max>
 	</option>
-	<option name="kawase_offset" type="double">
-		<_short>Kawase Offset</_short>
-		<default>2</default>
+	<option name="dual_kawase_offset" type="double">
+		<_short>Dual Kawase Offset</_short>
+		<default>5</default>
 		<min>0</min>
 		<max>25</max>
 	</option>
-	<option name="kawase_degrade" type="int">
-		<_short>Kawase Degrade</_short>
+	<option name="dual_kawase_degrade" type="int">
+		<_short>Dual Kawase Degrade</_short>
 		<default>1</default>
 		<min>1</min>
 		<max>5</max>
