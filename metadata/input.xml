@@ -43,5 +43,13 @@
 		<_short>Key Repeat Delay</_short>
 		<default>400</default>
 	</option>
+	<option name="cursor_theme" type="string">
+		<_short>Cursor Theme</_short>
+		<default>default</default>
+	</option>
+	<option name="cursor_size" type="int">
+		<_short>Cursor Size</_short>
+		<default>24</default>
+	</option>
 	</plugin>
 </wayfire>
