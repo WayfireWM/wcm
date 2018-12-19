@@ -1,4 +1,5 @@
 install_data('plugin-animate.svg', install_dir: icon_dir)
+install_data('plugin-blur.svg', install_dir: icon_dir)
 install_data('plugin-core.svg', install_dir: icon_dir)
 install_data('plugin-cube.svg', install_dir: icon_dir)
 install_data('plugin-expo.svg', install_dir: icon_dir)
