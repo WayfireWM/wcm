@@ -1,3 +1,4 @@
+install_data('alpha.xml', install_dir: metadata_dir)
 install_data('animate.xml', install_dir: metadata_dir)
 install_data('blur.xml', install_dir: metadata_dir)
 install_data('core.xml', install_dir: metadata_dir)
