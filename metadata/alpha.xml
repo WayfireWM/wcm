@@ -9,6 +9,8 @@
 	</option>
 	<option name="min_value" type="double">
 		<_short>Minimum Value</_short>
+		<min>0.0</min>
+		<max>1.0</max>
 		<precision>0.01</precision>
 		<default>0.1</default>
 	</option>
