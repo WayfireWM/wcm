@@ -3,13 +3,9 @@
 	<plugin name="core">
 	<_short>General Options</_short>
 	<category>General</category>
-	<option name="view_close" type="key">
+	<option name="close_top_view" type="key">
 		<_short>Close Window</_short>
-		<default>&lt;super&gt; KEY_Q</default>
-	</option>
-	<option name="drm_device" type="string">
-		<_short>DRM Device</_short>
-		<default>default</default>
+		<default>&lt;super&gt; KEY_Q | &lt;alt&gt; KEY_FN_F4</default>
 	</option>
 	<option name="vwidth" type="int">
 		<_short>Horizontal Virtual Size</_short>
