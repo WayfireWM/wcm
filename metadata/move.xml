@@ -5,7 +5,7 @@
 	<category>Window Management</category>
 	<option name="activate" type="button">
 		<_short>Activate</_short>
-		<default>&lt;alt&gt; BTN_LEFT</default>
+		<default>&lt;super&gt; BTN_LEFT</default>
 	</option>
 	<option name="enable_snap" type="bool">
 		<_short>Snap</_short>
