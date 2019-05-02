@@ -5,7 +5,7 @@
 	<category>Window Management</category>
 	<option name="activate" type="button">
 		<_short>Activate</_short>
-		<default>&lt;super&gt; BTN_LEFT</default>
+		<default>&lt;super&gt; BTN_RIGHT</default>
 	</option>
 	</plugin>
 </wayfire>
