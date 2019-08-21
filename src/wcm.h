@@ -38,7 +38,8 @@ enum option_type
         OPTION_TYPE_KEY,
         OPTION_TYPE_COLOR,
         OPTION_TYPE_GROUP,
-        OPTION_TYPE_SUBGROUP
+        OPTION_TYPE_SUBGROUP,
+        OPTION_TYPE_DYNAMIC_LIST
 };
 
 class LabeledInt
@@ -82,6 +83,8 @@ class Option
         option_type type;
         opt_data default_value;
         var_data data;
+        Option *parent;
+        GtkWidget *widget;
         std::vector<Option *> options;
         std::vector<LabeledInt *> int_labels;
         std::vector<LabeledString *> str_labels;
@@ -114,6 +117,9 @@ class WCM
         wayfire_config *wf_config;
         const char *config_file;
 };
+
+int
+load_config_file(WCM *wcm);
 
 int
 parse_xml_files(WCM *wcm, const char *dir_name);

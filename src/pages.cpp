@@ -30,6 +30,14 @@ static int num_button_columns;
 #define NUM_CATEGORIES 5
 
 static void
+reload_config(WCM *wcm)
+{
+        delete wcm->wf_config;
+
+        load_config_file(wcm);
+}
+
+static void
 get_button_position(Plugin *p, int *x, int *y)
 {
         p->x = (*x)++;
@@ -97,6 +105,198 @@ back_button_cb(GtkWidget *widget,
         gtk_widget_show_all(window);
 
         return true;
+}
+
+static bool begins_with(std::string word, std::string prefix)
+{
+    if (word.length() < prefix.length())
+        return false;
+
+    return word.substr(0, prefix.length()) == prefix;
+}
+
+static bool
+all_chars_are(std::string str, char c)
+{
+        for (size_t i = 0; i < str.size(); i++)
+                if (str[i] != c)
+                        return false;
+        return true;
+}
+
+static bool
+not_in_list(std::vector<int> list, int item)
+{
+        for (size_t i = 0; i < list.size(); i++)
+                if (list[i] == item)
+                        return false;
+        return true;
+}
+
+static void
+add_option_widget(GtkWidget *widget, Option *o);
+
+static void
+add_list_item_button_cb(GtkWidget *widget,
+                        GdkEventButton *event,
+                        gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        WCM *wcm = o->plugin->wcm;
+        wayfire_config_section *section;
+        wf_option option;
+        GtkWidget *top_spacer;
+        GList *children, *iter;
+        auto exec_prefix = std::string("command_");
+        std::vector<int> reorder_list;
+        std::vector<std::string> command_names;
+        std::vector<std::string> command_values;
+        std::vector<std::string> alpha_names;
+        std::vector<std::string> alpha_values;
+        size_t count = 0;
+        size_t i = 0, j = 0;
+
+        section = wcm->wf_config->get_section(o->plugin->name);
+
+        for (auto c : section->options) {
+                if (begins_with(c->name, exec_prefix)) {
+                        auto name0 = c->name.substr(exec_prefix.length());
+                        auto slot0 = strtol(name0.c_str(), NULL, 0);
+                        if (!all_chars_are(name0, '0') && !slot0) {
+                                alpha_names.push_back(c->name);
+                                alpha_values.push_back(section->get_option(c->name, "")->as_string());
+                                break;
+                        }
+                        for (auto command : section->options) {
+                                if (j <= i) {
+                                        j++;
+                                        continue;
+                                }
+                                /* Reorder the options */
+                                if (begins_with(command->name, exec_prefix)) {
+                                        auto name1 = command->name.substr(exec_prefix.length());
+                                        auto slot1 = strtol(name1.c_str(), NULL, 0);
+                                        if ((!all_chars_are(name0, '0') && !slot0) || (!all_chars_are(name1, '0') && !slot1))
+                                                continue;
+                                        if (slot0 > slot1 && not_in_list(reorder_list, slot1)) {
+                                                reorder_list.insert(reorder_list.begin(), slot1);
+                                                command_names.insert(command_names.begin(), command->name);
+                                                command_values.insert(command_values.begin(), section->get_option(command->name, "")->as_string());
+                                                count++;
+                                                break;
+                                        } else if (slot0 < slot1 && not_in_list(reorder_list, slot0)) {
+                                                reorder_list.push_back(slot0);
+                                                command_names.push_back(c->name);
+                                                command_values.push_back(section->get_option(c->name, "")->as_string());
+                                                count++;
+                                                break;
+                                        } else if (slot0 == slot1 && not_in_list(reorder_list, slot0)) {
+                                                reorder_list.push_back(slot0);
+                                                command_names.push_back(c->name);
+                                                command_values.push_back(section->get_option(c->name, "")->as_string());
+                                                count++;
+                                                break;
+                                        }
+                                }
+                                j++;
+                        }
+                } else {
+                        alpha_names.push_back(c->name);
+                        alpha_values.push_back(section->get_option(c->name, "")->as_string());
+                }
+                i++;
+        }
+        for (i = 0; i < count; i++) {
+                if (not_in_list(reorder_list, i)) {
+                        count = i;
+                        break;
+                }
+        }
+        auto name = std::string("command_") + std::to_string(count);
+        command_names.insert(command_names.begin() + count, name);
+        command_values.insert(command_values.begin() + count, std::string("<command>"));
+        name = std::string("binding_") + std::to_string(count);
+        alpha_names.insert(alpha_names.begin() + count, name);
+        alpha_values.insert(alpha_values.begin() + count, std::string("<binding>"));
+        for (auto command : section->options)
+        {
+                option = section->get_option(command->name, "");
+                option->set_value("");
+        }
+
+        wcm->wf_config->save_config(wcm->config_file);
+        reload_config(wcm);
+        section = wcm->wf_config->get_section(o->plugin->name);
+
+        i = 0;
+        for (auto command : command_names) {
+                option = section->get_option(command, "");
+                option->set_value(command_values[i]);
+                i++;
+        }
+        i = 0;
+        for (auto alpha_name : alpha_names) {
+                option = section->get_option(alpha_name, "");
+                option->set_value(alpha_values[i]);
+                i++;
+        }
+
+        wcm->wf_config->save_config(wcm->config_file);
+        reload_config(wcm);
+
+        children = gtk_container_get_children(GTK_CONTAINER(o->widget));
+        for(iter = children; iter != NULL; iter = g_list_next(iter))
+                gtk_widget_destroy(GTK_WIDGET(iter->data));
+        g_list_free(children);
+
+        top_spacer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+        gtk_widget_set_size_request(top_spacer, 1, 5);
+        gtk_box_pack_start(GTK_BOX(o->widget), top_spacer, false, false, 0);
+        add_option_widget(o->widget, o);
+}
+
+static void
+remove_list_item_button_cb(GtkWidget *widget,
+                           GdkEventButton *event,
+                           gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        WCM *wcm = o->plugin->wcm;
+        wayfire_config_section *section;
+        wf_option option;
+        GtkWidget *top_spacer;
+        GList *children, *iter;
+
+        section = wcm->wf_config->get_section(o->plugin->name);
+        for (size_t i = 0; i < o->parent->options.size(); i++) {
+                Option *opt = o->parent->options[i];
+                if (!strcmp(opt->name, o->name)) {
+                        option = section->get_option(std::string(opt->name), "");
+                        option->set_value("");
+                        auto binding = std::string("binding_") + std::string(opt->name).substr(std::string("command_").length());
+                        option = section->get_option(binding, "");
+                        option->set_value("");
+                        auto repeatable_binding = std::string("repeatable_binding_") + std::string(opt->name).substr(std::string("command_").length());
+                        option = section->get_option(repeatable_binding, "");
+                        option->set_value("");
+                        auto always_binding = std::string("always_binding_") + std::string(opt->name).substr(std::string("command_").length());
+                        option = section->get_option(always_binding, "");
+                        option->set_value("");
+                }
+        }
+
+        wcm->wf_config->save_config(wcm->config_file);
+        reload_config(wcm);
+
+        children = gtk_container_get_children(GTK_CONTAINER(o->widget));
+        for(iter = children; iter != NULL; iter = g_list_next(iter))
+                gtk_widget_destroy(GTK_WIDGET(iter->data));
+        g_list_free(children);
+
+        top_spacer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+        gtk_widget_set_size_request(top_spacer, 1, 5);
+        gtk_box_pack_start(GTK_BOX(o->widget), top_spacer, false, false, 0);
+        add_option_widget(o->widget, o->parent);
 }
 
 static void
@@ -389,7 +589,6 @@ main_panel_configure_cb(GtkWidget *widget,
         return false;
 }
 
-
 static void
 add_option_widget(GtkWidget *widget, Option *o)
 {
@@ -425,6 +624,123 @@ add_option_widget(GtkWidget *widget, Option *o)
                         gtk_button_set_image(GTK_BUTTON(reset_button), reset_image);
                         gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
                         gtk_box_pack_end(GTK_BOX(option_layout), reset_button, false, false, 0);
+                        break;
+                case OPTION_TYPE_DYNAMIC_LIST: {
+                        GtkWidget *entry, *remove_button, *add_button, *add_button_layout;
+                        GtkWidget *list_add_image = gtk_image_new_from_icon_name("list-add", GTK_ICON_SIZE_BUTTON);
+                        GtkWidget *list_remove_image;
+                        section = wcm->wf_config->get_section(o->plugin->name);
+                        std::vector<std::string> command_names;
+                        const std::string norepeat = "...norepeat...";
+                        const std::string noalways = "...noalways...";
+                        const std::string exec_prefix = "command_";
+                        for (auto command : section->options)
+                        {
+                                if (begins_with(command->name, exec_prefix))
+                                        command_names.push_back(command->name.substr(exec_prefix.length()));
+                        }
+                        if (!command_names.size())
+                                return;
+                        for (size_t i = 0; i < o->options.size(); i++) {
+                                Option *opt = o->options[i];
+                                free(opt->name);
+                                free(opt->default_value.s);
+                                delete opt;
+                        }
+                        o->options.clear();
+                        for (size_t i = 0; i < command_names.size(); i++) {
+                                auto command = exec_prefix + command_names[i];
+                                auto regular_binding_name = "binding_" + command_names[i];
+                                auto repeat_binding_name = "repeatable_binding_" + command_names[i];
+                                auto always_binding_name = "always_binding_" + command_names[i];
+
+                                auto executable = section->get_option(command, "")->as_string();
+                                auto regular_opt = section->get_option(regular_binding_name, "none")->as_string();
+                                auto repeatable_opt = section->get_option(repeat_binding_name, norepeat)->as_string();
+                                auto always_opt = section->get_option(always_binding_name, noalways)->as_string();
+                                GtkWidget *frame = gtk_frame_new(NULL);
+                                GtkWidget *expander = gtk_expander_new((std::string("Command ") + command_names[i]).c_str());
+                                GtkWidget *expander_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+                                GtkWidget *options_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+                                for (size_t j = 0; j < 4; j++) {
+                                        Option *dyn_opt = new Option();
+                                        option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+                                        std::string label_text, opt_value;
+                                        if (j == 0) {
+                                                dyn_opt->name = strdup(regular_binding_name.c_str());
+                                                label_text = std::string("Binding");
+                                                opt_value = regular_opt;
+                                        } else if (j == 1) {
+                                                dyn_opt->name = strdup(repeat_binding_name.c_str());
+                                                label_text = std::string("Repeatable Binding");
+                                                opt_value = repeatable_opt;
+                                        } else if (j == 2) {
+                                                dyn_opt->name = strdup(always_binding_name.c_str());
+                                                label_text = std::string("Always Binding");
+                                                opt_value = always_opt;
+                                        } else if (j == 3) {
+                                                dyn_opt->name = strdup(command.c_str());
+                                                label_text = std::string("Command");
+                                                opt_value = executable;
+                                        }
+                                        if (std::string(o->default_value.s) == "string") {
+                                                dyn_opt->type = OPTION_TYPE_STRING;
+                                        } else {
+                                                continue;
+                                        }
+                                        o->widget = dyn_opt->widget = widget;
+                                        dyn_opt->parent = o;
+                                        dyn_opt->default_value.s = strdup(label_text.c_str());
+                                        dyn_opt->plugin = o->plugin;
+                                        label = gtk_label_new(label_text.c_str());
+                                        gtk_widget_set_margin_start(label, 10);
+                                        gtk_widget_set_margin_end(label, 10);
+                                        gtk_widget_set_tooltip_text(label, label_text.c_str());
+                                        gtk_widget_set_size_request(label, 200, 1);
+                                        gtk_label_set_xalign(GTK_LABEL(label), 0);
+                                        entry = gtk_entry_new();
+                                        gtk_entry_set_text(GTK_ENTRY(entry), opt_value.c_str());
+                                        o->data_widget = entry;
+                                        g_signal_connect(entry, "activate",
+                                                        G_CALLBACK(set_string_option_cb), dyn_opt);
+                                        g_signal_connect(entry, "focus-out-event",
+                                                        G_CALLBACK(entry_focus_out_cb), dyn_opt);
+                                        if (j == 3) {
+                                                remove_button = gtk_button_new();
+                                                gtk_widget_set_margin_start(remove_button, 10);
+                                                gtk_widget_set_margin_end(remove_button, 10);
+                                                gtk_widget_set_tooltip_text(remove_button, "Remove from list");
+                                                g_signal_connect(remove_button, "button-release-event",
+                                                                G_CALLBACK(remove_list_item_button_cb), dyn_opt);
+                                                list_remove_image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON);
+                                                gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
+                                                gtk_box_pack_end(GTK_BOX(option_layout), remove_button, false, false, 0);
+                                        }
+                                        gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
+                                        gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
+                                        gtk_box_pack_start(GTK_BOX(options_layout), option_layout, true, true, 0);
+                                        o->options.push_back(dyn_opt);
+                                }
+                                gtk_container_add(GTK_CONTAINER(expander), options_layout);
+                                gtk_container_add(GTK_CONTAINER(frame), expander);
+                                gtk_container_add(GTK_CONTAINER(expander_layout), frame);
+                                if (executable == std::string("<command>") || regular_opt == std::string("<binding>"))
+                                        gtk_expander_set_expanded(GTK_EXPANDER(expander), true);
+                                gtk_box_pack_start(GTK_BOX(widget), expander_layout, false, true, 0);
+                        }
+                        add_button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+                        add_button = gtk_button_new();
+                        gtk_widget_set_margin_start(add_button, 10);
+                        gtk_widget_set_margin_end(add_button, 10);
+                        gtk_widget_set_tooltip_text(add_button, "Add new command");
+                        g_signal_connect(add_button, "button-release-event",
+                                        G_CALLBACK(add_list_item_button_cb), o);
+                        list_remove_image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON);
+                        gtk_button_set_image(GTK_BUTTON(add_button), list_add_image);
+                        gtk_box_pack_end(GTK_BOX(add_button_layout), add_button, false, false, 0);
+                        gtk_box_pack_end(GTK_BOX(widget), add_button_layout, false, true, 0);
+                        gtk_widget_show_all(widget);
+                        }
                         break;
                 default:
                         break;

@@ -64,7 +64,8 @@ create_option(xmlNode *cur_node, Plugin *p)
                         o->default_value.s = strdup("");
                 } else if (std::string((char *) prop) == "key") {
                         o->type = OPTION_TYPE_KEY;
-                        o->default_value.s = strdup("");
+                } else if (std::string((char *) prop) == "dynamic_list") {
+                        o->type = OPTION_TYPE_DYNAMIC_LIST;
                 } else {
                         printf("WARN: [%s] unknown option type: %s\n", p->name, prop);
                         o->type = (option_type) -1;
@@ -109,6 +110,9 @@ create_option(xmlNode *cur_node, Plugin *p)
                                 default:
                                         break;
                         }
+                } else if (std::string((char *) node->name) == "type" && o->type == OPTION_TYPE_DYNAMIC_LIST) {
+                        char *type = (char *) node->children->content;
+                        o->default_value.s = strdup(type);
                 } else if (std::string((char *) node->name) == "min") {
                         if (!node->children)
                                 continue;

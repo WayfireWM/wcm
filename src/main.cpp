@@ -29,7 +29,7 @@
 #include <wordexp.h>
 #include "wcm.h"
 
-static int
+int
 load_config_file(WCM *wcm)
 {
         wordexp_t exp;
@@ -81,7 +81,7 @@ plugin_enabled(Plugin *p, std::string plugins)
         c1 = plugins[pos - 1];
         c2 = plugins[pos + strlen(p->name)];
 
-        return c1 == ' ' && (c2 == ' ' || c2 == 0);
+        return (c1 == ' ' || c1 == 0) && (c2 == ' ' || c2 == 0);
 }
 
 static void
