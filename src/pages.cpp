@@ -178,8 +178,6 @@ add_command_item_button_cb(GtkWidget *widget,
                 }
                 i++;
         }
-        if (!count && !alpha_names.size())
-                return;
         for (i = 0; i < count; i++) {
                 if (not_in_list(reorder_list, i)) {
                         count = i;
@@ -187,12 +185,12 @@ add_command_item_button_cb(GtkWidget *widget,
                 }
         }
         auto name = std::string("command_") + std::to_string(count);
-        command_names.insert(command_names.begin() + count, name);
-        command_values.insert(command_values.begin() + count, std::string("<command>"));
+        command_names.push_back(name);
+        command_values.push_back(std::string("<command>"));
         name = std::string("binding_") + std::to_string(count);
-        alpha_names.insert(alpha_names.begin() + count, name);
-        alpha_values.insert(alpha_values.begin() + count, std::string("<binding>"));
-        reorder_list.insert(reorder_list.begin() + count, count);
+        alpha_names.push_back(name);
+        alpha_values.push_back(std::string("<binding>"));
+        reorder_list.push_back(count);
         auto sorted_list = reorder_list;
         std::sort(sorted_list.begin(), sorted_list.end());
         for (i = 0; i < sorted_list.size(); i++) {
@@ -328,8 +326,6 @@ add_autostart_item_button_cb(GtkWidget *widget,
                 }
                 i++;
         }
-        if (!count && !alpha_names.size())
-                return;
         for (i = 0; i < count; i++) {
                 if (not_in_list(reorder_list, i)) {
                         count = i;
@@ -337,9 +333,9 @@ add_autostart_item_button_cb(GtkWidget *widget,
                 }
         }
         auto name = std::string("a") + std::to_string(count);
-        numeric_names.insert(numeric_names.begin() + count, name);
-        numeric_values.insert(numeric_values.begin() + count, std::string("<command>"));
-        reorder_list.insert(reorder_list.begin() + count, count);
+        numeric_names.push_back(name);
+        numeric_values.push_back(std::string("<command>"));
+        reorder_list.push_back(count);
         auto sorted_list = reorder_list;
         std::sort(sorted_list.begin(), sorted_list.end());
         for (i = 0; i < sorted_list.size(); i++) {
@@ -734,8 +730,6 @@ setup_command_list(GtkWidget *widget, Option *o)
                 if (begins_with(command->name, exec_prefix))
                         command_names.push_back(command->name.substr(exec_prefix.length()));
         }
-        if (!command_names.size())
-                return;
         for (size_t i = 0; i < o->options.size(); i++) {
                 Option *opt = o->options[i];
                 free(opt->name);
@@ -848,8 +842,6 @@ setup_autostart_list(GtkWidget *widget, Option *o)
         std::vector<std::string> autostart_names;
         for (auto e : section->options)
                 autostart_names.push_back(e->name);
-        if (!autostart_names.size())
-                return;
         for (size_t i = 0; i < o->options.size(); i++) {
                 Option *opt = o->options[i];
                 free(opt->name);
