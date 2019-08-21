@@ -160,45 +160,17 @@ add_command_item_button_cb(GtkWidget *widget,
 
         for (auto c : section->options) {
                 if (begins_with(c->name, exec_prefix)) {
-                        auto name0 = c->name.substr(exec_prefix.length());
-                        auto slot0 = strtol(name0.c_str(), NULL, 0);
-                        if (!all_chars_are(name0, '0') && !slot0) {
+                        auto name = c->name.substr(exec_prefix.length());
+                        auto slot = strtol(name.c_str(), NULL, 0);
+                        if (!all_chars_are(name, '0') && !slot) {
                                 alpha_names.push_back(c->name);
                                 alpha_values.push_back(section->get_option(c->name, "")->as_string());
-                                break;
                         }
-                        for (auto command : section->options) {
-                                if (j <= i) {
-                                        j++;
-                                        continue;
-                                }
-                                /* Reorder the options */
-                                if (begins_with(command->name, exec_prefix)) {
-                                        auto name1 = command->name.substr(exec_prefix.length());
-                                        auto slot1 = strtol(name1.c_str(), NULL, 0);
-                                        if ((!all_chars_are(name0, '0') && !slot0) || (!all_chars_are(name1, '0') && !slot1))
-                                                continue;
-                                        if (slot0 > slot1 && not_in_list(reorder_list, slot1)) {
-                                                reorder_list.insert(reorder_list.begin(), slot1);
-                                                command_names.insert(command_names.begin(), command->name);
-                                                command_values.insert(command_values.begin(), section->get_option(command->name, "")->as_string());
-                                                count++;
-                                                break;
-                                        } else if (slot0 < slot1 && not_in_list(reorder_list, slot0)) {
-                                                reorder_list.push_back(slot0);
-                                                command_names.push_back(c->name);
-                                                command_values.push_back(section->get_option(c->name, "")->as_string());
-                                                count++;
-                                                break;
-                                        } else if (slot0 == slot1 && not_in_list(reorder_list, slot0)) {
-                                                reorder_list.push_back(slot0);
-                                                command_names.push_back(c->name);
-                                                command_values.push_back(section->get_option(c->name, "")->as_string());
-                                                count++;
-                                                break;
-                                        }
-                                }
-                                j++;
+                        else if (not_in_list(reorder_list, slot)) {
+                                reorder_list.push_back(slot);
+                                command_names.push_back(c->name);
+                                command_values.push_back(section->get_option(c->name, "")->as_string());
+                                count++;
                         }
                 } else {
                         alpha_names.push_back(c->name);
@@ -206,6 +178,8 @@ add_command_item_button_cb(GtkWidget *widget,
                 }
                 i++;
         }
+        if (!count && !alpha_names.size())
+                return;
         for (i = 0; i < count; i++) {
                 if (not_in_list(reorder_list, i)) {
                         count = i;
@@ -218,6 +192,19 @@ add_command_item_button_cb(GtkWidget *widget,
         name = std::string("binding_") + std::to_string(count);
         alpha_names.insert(alpha_names.begin() + count, name);
         alpha_values.insert(alpha_values.begin() + count, std::string("<binding>"));
+        reorder_list.insert(reorder_list.begin() + count, count);
+        auto sorted_list = reorder_list;
+        std::sort(sorted_list.begin(), sorted_list.end());
+        for (i = 0; i < sorted_list.size(); i++) {
+                for (j = 0; j < reorder_list.size(); j++) {
+                        if (sorted_list[i] == reorder_list[j]) {
+                                std::swap(reorder_list[i], reorder_list[j]);
+                                std::swap(command_names[i], command_names[j]);
+                                std::swap(command_values[i], command_values[j]);
+                                break;
+                        }
+                }
+        }
         for (auto command : section->options)
         {
                 option = section->get_option(command->name, "");
@@ -323,45 +310,17 @@ add_autostart_item_button_cb(GtkWidget *widget,
 
         for (auto c : section->options) {
                 if (begins_with(c->name, prefix)) {
-                        auto name0 = c->name.substr(prefix.length());
-                        auto slot0 = strtol(name0.c_str(), NULL, 0);
-                        if (!all_chars_are(name0, '0') && !slot0) {
+                        auto name = c->name.substr(prefix.length());
+                        auto slot = strtol(name.c_str(), NULL, 0);
+                        if (!all_chars_are(name, '0') && !slot) {
                                 alpha_names.push_back(c->name);
                                 alpha_values.push_back(section->get_option(c->name, "")->as_string());
-                                break;
                         }
-                        for (auto e : section->options) {
-                                if (j <= i) {
-                                        j++;
-                                        continue;
-                                }
-                                /* Reorder the options */
-                                if (begins_with(e->name, prefix)) {
-                                        auto name1 = e->name.substr(prefix.length());
-                                        auto slot1 = strtol(name1.c_str(), NULL, 0);
-                                        if ((!all_chars_are(name0, '0') && !slot0) || (!all_chars_are(name1, '0') && !slot1))
-                                                continue;
-                                        if (slot0 > slot1 && not_in_list(reorder_list, slot1)) {
-                                                reorder_list.insert(reorder_list.begin(), slot1);
-                                                numeric_names.insert(numeric_names.begin(), e->name);
-                                                numeric_values.insert(numeric_values.begin(), section->get_option(e->name, "")->as_string());
-                                                count++;
-                                                break;
-                                        } else if (slot0 < slot1 && not_in_list(reorder_list, slot0)) {
-                                                reorder_list.push_back(slot0);
-                                                numeric_names.push_back(c->name);
-                                                numeric_values.push_back(section->get_option(c->name, "")->as_string());
-                                                count++;
-                                                break;
-                                        } else if (slot0 == slot1 && not_in_list(reorder_list, slot0)) {
-                                                reorder_list.push_back(slot0);
-                                                numeric_names.push_back(c->name);
-                                                numeric_values.push_back(section->get_option(c->name, "")->as_string());
-                                                count++;
-                                                break;
-                                        }
-                                }
-                                j++;
+                        else if (not_in_list(reorder_list, slot)) {
+                                reorder_list.push_back(slot);
+                                numeric_names.push_back(c->name);
+                                numeric_values.push_back(section->get_option(c->name, "")->as_string());
+                                count++;
                         }
                 } else {
                         alpha_names.push_back(c->name);
@@ -369,6 +328,8 @@ add_autostart_item_button_cb(GtkWidget *widget,
                 }
                 i++;
         }
+        if (!count && !alpha_names.size())
+                return;
         for (i = 0; i < count; i++) {
                 if (not_in_list(reorder_list, i)) {
                         count = i;
@@ -378,6 +339,19 @@ add_autostart_item_button_cb(GtkWidget *widget,
         auto name = std::string("a") + std::to_string(count);
         numeric_names.insert(numeric_names.begin() + count, name);
         numeric_values.insert(numeric_values.begin() + count, std::string("<command>"));
+        reorder_list.insert(reorder_list.begin() + count, count);
+        auto sorted_list = reorder_list;
+        std::sort(sorted_list.begin(), sorted_list.end());
+        for (i = 0; i < sorted_list.size(); i++) {
+                for (j = 0; j < reorder_list.size(); j++) {
+                        if (sorted_list[i] == reorder_list[j]) {
+                                std::swap(reorder_list[i], reorder_list[j]);
+                                std::swap(numeric_names[i], numeric_names[j]);
+                                std::swap(numeric_values[i], numeric_values[j]);
+                                break;
+                        }
+                }
+        }
         for (auto e : section->options)
         {
                 option = section->get_option(e->name, "");
