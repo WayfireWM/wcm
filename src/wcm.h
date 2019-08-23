@@ -86,10 +86,12 @@ class Option
         var_data data;
         Option *parent;
         GtkWidget *widget;
+        GtkWidget *data_widget;
+        GtkWidget *command_type_combo;
+        GtkWidget *binding_entry;
         std::vector<Option *> options;
         std::vector<LabeledInt *> int_labels;
         std::vector<LabeledString *> str_labels;
-        GtkWidget *data_widget;
 };
 
 class WCM;

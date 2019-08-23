@@ -688,6 +688,119 @@ entry_focus_out_cb(GtkWidget *widget,
         return GDK_EVENT_PROPAGATE;
 }
 
+static std::string
+get_command_from_index(std::string command,
+                       wayfire_config_section *section,
+                       int index)
+{
+    std::string option_name, b;
+    wf_option option;
+
+    b = "binding";
+    option_name = command;
+
+    switch (index) {
+	case 0:
+            option_name.replace(option_name.find(b),
+                std::string(b).length(), "repeatable_binding");
+            option = section->get_option(option_name, "");
+            option->set_value("");
+            option_name = command;
+            option_name.replace(option_name.find(b),
+                std::string(b).length(), "always_binding");
+            option = section->get_option(option_name, "");
+            option->set_value("");
+            option_name = command;
+            break;
+        case 1:
+            option = section->get_option(option_name, "");
+            option->set_value("");
+            option_name = command;
+            option_name.replace(option_name.find(b),
+                std::string(b).length(), "always_binding");
+            option = section->get_option(option_name, "");
+            option->set_value("");
+            option_name = command;
+            option_name.replace(option_name.find(b),
+                std::string(b).length(), "repeatable_binding");
+            break;
+        case 2:
+            option = section->get_option(option_name, "");
+            option->set_value("");
+            option_name = command;
+            option_name.replace(option_name.find(b),
+                std::string(b).length(), "repeatable_binding");
+            option = section->get_option(option_name, "");
+            option->set_value("");
+            option_name = command;
+            option_name.replace(option_name.find(b),
+                std::string(b).length(), "always_binding");
+            break;
+        default:
+            break;
+    }
+
+    return option_name;
+}
+
+static void
+set_command_combo_box_option_cb(GtkWidget *widget,
+                            gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        WCM *wcm = o->plugin->wcm;
+        wayfire_config_section *section;
+        std::string option_name, value;
+        wf_option option;
+        int active;
+
+        section = wcm->wf_config->get_section(o->plugin->name);
+        active = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+        option_name = get_command_from_index(o->name, section, active);
+        option = section->get_option(option_name, "");
+        option->set_value(gtk_entry_get_text(GTK_ENTRY(o->binding_entry)));
+        wcm->wf_config->save_config(wcm->config_file);
+}
+
+static gboolean
+command_combo_box_focus_out_cb(GtkWidget *widget,
+                           GdkEventButton *event,
+                           gpointer user_data)
+{
+        set_int_combo_box_option_cb(widget, user_data);
+
+        return GDK_EVENT_PROPAGATE;
+}
+
+static void
+set_command_string_option_cb(GtkWidget *widget,
+                     gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        WCM *wcm = o->plugin->wcm;
+        wayfire_config_section *section;
+        std::string option_name;
+        wf_option option;
+        int active;
+
+        section = wcm->wf_config->get_section(o->plugin->name);
+        active = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+        option_name = get_command_from_index(o->name, section, active);
+        option = section->get_option(option_name, "");
+        option->set_value(gtk_entry_get_text(GTK_ENTRY(widget)));
+        wcm->wf_config->save_config(wcm->config_file);
+}
+
+static gboolean
+entry_command_focus_out_cb(GtkWidget *widget,
+                   GdkEventButton *event,
+                   gpointer user_data)
+{
+        set_command_string_option_cb(widget, user_data);
+
+        return GDK_EVENT_PROPAGATE;
+}
+
 static GtkWidget *
 create_plugins_layout(WCM *wcm);
 
@@ -715,15 +828,13 @@ setup_command_list(GtkWidget *widget, Option *o)
 {
         WCM *wcm = o->plugin->wcm;
         wayfire_config_section *section;
-        GtkWidget *option_layout, *label, *entry, *remove_button, *add_button, *add_button_layout;
+        GtkWidget *option_layout, *combo_box, *label, *entry, *remove_button, *add_button, *add_button_layout;
         GtkWidget *list_add_image = gtk_image_new_from_icon_name("list-add", GTK_ICON_SIZE_BUTTON);
         GtkWidget *list_remove_image;
         wf_option option;
 
         section = wcm->wf_config->get_section(o->plugin->name);
         std::vector<std::string> command_names;
-        const std::string norepeat = "...norepeat...";
-        const std::string noalways = "...noalways...";
         const std::string exec_prefix = "command_";
         for (auto command : section->options)
         {
@@ -744,14 +855,33 @@ setup_command_list(GtkWidget *widget, Option *o)
                 auto always_binding_name = "always_binding_" + command_names[i];
 
                 auto executable = section->get_option(command, "")->as_string();
-                auto regular_opt = section->get_option(regular_binding_name, "none")->as_string();
-                auto repeatable_opt = section->get_option(repeat_binding_name, norepeat)->as_string();
-                auto always_opt = section->get_option(always_binding_name, noalways)->as_string();
+                auto regular_opt = section->get_option(regular_binding_name, "")->as_string();
+                auto repeatable_opt = section->get_option(repeat_binding_name, "")->as_string();
+                auto always_opt = section->get_option(always_binding_name, "")->as_string();
                 GtkWidget *frame = gtk_frame_new(NULL);
                 GtkWidget *expander = gtk_expander_new((std::string("Command ") + command_names[i]).c_str());
                 GtkWidget *expander_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
                 GtkWidget *options_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-                for (size_t j = 0; j < 4; j++) {
+                option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+                combo_box = gtk_combo_box_text_new();
+                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Regular");
+                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Repeat");
+                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Always");
+                if (!always_opt.empty())
+                    gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 2);
+                else if (!repeatable_opt.empty())
+                    gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 1);
+                else
+                    gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 0);
+                label = gtk_label_new("Type");
+                gtk_widget_set_margin_start(label, 10);
+                gtk_widget_set_margin_end(label, 10);
+                gtk_widget_set_size_request(label, 200, 1);
+                gtk_label_set_xalign(GTK_LABEL(label), 0);
+                gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
+                gtk_box_pack_start(GTK_BOX(option_layout), combo_box, true, true, 0);
+                gtk_box_pack_start(GTK_BOX(options_layout), option_layout, true, true, 0);
+                for (size_t j = 0; j < 2; j++) {
                         Option *dyn_opt = new Option();
                         option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
                         std::string label_text, opt_value;
@@ -760,14 +890,6 @@ setup_command_list(GtkWidget *widget, Option *o)
                                 label_text = std::string("Binding");
                                 opt_value = regular_opt;
                         } else if (j == 1) {
-                                dyn_opt->name = strdup(repeat_binding_name.c_str());
-                                label_text = std::string("Repeatable Binding");
-                                opt_value = repeatable_opt;
-                        } else if (j == 2) {
-                                dyn_opt->name = strdup(always_binding_name.c_str());
-                                label_text = std::string("Always Binding");
-                                opt_value = always_opt;
-                        } else if (j == 3) {
                                 dyn_opt->name = strdup(command.c_str());
                                 label_text = std::string("Command");
                                 opt_value = executable;
@@ -784,17 +906,29 @@ setup_command_list(GtkWidget *widget, Option *o)
                         label = gtk_label_new(label_text.c_str());
                         gtk_widget_set_margin_start(label, 10);
                         gtk_widget_set_margin_end(label, 10);
-                        gtk_widget_set_tooltip_text(label, label_text.c_str());
                         gtk_widget_set_size_request(label, 200, 1);
                         gtk_label_set_xalign(GTK_LABEL(label), 0);
                         entry = gtk_entry_new();
                         gtk_entry_set_text(GTK_ENTRY(entry), opt_value.c_str());
                         o->data_widget = entry;
-                        g_signal_connect(entry, "activate",
-                                        G_CALLBACK(set_string_option_cb), dyn_opt);
-                        g_signal_connect(entry, "focus-out-event",
-                                        G_CALLBACK(entry_focus_out_cb), dyn_opt);
-                        if (j == 3) {
+                        if (j == 0) {
+                            g_signal_connect(entry, "activate",
+                                            G_CALLBACK(set_command_string_option_cb), dyn_opt);
+                            g_signal_connect(entry, "focus-out-event",
+                                            G_CALLBACK(entry_command_focus_out_cb), dyn_opt);
+                            dyn_opt->command_type_combo = combo_box;
+                            g_signal_connect(combo_box, "changed",
+                                            G_CALLBACK(set_command_combo_box_option_cb), dyn_opt);
+                            g_signal_connect(combo_box, "focus-out-event",
+                                            G_CALLBACK(command_combo_box_focus_out_cb), dyn_opt);
+                            dyn_opt->binding_entry = entry;
+                        } else {
+                            g_signal_connect(entry, "activate",
+                                            G_CALLBACK(set_string_option_cb), dyn_opt);
+                            g_signal_connect(entry, "focus-out-event",
+                                            G_CALLBACK(entry_focus_out_cb), dyn_opt);
+                        }
+                        if (j == 1) {
                                 remove_button = gtk_button_new();
                                 gtk_widget_set_margin_start(remove_button, 10);
                                 gtk_widget_set_margin_end(remove_button, 10);
