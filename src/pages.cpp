@@ -72,7 +72,7 @@ position_plugin_buttons(WCM *wcm)
 }
 
 static gboolean
-close_button_cb(GtkWidget *widget,
+close_button_button_cb(GtkWidget *widget,
                 GdkEventButton *event,
                 gpointer user_data)
 {
@@ -85,6 +85,15 @@ close_button_cb(GtkWidget *widget,
                 exit(0);
 
         return true;
+}
+
+bool
+close_button_key_cb(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+        if (event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
+                exit(0);
+
+        return false;
 }
 
 static gboolean
@@ -1461,7 +1470,9 @@ create_main_layout(WCM *wcm)
         gtk_container_add(GTK_CONTAINER(close_button), close_layout);
         g_object_set(close_button, "margin", 10, NULL);
         g_signal_connect(close_button, "button-release-event",
-                         G_CALLBACK(close_button_cb), NULL);
+                         G_CALLBACK(close_button_button_cb), NULL);
+        g_signal_connect(close_button, "key-press-event",
+                         G_CALLBACK(close_button_key_cb), NULL);
         gtk_box_pack_end(GTK_BOX(left_panel_layout), close_button, false, false, 0);
         gtk_box_pack_start(GTK_BOX(main_layout), left_panel_layout, false, true, 0);
         gtk_container_add(GTK_CONTAINER(scrolled_window), create_plugins_layout(wcm));
