@@ -296,7 +296,7 @@ add_autostart_item_button_cb(GtkWidget *widget,
         GtkWidget *top_spacer;
         GList *children, *iter;
         auto prefix = std::string("a");
-        std::vector<int> reorder_list;
+        std::vector<int> slot_list;
         std::vector<std::string> names;
         std::vector<std::string> values;
         size_t i = 0;
@@ -311,8 +311,8 @@ add_autostart_item_button_cb(GtkWidget *widget,
                                 names.push_back(c->name);
                                 values.push_back(section->get_option(c->name, "")->as_string());
                         }
-                        else if (not_in_list(reorder_list, slot)) {
-                                reorder_list.push_back(slot);
+                        else if (not_in_list(slot_list, slot)) {
+                                slot_list.push_back(slot);
                                 names.push_back(c->name);
                                 values.push_back(section->get_option(c->name, "")->as_string());
                         }
@@ -323,21 +323,14 @@ add_autostart_item_button_cb(GtkWidget *widget,
                 i++;
         }
         for (i = 0; i < names.size(); i++) {
-                if (not_in_list(reorder_list, i)) {
+                if (not_in_list(slot_list, i)) {
                         break;
                 }
         }
-        auto name = std::string("a") + std::to_string(i);
-        names.push_back(name);
-        values.push_back(std::string("<command>"));
-        reorder_list.push_back(i);
 
-        i = 0;
-        for (auto e : names) {
-                option = section->get_option(e, "");
-                option->set_value(values[i]);
-                i++;
-        }
+        auto name = std::string("a") + std::to_string(i);
+        option = section->get_option(name, "");
+        option->set_value("<command>");
 
         wcm->wf_config->save_config(wcm->config_file);
 
