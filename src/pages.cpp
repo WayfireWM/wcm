@@ -331,13 +331,6 @@ add_autostart_item_button_cb(GtkWidget *widget,
         names.push_back(name);
         values.push_back(std::string("<command>"));
         reorder_list.push_back(i);
-        for (auto e : section->options)
-        {
-                option = section->get_option(e->name, "");
-                option->set_value("");
-        }
-
-        wcm->wf_config->save_config(wcm->config_file);
 
         i = 0;
         for (auto e : names) {
