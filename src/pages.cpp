@@ -969,7 +969,7 @@ setup_autostart_list(GtkWidget *widget, Option *o)
 {
         WCM *wcm = o->plugin->wcm;
         wayfire_config_section *section;
-        GtkWidget *option_layout, *entry, *label, *remove_button, *add_button, *add_button_layout;
+        GtkWidget *option_layout, *entry, *remove_button, *add_button, *add_button_layout;
         GtkWidget *list_add_image = gtk_image_new_from_icon_name("list-add", GTK_ICON_SIZE_BUTTON);
         GtkWidget *list_remove_image;
         section = wcm->wf_config->get_section(o->plugin->name);
@@ -998,12 +998,6 @@ setup_autostart_list(GtkWidget *widget, Option *o)
                 dyn_opt->parent = o;
                 dyn_opt->default_value.s = strdup(executable.c_str());
                 dyn_opt->plugin = o->plugin;
-                label = gtk_label_new(e.c_str());
-                gtk_widget_set_margin_start(label, 10);
-                gtk_widget_set_margin_end(label, 10);
-                gtk_widget_set_tooltip_text(label, e.c_str());
-                gtk_widget_set_size_request(label, 200, 1);
-                gtk_label_set_xalign(GTK_LABEL(label), 0);
                 entry = gtk_entry_new();
                 gtk_entry_set_text(GTK_ENTRY(entry), executable.c_str());
                 o->data_widget = entry;
@@ -1020,7 +1014,6 @@ setup_autostart_list(GtkWidget *widget, Option *o)
                 list_remove_image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON);
                 gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
                 gtk_box_pack_end(GTK_BOX(option_layout), remove_button, false, false, 0);
-                gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
                 gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
                 gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
                 o->options.push_back(dyn_opt);
