@@ -727,7 +727,7 @@ command_combo_box_focus_out_cb(GtkWidget *widget,
                            GdkEventButton *event,
                            gpointer user_data)
 {
-        set_int_combo_box_option_cb(widget, user_data);
+        set_command_combo_box_option_cb(widget, user_data);
 
         return GDK_EVENT_PROPAGATE;
 }
