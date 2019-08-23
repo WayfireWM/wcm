@@ -87,8 +87,9 @@ class Option
         Option *parent;
         GtkWidget *widget;
         GtkWidget *data_widget;
-        GtkWidget *command_type_combo;
+        GtkWidget *command_combo;
         GtkWidget *binding_entry;
+        GtkWidget *command_expander;
         std::vector<Option *> options;
         std::vector<LabeledInt *> int_labels;
         std::vector<LabeledString *> str_labels;

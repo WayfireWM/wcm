@@ -744,7 +744,7 @@ set_command_string_option_cb(GtkWidget *widget,
         int active;
 
         section = wcm->wf_config->get_section(o->plugin->name);
-        active = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+        active = gtk_combo_box_get_active(GTK_COMBO_BOX(o->command_combo));
         option_name = get_command_from_index(o->name, section, active);
         option = section->get_option(option_name, "");
         option->set_value(gtk_entry_get_text(GTK_ENTRY(widget)));
@@ -757,6 +757,31 @@ entry_command_focus_out_cb(GtkWidget *widget,
                    gpointer user_data)
 {
         set_command_string_option_cb(widget, user_data);
+
+        return GDK_EVENT_PROPAGATE;
+}
+
+static void
+set_binding_string_option_cb(GtkWidget *widget,
+                     gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        std::string label = o->name;
+
+        label.erase(0, std::string("command_").length());
+        label = std::string("Command " + label + ": " +
+                gtk_entry_get_text(GTK_ENTRY(widget)));
+
+        set_string_option_cb(widget, user_data);
+        gtk_expander_set_label(GTK_EXPANDER(o->command_expander), label.c_str());
+}
+
+static gboolean
+binding_entry_focus_out_cb(GtkWidget *widget,
+                   GdkEventButton *event,
+                   gpointer user_data)
+{
+        set_binding_string_option_cb(widget, user_data);
 
         return GDK_EVENT_PROPAGATE;
 }
@@ -819,7 +844,7 @@ setup_command_list(GtkWidget *widget, Option *o)
                 auto repeatable_opt = section->get_option(repeat_binding_name, "")->as_string();
                 auto always_opt = section->get_option(always_binding_name, "")->as_string();
                 GtkWidget *frame = gtk_frame_new(NULL);
-                GtkWidget *expander = gtk_expander_new((std::string("Command ") + command_names[i]).c_str());
+                GtkWidget *expander = gtk_expander_new((std::string("Command ") + command_names[i] + ": " + executable).c_str());
                 GtkWidget *expander_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
                 GtkWidget *options_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
                 option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -876,17 +901,18 @@ setup_command_list(GtkWidget *widget, Option *o)
                                             G_CALLBACK(set_command_string_option_cb), dyn_opt);
                             g_signal_connect(entry, "focus-out-event",
                                             G_CALLBACK(entry_command_focus_out_cb), dyn_opt);
-                            dyn_opt->command_type_combo = combo_box;
                             g_signal_connect(combo_box, "changed",
                                             G_CALLBACK(set_command_combo_box_option_cb), dyn_opt);
                             g_signal_connect(combo_box, "focus-out-event",
                                             G_CALLBACK(command_combo_box_focus_out_cb), dyn_opt);
+                            dyn_opt->command_combo = combo_box;
                             dyn_opt->binding_entry = entry;
                         } else {
                             g_signal_connect(entry, "activate",
-                                            G_CALLBACK(set_string_option_cb), dyn_opt);
+                                            G_CALLBACK(set_binding_string_option_cb), dyn_opt);
                             g_signal_connect(entry, "focus-out-event",
-                                            G_CALLBACK(entry_focus_out_cb), dyn_opt);
+                                            G_CALLBACK(binding_entry_focus_out_cb), dyn_opt);
+                            dyn_opt->command_expander = expander;
                         }
                         if (j == 1) {
                                 remove_button = gtk_button_new();
