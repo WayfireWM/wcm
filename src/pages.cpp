@@ -302,7 +302,7 @@ add_autostart_item_button_cb(GtkWidget *widget,
         std::vector<std::string> alpha_names;
         std::vector<std::string> alpha_values;
         size_t count = 0;
-        size_t i = 0, j = 0;
+        size_t i = 0;
 
         section = wcm->wf_config->get_section(o->plugin->name);
 
@@ -336,18 +336,6 @@ add_autostart_item_button_cb(GtkWidget *widget,
         numeric_names.push_back(name);
         numeric_values.push_back(std::string("<command>"));
         reorder_list.push_back(count);
-        auto sorted_list = reorder_list;
-        std::sort(sorted_list.begin(), sorted_list.end());
-        for (i = 0; i < sorted_list.size(); i++) {
-                for (j = 0; j < reorder_list.size(); j++) {
-                        if (sorted_list[i] == reorder_list[j]) {
-                                std::swap(reorder_list[i], reorder_list[j]);
-                                std::swap(numeric_names[i], numeric_names[j]);
-                                std::swap(numeric_values[i], numeric_values[j]);
-                                break;
-                        }
-                }
-        }
         for (auto e : section->options)
         {
                 option = section->get_option(e->name, "");
@@ -355,8 +343,6 @@ add_autostart_item_button_cb(GtkWidget *widget,
         }
 
         wcm->wf_config->save_config(wcm->config_file);
-        reload_config(wcm);
-        section = wcm->wf_config->get_section(o->plugin->name);
 
         i = 0;
         for (auto e : numeric_names) {
@@ -372,7 +358,6 @@ add_autostart_item_button_cb(GtkWidget *widget,
         }
 
         wcm->wf_config->save_config(wcm->config_file);
-        reload_config(wcm);
 
         children = gtk_container_get_children(GTK_CONTAINER(o->widget));
         for(iter = children; iter != NULL; iter = g_list_next(iter))
@@ -700,7 +685,7 @@ get_command_from_index(std::string command,
     option_name = command;
 
     switch (index) {
-	case 0:
+        case 0:
             option_name.replace(option_name.find(b),
                 std::string(b).length(), "repeatable_binding");
             option = section->get_option(option_name, "");
