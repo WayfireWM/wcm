@@ -297,11 +297,8 @@ add_autostart_item_button_cb(GtkWidget *widget,
         GList *children, *iter;
         auto prefix = std::string("a");
         std::vector<int> reorder_list;
-        std::vector<std::string> numeric_names;
-        std::vector<std::string> numeric_values;
-        std::vector<std::string> alpha_names;
-        std::vector<std::string> alpha_values;
-        size_t count = 0;
+        std::vector<std::string> names;
+        std::vector<std::string> values;
         size_t i = 0;
 
         section = wcm->wf_config->get_section(o->plugin->name);
@@ -311,31 +308,29 @@ add_autostart_item_button_cb(GtkWidget *widget,
                         auto name = c->name.substr(prefix.length());
                         auto slot = strtol(name.c_str(), NULL, 0);
                         if (!all_chars_are(name, '0') && !slot) {
-                                alpha_names.push_back(c->name);
-                                alpha_values.push_back(section->get_option(c->name, "")->as_string());
+                                names.push_back(c->name);
+                                values.push_back(section->get_option(c->name, "")->as_string());
                         }
                         else if (not_in_list(reorder_list, slot)) {
                                 reorder_list.push_back(slot);
-                                numeric_names.push_back(c->name);
-                                numeric_values.push_back(section->get_option(c->name, "")->as_string());
-                                count++;
+                                names.push_back(c->name);
+                                values.push_back(section->get_option(c->name, "")->as_string());
                         }
                 } else {
-                        alpha_names.push_back(c->name);
-                        alpha_values.push_back(section->get_option(c->name, "")->as_string());
+                        names.push_back(c->name);
+                        values.push_back(section->get_option(c->name, "")->as_string());
                 }
                 i++;
         }
-        for (i = 0; i < count; i++) {
+        for (i = 0; i < names.size(); i++) {
                 if (not_in_list(reorder_list, i)) {
-                        count = i;
                         break;
                 }
         }
-        auto name = std::string("a") + std::to_string(count);
-        numeric_names.push_back(name);
-        numeric_values.push_back(std::string("<command>"));
-        reorder_list.push_back(count);
+        auto name = std::string("a") + std::to_string(i);
+        names.push_back(name);
+        values.push_back(std::string("<command>"));
+        reorder_list.push_back(i);
         for (auto e : section->options)
         {
                 option = section->get_option(e->name, "");
@@ -345,15 +340,9 @@ add_autostart_item_button_cb(GtkWidget *widget,
         wcm->wf_config->save_config(wcm->config_file);
 
         i = 0;
-        for (auto e : numeric_names) {
+        for (auto e : names) {
                 option = section->get_option(e, "");
-                option->set_value(numeric_values[i]);
-                i++;
-        }
-        i = 0;
-        for (auto alpha_name : alpha_names) {
-                option = section->get_option(alpha_name, "");
-                option->set_value(alpha_values[i]);
+                option->set_value(values[i]);
                 i++;
         }
 
