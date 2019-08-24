@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="invert">
+	<_short>Invert Colors</_short>
+	<category>Effects</category>
+	<option name="toggle" type="string">
+		<_short>Toggle</_short>
+		<default>&lt;super&gt; KEY_I</default>
+	</option>
+	</plugin>
+</wayfire>

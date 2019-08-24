@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="matcher">
+	<_short>Matcher</_short>
+	<category>Window Management</category>
+	</plugin>
+</wayfire>

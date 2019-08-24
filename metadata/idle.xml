@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<wayfire>
+	<plugin name="idle">
+	<_short>Idle</_short>
+	<category>Desktop</category>
+	<option name="toggle" type="string">
+		<_short>Toggle</_short>
+		<default>&lt;super&gt; &lt;shift&gt; KEY_I</default>
+	</option>
+	<option name="dpms_timeout" type="int">
+		<_short>DPMS Timeout</_short>
+		<default>-1</default>
+	</option>
+	</plugin>
+</wayfire>
