@@ -1253,6 +1253,7 @@ plugin_button_cb(GtkWidget *widget,
         WCM *wcm = p->wcm;
         GtkWidget *window = wcm->window;
         GtkWidget *main_layout = wcm->main_layout;
+        GtkWidget *enable_label, *enabled_cb;
         int i, j, k;
 
         g_object_ref(main_layout);
@@ -1267,14 +1268,16 @@ plugin_button_cb(GtkWidget *widget,
         gtk_label_set_line_wrap(GTK_LABEL(label), true);
         gtk_label_set_max_width_chars(GTK_LABEL(label), 15);
         GtkWidget *enable_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        GtkWidget *enable_label = gtk_label_new(NULL);
-        gtk_label_set_markup(GTK_LABEL(enable_label), "<span size=\"10000\"><b>Use This Plugin</b></span>");
-        GtkWidget *enabled_cb = gtk_check_button_new();
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(enabled_cb), p->enabled ? true : false);
-        gtk_widget_set_margin_start(enabled_cb, 50);
-        gtk_widget_set_margin_end(enabled_cb, 15);
-        g_signal_connect(enabled_cb, "toggled",
-                         G_CALLBACK(toggle_plugin_enabled_cb), p);
+        if (std::string(p->name) != "core" && std::string(p->name) != "input") {
+                enable_label = gtk_label_new(NULL);
+                gtk_label_set_markup(GTK_LABEL(enable_label), "<span size=\"10000\"><b>Use This Plugin</b></span>");
+                enabled_cb = gtk_check_button_new();
+                gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(enabled_cb), p->enabled ? true : false);
+                gtk_widget_set_margin_start(enabled_cb, 50);
+                gtk_widget_set_margin_end(enabled_cb, 15);
+                g_signal_connect(enabled_cb, "toggled",
+                                G_CALLBACK(toggle_plugin_enabled_cb), p);
+        }
         GtkWidget *back_button = gtk_button_new();
         GtkWidget *back_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *back_image = gtk_image_new_from_icon_name("back", GTK_ICON_SIZE_BUTTON);
@@ -1325,8 +1328,10 @@ plugin_button_cb(GtkWidget *widget,
         }
         gtk_box_pack_start(GTK_BOX(plugin_buttons_layout), notebook, false, true, 10);
         gtk_box_pack_start(GTK_BOX(left_panel_layout), label, false, false, 0);
-        gtk_box_pack_start(GTK_BOX(enable_layout), enabled_cb, false, false, 0);
-        gtk_box_pack_start(GTK_BOX(enable_layout), enable_label, false, false, 0);
+        if (std::string(p->name) != "core" && std::string(p->name) != "input") {
+                gtk_box_pack_start(GTK_BOX(enable_layout), enabled_cb, false, false, 0);
+                gtk_box_pack_start(GTK_BOX(enable_layout), enable_label, false, false, 0);
+        }
         gtk_box_pack_start(GTK_BOX(left_panel_layout), enable_layout, false, false, 0);
         gtk_box_pack_end(GTK_BOX(left_panel_layout), back_button, false, false, 0);
         gtk_box_pack_start(GTK_BOX(plugin_layout), left_panel_layout, false, true, 0);
