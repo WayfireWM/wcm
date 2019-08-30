@@ -61,13 +61,13 @@
 	</option>
 	<option name="kawase_iterations" type="int">
 		<_short>Kawase Iterations</_short>
-		<default>5</default>
+		<default>2</default>
 		<min>0</min>
 		<max>10</max>
 	</option>
 	<option name="kawase_offset" type="double">
 		<_short>Kawase Offset</_short>
-		<default>3</default>
+		<default>5</default>
 		<min>0</min>
 		<max>25</max>
 	</option>
