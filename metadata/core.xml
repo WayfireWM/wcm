@@ -15,5 +15,9 @@
 		<_short>Vertical Virtual Size</_short>
 		<default>3</default>
 	</option>
+	<option name="background_color" type="color">
+		<_short>Background Color</_short>
+		<default>0.0 0.0 0.0 1.0</default>
+	</option>
 	</plugin>
 </wayfire>
