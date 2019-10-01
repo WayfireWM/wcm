@@ -1,4 +1,5 @@
 install_data('alpha.xml', install_dir: metadata_dir)
+install_data('autorotate-iio.xml', install_dir: metadata_dir)
 install_data('autostart.xml', install_dir: metadata_dir)
 install_data('animate.xml', install_dir: metadata_dir)
 install_data('blur.xml', install_dir: metadata_dir)
