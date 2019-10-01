@@ -75,6 +75,9 @@ plugin_enabled(Plugin *p, std::string plugins)
 
         pos = plugins.find(std::string(p->name));
 
+        if (!pos)
+                return 1;
+
         if (pos == std::string::npos)
                 return 0;
 
