@@ -15,6 +15,10 @@
 		<_short>Enable Vertical</_short>
 		<default>1</default>
 	</option>
+	<option name="enable_smooth_transition" type="bool">
+		<_short>Enable Smooth Transition</_short>
+		<default>0</default>
+	</option>
 	<option name="fingers" type="int">
 		<_short>Number of Fingers</_short>
 		<default>4</default>
