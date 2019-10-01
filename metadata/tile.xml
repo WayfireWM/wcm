@@ -3,65 +3,45 @@
 	<plugin name="tile">
 	<_short>Tile Windows</_short>
 	<category>Window Management</category>
-	<option name="action_left" type="key">
-		<_short>Left</_short>
-		<default>KEY_H</default>
+	<option name="tile_by_default" type="bool">
+		<_short>Tile by Default</_short>
+		<default>1</default>
 	</option>
-	<option name="action_right" type="key">
-		<_short>Right</_short>
-		<default>KEY_L</default>
+	<option name="keep_fullscreen_on_adjacent" type="bool">
+		<_short>Keep Fullscreen on Adjacent</_short>
+		<default>1</default>
 	</option>
-	<option name="action_up" type="key">
-		<_short>Up</_short>
-		<default>KEY_K</default>
-	</option>
-	<option name="action_down" type="key">
-		<_short>Down</_short>
-		<default>KEY_J</default>
-	</option>
-	<option name="action_child" type="key">
-		<_short>Child</_short>
-		<default>KEY_C</default>
-	</option>
-	<option name="action_parent" type="key">
-		<_short>Parent</_short>
-		<default>KEY_P</default>
-	</option>
-	<option name="action_rotate" type="key">
-		<_short>Rotate</_short>
-		<default>KEY_R</default>
-	</option>
-	<option name="action_exit" type="key">
-		<_short>Exit</_short>
-		<default>KEY_ENTER</default>
-	</option>
-	<option name="action_split_horiz" type="key">
-		<_short>Split Horizontal</_short>
-		<default>KEY_O</default>
-	</option>
-	<option name="action_split_vert" type="key">
-		<_short>Split Vertical</_short>
-		<default>KEY_E</default>
-	</option>
-	<option name="action_split_type" type="key">
-		<_short>Split Type</_short>
-		<default>KEY_T</default>
-	</option>
-	<option name="select-mode" type="key">
-		<_short>Select Mode</_short>
-		<default>&lt;alt&gt; KEY_S</default>
-	</option>
-	<option name="maximize" type="key">
-		<_short>Maximize</_short>
-		<default>&lt;super&gt; KEY_M</default>
-	</option>
-	<option name="resize" type="button">
-		<_short>Resize</_short>
+	<option name="button_move" type="key">
+		<_short>Button Move</_short>
 		<default>&lt;super&gt; BTN_LEFT</default>
 	</option>
-	<option name="selection-color" type="color">
-		<_short>Selection Color</_short>
-		<default>0.5 0.5 1.0 0.5</default>
+	<option name="button_resize" type="key">
+		<_short>Button Resize</_short>
+		<default>&lt;super&gt; BTN_RIGHT</default>
+	</option>
+	<option name="key_toggle" type="key">
+		<_short>Key Toggle</_short>
+		<default>&lt;super&gt; KEY_T</default>
+	</option>
+	<option name="key_toggle_fullscreen" type="key">
+		<_short>Key Toggle Fullscreen</_short>
+		<default>&lt;super&gt; KEY_M</default>
+	</option>
+	<option name="key_focus_left" type="key">
+		<_short>Key Focus Left</_short>
+		<default>&lt;super&gt; KEY_H</default>
+	</option>
+	<option name="key_focus_right" type="key">
+		<_short>Key Focus Left</_short>
+		<default>&lt;super&gt; KEY_L</default>
+	</option>
+	<option name="key_focus_above" type="key">
+		<_short>Key Focus Left</_short>
+		<default>&lt;super&gt; KEY_K</default>
+	</option>
+	<option name="key_focus_below" type="key">
+		<_short>Key Focus Left</_short>
+		<default>&lt;super&gt; KEY_J</default>
 	</option>
 	</plugin>
 </wayfire>
