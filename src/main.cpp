@@ -51,10 +51,13 @@ activate(GtkApplication* app,
 {
         WCM *wcm = (WCM *) user_data;
         GtkWidget *window;
+        GdkPixbuf *icon;
 
         window = gtk_application_window_new(app);
+        icon = gdk_pixbuf_new_from_file(ICONDIR "/wcm.png", NULL);
         gtk_widget_set_size_request(window, 750, 500);
         gtk_window_set_default_size(GTK_WINDOW(window), 1000, 580);
+        gtk_window_set_icon (GTK_WINDOW(window), icon);
 
         wcm->window = window;
 
