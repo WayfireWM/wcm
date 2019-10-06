@@ -7,6 +7,22 @@
 		<_short>Duration</_short>
 		<default>300</default>
 	</option>
+	<option name="type" type="string">
+		<_short>Type</_short>
+		<default>simple</default>
+		<desc>
+			<value>none</value>
+			<_name>None</_name>
+		</desc>
+		<desc>
+			<value>simple</value>
+			<_name>Simple</_name>
+		</desc>
+		<desc>
+			<value>wobbly</value>
+			<_name>Wobbly</_name>
+		</desc>
+	</option>
 	<option name="slot_bl" type="key">
 		<_short>Bottom Left</_short>
 		<default>&lt;ctrl&gt; &lt;alt&gt; KEY_KP1</default>
