@@ -1,4 +1,4 @@
-project('wcm', 'cpp', version : '0.1')
+project('wcm', 'cpp', version : '0.3')
 
 add_global_arguments('-DCONFIG_FILE_PATH="' + get_option('config_file_path') + '"', language : 'cpp')
 
