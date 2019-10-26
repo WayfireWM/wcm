@@ -11,7 +11,7 @@
 		<_short>Disable while Typing</_short>
 		<default>false</default>
 	</option>
-	<option name="naturall_scroll" type="bool">
+	<option name="natural_scroll" type="bool">
 		<_short>Natural Scroll</_short>
 		<default>false</default>
 	</option>
