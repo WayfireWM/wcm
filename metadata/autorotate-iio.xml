@@ -9,19 +9,19 @@
 	</option>
 	<option name="rotate_up" type="key">
 		<_short>Rotate Up</_short>
-		<default>&lt;super&gt; KEY_UP</default>
+		<default>&lt;ctrl&gt; &lt;super&gt; KEY_UP</default>
 	</option>
 	<option name="rotate_left" type="key">
 		<_short>Rotate Left</_short>
-		<default>&lt;super&gt; KEY_LEFT</default>
+		<default>&lt;ctrl&gt; &lt;super&gt; KEY_LEFT</default>
 	</option>
 	<option name="rotate_down" type="key">
 		<_short>Rotate Down</_short>
-		<default>&lt;super&gt; KEY_DOWN</default>
+		<default>&lt;ctrl&gt; &lt;super&gt; KEY_DOWN</default>
 	</option>
 	<option name="rotate_right" type="key">
 		<_short>Rotate Right</_short>
-		<default>&lt;super&gt; KEY_RIGHT</default>
+		<default>&lt;ctrl&gt; &lt;super&gt; KEY_RIGHT</default>
 	</option>
 	</plugin>
 </wayfire>
