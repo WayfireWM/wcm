@@ -106,6 +106,7 @@ class Plugin
         char *category;
         int x, y;
         int enabled;
+        GtkWidget *t1, *t2;
         std::vector<Option *> options;
 };
 

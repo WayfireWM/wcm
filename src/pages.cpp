@@ -1213,18 +1213,26 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
         WCM *wcm = p->wcm;
         wayfire_config_section *section;
         wf_option option;
+        std::string plugins;
+        size_t pos;
 
         section = wcm->wf_config->get_section("core");
         option = section->get_option("plugins", "default");
 
         p->enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+        plugins = option->as_string();
 
         if (p->enabled) {
-                option->set_value(option->as_string() + " " + std::string(p->name));
-                wcm->wf_config->save_config(wcm->config_file);
+                pos = plugins.find(std::string(p->name));
+                if (pos == std::string::npos) {
+                        option->set_value(option->as_string() + " " + std::string(p->name));
+                        wcm->wf_config->save_config(wcm->config_file);
+                }
+                if (widget == p->t1)
+                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t2), true);
+                else if (widget == p->t2)
+                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t1), true);
         } else {
-                std::string plugins = option->as_string();
-                size_t pos;
                 int i;
                 /* Remove plugin name string */
                 pos = plugins.find(std::string(p->name));
@@ -1240,6 +1248,10 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
                                 plugins.erase(plugins.begin() + i);
                 option->set_value(plugins);
                 wcm->wf_config->save_config(wcm->config_file);
+                if (widget == p->t1)
+                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t2), false);
+                else if (widget == p->t2)
+                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t1), false);
         }
 }
 
@@ -1277,6 +1289,7 @@ plugin_button_cb(GtkWidget *widget,
                 gtk_widget_set_margin_end(enabled_cb, 15);
                 g_signal_connect(enabled_cb, "toggled",
                                 G_CALLBACK(toggle_plugin_enabled_cb), p);
+                p->t2 = enabled_cb;
         }
         GtkWidget *back_button = gtk_button_new();
         GtkWidget *back_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -1386,6 +1399,7 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
                 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), p->enabled ? true : false);
                 g_signal_connect(check_button, "toggled",
                                  G_CALLBACK(toggle_plugin_enabled_cb), p);
+                p->t1 = check_button;
         }
         GtkWidget *plugin_button = gtk_button_new();
         gtk_button_set_relief(GTK_BUTTON(plugin_button), GTK_RELIEF_NONE);
