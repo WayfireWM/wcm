@@ -87,11 +87,11 @@
 	</option>
 	<option name="rotate_left" type="button">
 		<_short>Rotate Left</_short>
-		<default>&lt;alt&gt; &lt;ctrl&gt; BTN_LEFT</default>
+		<default>&lt;alt&gt; &lt;ctrl&gt; KEY_LEFT</default>
 	</option>
 	<option name="rotate_right" type="button">
 		<_short>Rotate Right</_short>
-		<default>&lt;alt&gt; &lt;ctrl&gt; BTN_LEFT</default>
+		<default>&lt;alt&gt; &lt;ctrl&gt; KEY_LEFT</default>
 	</option>
 	</group>
 	</plugin>
