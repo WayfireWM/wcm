@@ -91,7 +91,7 @@
 	</option>
 	<option name="rotate_right" type="key">
 		<_short>Rotate Right</_short>
-		<default>&lt;alt&gt; &lt;ctrl&gt; KEY_LEFT</default>
+		<default>&lt;alt&gt; &lt;ctrl&gt; KEY_RIGHT</default>
 	</option>
 	</group>
 	</plugin>
