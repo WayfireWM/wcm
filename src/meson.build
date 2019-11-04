@@ -1,8 +1,8 @@
-xml_dep = dependency('libxml-2.0', required : true)
-gtk_dep = dependency('gtk+-3.0', required : true)
-wf_dep = dependency('wf-config', required : true)
+xml = dependency('libxml-2.0', required : true)
+gtk = dependency('gtk+-3.0', required : true)
+wf_config = dependency('wf-config', required : true)
 
-dep_list = [xml_dep, gtk_dep, wf_dep]
+dep_list = [xml, gtk, wf_config, wf_protos, evdev]
 
 sources = files('main.cpp', 'metadata.cpp', 'pages.cpp')
 

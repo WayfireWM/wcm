@@ -28,6 +28,7 @@
 #include <string.h>
 #include <gtk/gtk.h>
 #include <config.hpp>
+#include <wlr-input-inhibitor-unstable-v1-client-protocol.h>
 
 enum option_type
 {
@@ -41,6 +42,14 @@ enum option_type
         OPTION_TYPE_GROUP,
         OPTION_TYPE_SUBGROUP,
         OPTION_TYPE_DYNAMIC_LIST
+};
+
+enum mod_type
+{
+        MOD_TYPE_SHIFT   = 1 << 0,
+        MOD_TYPE_CONTROL = 1 << 1,
+        MOD_TYPE_ALT     = 1 << 2,
+        MOD_TYPE_SUPER   = 1 << 3
 };
 
 class LabeledInt
@@ -82,11 +91,14 @@ class Option
         char *name;
         char *disp_name;
         option_type type;
+        mod_type mod_mask;
         opt_data default_value;
         var_data data;
         Option *parent;
         GtkWidget *widget;
         GtkWidget *data_widget;
+        GtkWidget *label_widget;
+        GtkWidget *edit_window;
         GtkWidget *command_combo;
         GtkWidget *binding_entry;
         GtkWidget *command_expander;
@@ -121,6 +133,8 @@ class WCM
         std::vector<Plugin *> plugins;
         wayfire_config *wf_config;
         const char *config_file;
+        zwlr_input_inhibitor_v1 *screen_lock;
+        zwlr_input_inhibit_manager_v1 *inhibitor_manager;
 };
 
 int

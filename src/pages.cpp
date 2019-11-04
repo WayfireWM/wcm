@@ -23,6 +23,9 @@
  * SOFTWARE.
  */
 
+#include <libevdev/libevdev.h>
+#include <gdk/gdkwayland.h>
+#include <iostream>
 #include "wcm.h"
 
 static int num_button_columns;
@@ -426,7 +429,7 @@ reset_button_cb(GtkWidget *widget,
                         break;
                 case OPTION_TYPE_BUTTON:
                 case OPTION_TYPE_KEY:
-                        gtk_entry_set_text(GTK_ENTRY(o->data_widget), o->default_value.s);
+                        gtk_button_set_label(GTK_BUTTON(o->data_widget), o->default_value.s);
                         section = wcm->wf_config->get_section(o->plugin->name);
                         option = section->get_option(o->name, "");
                         option->set_value(o->default_value.s);
@@ -1026,6 +1029,346 @@ setup_autostart_list(GtkWidget *widget, Option *o)
         gtk_widget_show_all(widget);
 }
 
+static std::string
+write_binding_option(Option *o, std::string name)
+{
+        WCM *wcm = o->plugin->wcm;
+        wayfire_config_section *section;
+        std::string text = "";
+        bool first = true;
+        wf_option option;
+
+        section = wcm->wf_config->get_section(o->plugin->name);
+        option = section->get_option(o->name, "");
+        if (o->mod_mask & MOD_TYPE_SHIFT) {
+                text += "<shift>";
+                first = false;
+        }
+        if (o->mod_mask & MOD_TYPE_CONTROL) {
+                if (!first)
+                        text += " ";
+                text += "<ctrl>";
+                first = false;
+        }
+        if (o->mod_mask & MOD_TYPE_ALT) {
+                if (!first)
+                        text += " ";
+                text += "<alt>";
+                first = false;
+        }
+        if (o->mod_mask & MOD_TYPE_SUPER) {
+                if (!first)
+                        text += " ";
+                text += "<super>";
+                first = false;
+        }
+        if (!first)
+                text += " ";
+        text += name;
+
+        option->set_value(text.c_str());
+        wcm->wf_config->save_config(wcm->config_file);
+
+        return text;
+}
+
+static void
+grab_binding_button_cb(GtkWidget *widget,
+                       GdkEventButton *event,
+                       gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        std::string opt_text = "";
+
+        if (event->type != GDK_BUTTON_PRESS)
+                return;
+
+        switch (event->button) {
+                case 1:
+                        opt_text = write_binding_option(o, "BTN_LEFT");
+                        break;
+                case 2:
+                        opt_text = write_binding_option(o, "BTN_MIDDLE");
+                        break;
+                case 3:
+                        opt_text = write_binding_option(o, "BTN_RIGHT");
+                        break;
+                case 4:
+                        opt_text = write_binding_option(o, "BTN_SIDE");
+                        break;
+                case 5:
+                        opt_text = write_binding_option(o, "BTN_EXTRA");
+                        break;
+                default:
+                        break;
+        }
+
+        gtk_button_set_label(GTK_BUTTON(o->data_widget), opt_text.c_str());
+        gtk_window_close(GTK_WINDOW(widget));
+        if (o->plugin->wcm->screen_lock) {
+                zwlr_input_inhibitor_v1_destroy(o->plugin->wcm->screen_lock);
+                o->plugin->wcm->screen_lock = NULL;
+                wl_display_flush(gdk_wayland_display_get_wl_display(gdk_display_get_default()));
+        }
+}
+
+#define HW_OFFSET 8
+
+bool
+grab_binding_key_cb(GtkWidget *widget,
+                    GdkEventKey *event,
+                    gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+
+        if (event->type == GDK_KEY_PRESS) {
+                if (event->keyval == GDK_KEY_Shift_L || event->keyval == GDK_KEY_Shift_R) {
+                        o->mod_mask = (mod_type) (o->mod_mask | MOD_TYPE_SHIFT);
+                } else if (event->keyval == GDK_KEY_Control_L || event->keyval == GDK_KEY_Control_R) {
+                        o->mod_mask = (mod_type) (o->mod_mask | MOD_TYPE_CONTROL);
+                } else if (event->keyval == GDK_KEY_Alt_L || event->keyval == GDK_KEY_Alt_R ||
+                        event->keyval == GDK_KEY_Meta_L || event->keyval == GDK_KEY_Meta_R) {
+                        o->mod_mask = (mod_type) (o->mod_mask | MOD_TYPE_ALT);
+                } else if (event->keyval == GDK_KEY_Super_L || event->keyval == GDK_KEY_Super_R) {
+                        o->mod_mask = (mod_type) (o->mod_mask | MOD_TYPE_SUPER);
+                } else {
+                        gtk_button_set_label(GTK_BUTTON(o->data_widget),
+                                write_binding_option(o,
+                                libevdev_event_code_get_name(EV_KEY, event->hardware_keycode - HW_OFFSET)).c_str());
+                        gtk_window_close(GTK_WINDOW(widget));
+                        if (o->plugin->wcm->screen_lock) {
+                                zwlr_input_inhibitor_v1_destroy(o->plugin->wcm->screen_lock);
+                                o->plugin->wcm->screen_lock = NULL;
+                                wl_display_flush(gdk_wayland_display_get_wl_display(gdk_display_get_default()));
+                        }
+                }
+        }
+
+        if (event->type == GDK_KEY_RELEASE) {
+                if (event->keyval == GDK_KEY_Shift_L || event->keyval == GDK_KEY_Shift_R) {
+                        o->mod_mask = (mod_type) (o->mod_mask & ~MOD_TYPE_SHIFT);
+                } else if (event->keyval == GDK_KEY_Control_L || event->keyval == GDK_KEY_Control_R) {
+                        o->mod_mask = (mod_type) (o->mod_mask & ~MOD_TYPE_CONTROL);
+                } else if (event->keyval == GDK_KEY_Alt_L || event->keyval == GDK_KEY_Alt_R ||
+                        event->keyval == GDK_KEY_Meta_L || event->keyval == GDK_KEY_Meta_R) {
+                        o->mod_mask = (mod_type) (o->mod_mask & ~MOD_TYPE_ALT);
+                } else if (event->keyval == GDK_KEY_Super_L || event->keyval == GDK_KEY_Super_R) {
+                        o->mod_mask = (mod_type) (o->mod_mask & ~MOD_TYPE_SUPER);
+                }
+        }
+
+        std::string modifiers = "";
+
+        if (o->mod_mask & MOD_TYPE_SHIFT)
+                modifiers += "<Shift>";
+
+        if (o->mod_mask & MOD_TYPE_CONTROL)
+                modifiers += "<Control>";
+
+        if (o->mod_mask & MOD_TYPE_ALT)
+                modifiers += "<Alt>";
+
+        if (o->mod_mask & MOD_TYPE_SUPER)
+                modifiers += "<Super>";
+
+        gtk_label_set_text(GTK_LABEL(o->label_widget), modifiers.c_str());
+
+        return false;
+}
+
+static void registry_add_object(void *data, struct wl_registry *registry,
+    uint32_t name, const char *interface, uint32_t version)
+{
+        WCM *wcm = (WCM *) data;
+
+        if (strcmp(interface, zwlr_input_inhibit_manager_v1_interface.name) == 0)
+        {
+                wcm->inhibitor_manager = (zwlr_input_inhibit_manager_v1*) wl_registry_bind(
+                        registry, name, &zwlr_input_inhibit_manager_v1_interface, 1u);
+        }
+}
+
+static void registry_remove_object(void *data, struct wl_registry *registry, uint32_t name)
+{
+}
+
+static struct wl_registry_listener registry_listener =
+{
+        &registry_add_object,
+        &registry_remove_object
+};
+
+static bool
+lock_input(WCM *wcm)
+{
+
+        struct wl_display *display = gdk_wayland_display_get_wl_display(gdk_display_get_default());
+        if (!display)
+        {
+            std::cerr << "display == NULL" << std::endl;
+            return false;
+        }
+        struct wl_registry *registry = wl_display_get_registry(display);
+        if (!registry)
+        {
+            std::cerr << "registry == NULL" << std::endl;
+            return false;
+        }
+
+        wl_registry_add_listener(registry, &registry_listener, wcm);
+        wl_display_dispatch(display);
+        wl_display_roundtrip(display);
+
+        if (!wcm->inhibitor_manager)
+        {
+            std::cerr << "Compositor does not support " <<
+                " wlr_input_inhibit_manager_v1!" << std::endl;
+            return false;
+        }
+
+        /* Lock input */
+        if (wcm->inhibitor_manager)
+        {
+            wcm->screen_lock = zwlr_input_inhibit_manager_v1_get_inhibitor(wcm->inhibitor_manager);
+        }
+
+        return true;
+}
+
+static gboolean
+window_deleted_cb(GtkWidget *widget,
+                  GdkEvent *event,
+                  gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+
+        if (!o->plugin->wcm->screen_lock)
+                 return false;
+
+        zwlr_input_inhibitor_v1_destroy(o->plugin->wcm->screen_lock);
+        o->plugin->wcm->screen_lock = NULL;
+        wl_display_flush(gdk_wayland_display_get_wl_display(gdk_display_get_default()));
+
+        return false;
+}
+
+static void
+key_grab_button_cb(GtkWidget *widget,
+                   GdkEventButton *event,
+                   gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+
+        if (!lock_input(o->plugin->wcm))
+                return;
+
+        o->mod_mask = (mod_type) 0;
+        GtkWidget *grab_binding_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        gtk_window_set_title(GTK_WINDOW(grab_binding_window), "Waiting for Binding");
+        g_signal_connect(grab_binding_window, "button-press-event",
+                                         G_CALLBACK(grab_binding_button_cb), o);
+        g_signal_connect(grab_binding_window, "key-press-event",
+                                         G_CALLBACK(grab_binding_key_cb), o);
+        g_signal_connect(grab_binding_window, "key-release-event",
+                                         G_CALLBACK(grab_binding_key_cb), o);
+        g_signal_connect(grab_binding_window, "delete-event",
+                                         G_CALLBACK(window_deleted_cb), o);
+
+        GtkWidget *layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        GtkWidget *label = gtk_label_new(NULL);
+        gtk_box_pack_start(GTK_BOX(layout), label, true, true, 0);
+        gtk_container_add(GTK_CONTAINER(grab_binding_window), layout);
+        o->label_widget = label;
+
+        gtk_widget_show_all(grab_binding_window);
+}
+
+static void
+binding_cancel_cb(GtkWidget *widget,
+                  GdkEventButton *event,
+                  gpointer user_data)
+{
+        gtk_window_close(GTK_WINDOW(user_data));
+}
+
+static void
+write_option(GtkWidget *widget,
+             gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        WCM *wcm = o->plugin->wcm;
+        wayfire_config_section *section;
+        wf_option option;
+
+        section = wcm->wf_config->get_section(o->plugin->name);
+        option = section->get_option(o->name, "");
+
+        option->set_value(gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
+        wcm->wf_config->save_config(wcm->config_file);
+
+        gtk_button_set_label(GTK_BUTTON(o->data_widget), gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
+
+        gtk_window_close(GTK_WINDOW(o->edit_window));
+}
+
+static void
+binding_ok_cb(GtkWidget *widget,
+              GdkEventButton *event,
+              gpointer user_data)
+{
+        write_option(widget, user_data);
+}
+
+static void
+binding_entry_cb(GtkWidget *widget,
+                 gpointer user_data)
+{
+        write_option(widget, user_data);
+}
+
+static void
+binding_edit_button_cb(GtkWidget *widget,
+                       GdkEventButton *event,
+                       gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        WCM *wcm = o->plugin->wcm;
+        wayfire_config_section *section;
+        wf_option option;
+
+        section = wcm->wf_config->get_section(o->plugin->name);
+        option = section->get_option(o->name, o->default_value.s);
+
+        GtkWidget *edit_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        gtk_window_set_title(GTK_WINDOW(edit_window), "Edit Binding");
+
+        GtkWidget *layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+        GtkWidget *button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        GtkWidget *button_cancel = gtk_button_new_with_label("Cancel");
+        GtkWidget *button_ok = gtk_button_new_with_label("Ok");
+        GtkWidget *entry = gtk_entry_new();
+        gtk_widget_set_margin_top(layout, 10);
+        gtk_widget_set_margin_bottom(layout, 10);
+        gtk_widget_set_margin_start(layout, 10);
+        gtk_widget_set_margin_end(layout, 10);
+        g_signal_connect(button_cancel, "button-release-event",
+                G_CALLBACK(binding_cancel_cb), edit_window);
+        g_signal_connect(button_ok, "button-release-event",
+                G_CALLBACK(binding_ok_cb), o);
+        g_signal_connect(entry, "activate",
+                G_CALLBACK(binding_entry_cb), o);
+        gtk_entry_set_text(GTK_ENTRY(entry), option->as_string().c_str());
+        gtk_box_pack_start(GTK_BOX(layout), entry, false, false, 0);
+        gtk_box_pack_end(GTK_BOX(button_layout), button_ok, false, false, 0);
+        gtk_box_pack_end(GTK_BOX(button_layout), button_cancel, false, false, 0);
+        gtk_box_pack_end(GTK_BOX(layout), button_layout, false, true, 0);
+        gtk_container_add(GTK_CONTAINER(edit_window), layout);
+        o->label_widget = entry;
+        o->edit_window = edit_window;
+
+        gtk_widget_show_all(edit_window);
+}
+
 static void
 add_option_widget(GtkWidget *widget, Option *o)
 {
@@ -1138,14 +1481,16 @@ add_option_widget(GtkWidget *widget, Option *o)
                 case OPTION_TYPE_BUTTON:
                 case OPTION_TYPE_KEY: {
                         option = section->get_option(o->name, o->default_value.s);
-                        GtkWidget *entry = gtk_entry_new();
-                        gtk_entry_set_text(GTK_ENTRY(entry), option->as_string().c_str());
-                        o->data_widget = entry;
-                        g_signal_connect(entry, "activate",
-                                         G_CALLBACK(set_string_option_cb), o);
-                        g_signal_connect(entry, "focus-out-event",
-                                         G_CALLBACK(entry_focus_out_cb), o);
-                        gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
+                        GtkWidget *edit_button = gtk_button_new_from_icon_name("gtk-edit", GTK_ICON_SIZE_BUTTON);
+                        g_signal_connect(edit_button, "button-release-event",
+                                        G_CALLBACK(binding_edit_button_cb), o);
+                        GtkWidget *key_grab_button = gtk_button_new_with_label(option->as_string().c_str());
+                        g_signal_connect(key_grab_button, "button-release-event",
+                                        G_CALLBACK(key_grab_button_cb), o);
+                        o->data_widget = key_grab_button;
+                        gtk_box_pack_end(GTK_BOX(option_layout), edit_button, false, true, 0);
+                        gtk_widget_set_margin_start(edit_button, 10);
+                        gtk_box_pack_end(GTK_BOX(option_layout), key_grab_button, false, true, 0);
                         gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
                 }
                         break;
