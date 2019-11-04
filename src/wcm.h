@@ -90,6 +90,7 @@ class Option
         Plugin *plugin;
         char *name;
         char *disp_name;
+        char *binding;
         option_type type;
         mod_type mod_mask;
         opt_data default_value;
@@ -98,7 +99,8 @@ class Option
         GtkWidget *widget;
         GtkWidget *data_widget;
         GtkWidget *label_widget;
-        GtkWidget *edit_window;
+        GtkWidget *aux_window;
+        GtkWidget *confirm_window;
         GtkWidget *command_combo;
         GtkWidget *binding_entry;
         GtkWidget *command_expander;

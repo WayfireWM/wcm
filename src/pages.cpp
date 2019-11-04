@@ -1029,7 +1029,7 @@ setup_autostart_list(GtkWidget *widget, Option *o)
         gtk_widget_show_all(widget);
 }
 
-static std::string
+static void
 write_binding_option(Option *o, std::string name)
 {
         WCM *wcm = o->plugin->wcm;
@@ -1069,7 +1069,71 @@ write_binding_option(Option *o, std::string name)
         option->set_value(text.c_str());
         wcm->wf_config->save_config(wcm->config_file);
 
-        return text;
+        gtk_button_set_label(GTK_BUTTON(o->data_widget), option->as_string().c_str());
+}
+
+static void
+binding_cancel_cb(GtkWidget *widget,
+                  GdkEventButton *event,
+                  gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+
+        gtk_window_close(GTK_WINDOW(o->confirm_window));
+
+        free(o->binding);
+}
+
+static void
+binding_confirm_cb(GtkWidget *widget,
+                   GdkEventButton *event,
+                   gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+
+        write_binding_option(o, o->binding);
+
+        gtk_window_close(GTK_WINDOW(o->confirm_window));
+
+        free(o->binding);
+}
+
+static void
+write_binding_option_check(Option *o, std::string name)
+{
+        char buf[256];
+
+        if (!o->plugin->wcm->screen_lock)
+                return;
+
+	if (o->mod_mask)
+                return write_binding_option(o, name);
+
+        GtkWidget *confirm_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        gtk_window_set_title(GTK_WINDOW(confirm_window), "Confirm Binding");
+
+        GtkWidget *layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+        GtkWidget *button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        GtkWidget *button_cancel = gtk_button_new_with_label("Cancel");
+        GtkWidget *button_ok = gtk_button_new_with_label("Ok");
+        sprintf(buf, "Attempting to bind \"%s\" without modifier.\nYou will be unable to use this key/button for anything else!\nAre you sure?", name.c_str());
+        GtkWidget *label = gtk_label_new(buf);
+        gtk_widget_set_margin_top(layout, 10);
+        gtk_widget_set_margin_bottom(layout, 10);
+        gtk_widget_set_margin_start(layout, 10);
+        gtk_widget_set_margin_end(layout, 10);
+        g_signal_connect(button_cancel, "button-release-event",
+                G_CALLBACK(binding_cancel_cb), o);
+        g_signal_connect(button_ok, "button-release-event",
+                G_CALLBACK(binding_confirm_cb), o);
+        gtk_box_pack_end(GTK_BOX(button_layout), button_ok, false, false, 0);
+        gtk_box_pack_end(GTK_BOX(button_layout), button_cancel, false, false, 0);
+        gtk_box_pack_start(GTK_BOX(layout), label, false, false, 0);
+        gtk_box_pack_end(GTK_BOX(layout), button_layout, false, true, 0);
+        gtk_container_add(GTK_CONTAINER(confirm_window), layout);
+        gtk_widget_show_all(confirm_window);
+        o->confirm_window = confirm_window;
+        o->binding = strdup(name.c_str());
 }
 
 static void
@@ -1078,32 +1142,30 @@ grab_binding_button_cb(GtkWidget *widget,
                        gpointer user_data)
 {
         Option *o = (Option *) user_data;
-        std::string opt_text = "";
 
         if (event->type != GDK_BUTTON_PRESS)
                 return;
 
         switch (event->button) {
                 case 1:
-                        opt_text = write_binding_option(o, "BTN_LEFT");
+                        write_binding_option_check(o, "BTN_LEFT");
                         break;
                 case 2:
-                        opt_text = write_binding_option(o, "BTN_MIDDLE");
+                        write_binding_option_check(o, "BTN_MIDDLE");
                         break;
                 case 3:
-                        opt_text = write_binding_option(o, "BTN_RIGHT");
+                        write_binding_option_check(o, "BTN_RIGHT");
                         break;
                 case 4:
-                        opt_text = write_binding_option(o, "BTN_SIDE");
+                        write_binding_option_check(o, "BTN_SIDE");
                         break;
                 case 5:
-                        opt_text = write_binding_option(o, "BTN_EXTRA");
+                        write_binding_option_check(o, "BTN_EXTRA");
                         break;
                 default:
                         break;
         }
 
-        gtk_button_set_label(GTK_BUTTON(o->data_widget), opt_text.c_str());
         gtk_window_close(GTK_WINDOW(widget));
         if (o->plugin->wcm->screen_lock) {
                 zwlr_input_inhibitor_v1_destroy(o->plugin->wcm->screen_lock);
@@ -1132,9 +1194,8 @@ grab_binding_key_cb(GtkWidget *widget,
                 } else if (event->keyval == GDK_KEY_Super_L || event->keyval == GDK_KEY_Super_R) {
                         o->mod_mask = (mod_type) (o->mod_mask | MOD_TYPE_SUPER);
                 } else {
-                        gtk_button_set_label(GTK_BUTTON(o->data_widget),
-                                write_binding_option(o,
-                                libevdev_event_code_get_name(EV_KEY, event->hardware_keycode - HW_OFFSET)).c_str());
+                        write_binding_option_check(o,
+                                libevdev_event_code_get_name(EV_KEY, event->hardware_keycode - HW_OFFSET));
                         gtk_window_close(GTK_WINDOW(widget));
                         if (o->plugin->wcm->screen_lock) {
                                 zwlr_input_inhibitor_v1_destroy(o->plugin->wcm->screen_lock);
@@ -1284,14 +1345,6 @@ key_grab_button_cb(GtkWidget *widget,
 }
 
 static void
-binding_cancel_cb(GtkWidget *widget,
-                  GdkEventButton *event,
-                  gpointer user_data)
-{
-        gtk_window_close(GTK_WINDOW(user_data));
-}
-
-static void
 write_option(GtkWidget *widget,
              gpointer user_data)
 {
@@ -1306,9 +1359,70 @@ write_option(GtkWidget *widget,
         option->set_value(gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
         wcm->wf_config->save_config(wcm->config_file);
 
-        gtk_button_set_label(GTK_BUTTON(o->data_widget), gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
+        gtk_button_set_label(GTK_BUTTON(o->data_widget), option->as_string().c_str());
 
-        gtk_window_close(GTK_WINDOW(o->edit_window));
+        gtk_window_close(GTK_WINDOW(o->confirm_window));
+        gtk_window_close(GTK_WINDOW(o->aux_window));
+}
+
+static void
+binding_edit_cancel_cb(GtkWidget *widget,
+                  GdkEventButton *event,
+                  gpointer user_data)
+{
+        gtk_window_close(GTK_WINDOW(user_data));
+}
+
+static void
+binding_edit_confirm_cb(GtkWidget *widget,
+                        GdkEventButton *event,
+                        gpointer user_data)
+{
+        write_option(widget, user_data);
+}
+
+static void
+write_option_check(GtkWidget *widget,
+                   gpointer user_data)
+{
+        char buf[256];
+        Option *o = (Option *) user_data;
+        char *text = (char *) gtk_entry_get_text(GTK_ENTRY(o->label_widget));
+
+        while (strlen(text) && *text == ' ')
+                text++;
+
+        if (!strncmp(text, "BTN", 3) || !strncmp(text, "KEY", 3))
+        {
+                GtkWidget *confirm_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+                gtk_window_set_title(GTK_WINDOW(confirm_window), "Confirm Binding");
+
+                GtkWidget *layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+                GtkWidget *button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+                GtkWidget *button_cancel = gtk_button_new_with_label("Cancel");
+                GtkWidget *button_ok = gtk_button_new_with_label("Ok");
+                sprintf(buf, "Attempting to bind \"%s\" without modifier.\nYou will be unable to use this key/button for anything else!\nAre you sure?", text);
+                GtkWidget *label = gtk_label_new(buf);
+                gtk_widget_set_margin_top(layout, 10);
+                gtk_widget_set_margin_bottom(layout, 10);
+                gtk_widget_set_margin_start(layout, 10);
+                gtk_widget_set_margin_end(layout, 10);
+                g_signal_connect(button_cancel, "button-release-event",
+                        G_CALLBACK(binding_edit_cancel_cb), confirm_window);
+                g_signal_connect(button_ok, "button-release-event",
+                        G_CALLBACK(binding_edit_confirm_cb), o);
+                gtk_box_pack_end(GTK_BOX(button_layout), button_ok, false, false, 0);
+                gtk_box_pack_end(GTK_BOX(button_layout), button_cancel, false, false, 0);
+                gtk_box_pack_start(GTK_BOX(layout), label, false, false, 0);
+                gtk_box_pack_end(GTK_BOX(layout), button_layout, false, true, 0);
+                gtk_container_add(GTK_CONTAINER(confirm_window), layout);
+                gtk_widget_show_all(confirm_window);
+                o->confirm_window = confirm_window;
+
+                return;
+        }
+
+        write_option(widget, user_data);
 }
 
 static void
@@ -1316,14 +1430,14 @@ binding_ok_cb(GtkWidget *widget,
               GdkEventButton *event,
               gpointer user_data)
 {
-        write_option(widget, user_data);
+        write_option_check(widget, user_data);
 }
 
 static void
 binding_entry_cb(GtkWidget *widget,
                  gpointer user_data)
 {
-        write_option(widget, user_data);
+        write_option_check(widget, user_data);
 }
 
 static void
@@ -1364,7 +1478,7 @@ binding_edit_button_cb(GtkWidget *widget,
         gtk_box_pack_end(GTK_BOX(layout), button_layout, false, true, 0);
         gtk_container_add(GTK_CONTAINER(edit_window), layout);
         o->label_widget = entry;
-        o->edit_window = edit_window;
+        o->aux_window = edit_window;
 
         gtk_widget_show_all(edit_window);
 }
