@@ -1610,9 +1610,9 @@ add_option_widget(GtkWidget *widget, Option *o)
                         g_signal_connect(key_grab_button, "button-release-event",
                                         G_CALLBACK(key_grab_button_cb), o);
                         o->data_widget = key_grab_button;
-                        gtk_box_pack_end(GTK_BOX(option_layout), edit_button, false, true, 0);
+                        gtk_box_pack_end(GTK_BOX(option_layout), edit_button, false, false, 0);
                         gtk_widget_set_margin_start(edit_button, 10);
-                        gtk_box_pack_end(GTK_BOX(option_layout), key_grab_button, false, true, 0);
+                        gtk_box_pack_end(GTK_BOX(option_layout), key_grab_button, true, true, 0);
                         gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
                 }
                         break;
