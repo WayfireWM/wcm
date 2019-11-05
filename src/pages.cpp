@@ -841,9 +841,15 @@ binding_cancel_cb(GtkWidget *widget,
 {
         Option *o = (Option *) user_data;
 
-        gtk_window_close(GTK_WINDOW(o->confirm_window));
+        if (o->confirm_window) {
+                gtk_window_close(GTK_WINDOW(o->confirm_window));
+                o->confirm_window = NULL;
+        }
 
-        free(o->binding);
+        if (o->binding) {
+                free(o->binding);
+                o->binding = NULL;
+        }
 }
 
 static void
@@ -855,9 +861,15 @@ binding_confirm_cb(GtkWidget *widget,
 
         write_binding_option(o, o->binding);
 
-        gtk_window_close(GTK_WINDOW(o->confirm_window));
+        if (o->confirm_window) {
+                gtk_window_close(GTK_WINDOW(o->confirm_window));
+                o->confirm_window = NULL;
+        }
 
-        free(o->binding);
+        if (o->binding) {
+                free(o->binding);
+                o->binding = NULL;
+        }
 }
 
 static void
@@ -868,8 +880,11 @@ write_binding_option_check(Option *o, std::string name)
         if (!o->plugin->wcm->screen_lock)
                 return;
 
-	if (o->mod_mask)
-                return write_binding_option(o, name);
+	if (o->mod_mask) {
+                o->confirm_window = NULL;
+                write_binding_option(o, name);
+                return;
+        }
 
         GtkWidget *confirm_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
         gtk_window_set_title(GTK_WINDOW(confirm_window), "Confirm Binding");
@@ -1113,18 +1128,28 @@ write_option(GtkWidget *widget,
         Option *o = (Option *) user_data;
         WCM *wcm = o->plugin->wcm;
         wayfire_config_section *section;
+        std::string option_name, value;
         wf_option option;
+        int active;
 
         section = wcm->wf_config->get_section(o->plugin->name);
-        option = section->get_option(o->name, "");
+
+        if (o->command) {
+                active = gtk_combo_box_get_active(GTK_COMBO_BOX(o->command_combo));
+                option_name = get_command_from_index(o->name, section, active);
+                option = section->get_option(option_name, "");
+        } else {
+                option = section->get_option(o->name, "");
+        }
 
         option->set_value(gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
+        gtk_button_set_label(GTK_BUTTON(o->data_widget), option->as_string().c_str());
         wcm->wf_config->save_config(wcm->config_file);
 
-        gtk_button_set_label(GTK_BUTTON(o->data_widget), option->as_string().c_str());
-
-        if (o->confirm_window)
+        if (o->confirm_window) {
                 gtk_window_close(GTK_WINDOW(o->confirm_window));
+                o->confirm_window = NULL;
+        }
         gtk_window_close(GTK_WINDOW(o->aux_window));
 }
 
@@ -1141,12 +1166,7 @@ binding_edit_confirm_cb(GtkWidget *widget,
                         GdkEventButton *event,
                         gpointer user_data)
 {
-        Option *o = (Option *) user_data;
-
-        if (o->command)
-                set_command_combo_box_option_cb(widget, user_data);
-        else
-                write_option(widget, user_data);
+        write_option(widget, user_data);
 }
 
 static void
@@ -1235,7 +1255,7 @@ binding_edit_button_cb(GtkWidget *widget,
         gtk_widget_set_margin_start(layout, 10);
         gtk_widget_set_margin_end(layout, 10);
         g_signal_connect(button_cancel, "button-release-event",
-                G_CALLBACK(binding_cancel_cb), edit_window);
+                G_CALLBACK(binding_edit_cancel_cb), edit_window);
         g_signal_connect(button_ok, "button-release-event",
                 G_CALLBACK(binding_ok_cb), o);
         g_signal_connect(entry, "activate",
@@ -1313,6 +1333,7 @@ setup_command_list(GtkWidget *widget, Option *o)
                 for (size_t j = 0; j < 2; j++) {
                         Option *dyn_opt = new Option();
                         dyn_opt->command = true;
+                        dyn_opt->binding = NULL;
                         option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
                         std::string label_text, opt_value;
                         if (j == 0) {
@@ -1346,7 +1367,6 @@ setup_command_list(GtkWidget *widget, Option *o)
                                 GtkWidget *key_grab_button = gtk_button_new_with_label(opt_value.c_str());
                                 g_signal_connect(key_grab_button, "button-release-event",
                                                 G_CALLBACK(key_grab_button_cb), dyn_opt);
-                                gtk_box_pack_end(GTK_BOX(option_layout), edit_button, false, true, 0);
                                 gtk_widget_set_margin_start(edit_button, 10);
                                 gtk_widget_set_margin_end(edit_button, 10);
                                 g_signal_connect(combo_box, "changed",
