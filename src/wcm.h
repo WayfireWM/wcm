@@ -96,13 +96,13 @@ class Option
         opt_data default_value;
         var_data data;
         Option *parent;
+        bool command;
         GtkWidget *widget;
         GtkWidget *data_widget;
         GtkWidget *label_widget;
         GtkWidget *aux_window;
         GtkWidget *confirm_window;
         GtkWidget *command_combo;
-        GtkWidget *binding_entry;
         GtkWidget *command_expander;
         std::vector<Option *> options;
         std::vector<LabeledInt *> int_labels;

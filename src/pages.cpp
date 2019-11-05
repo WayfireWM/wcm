@@ -717,7 +717,7 @@ get_command_from_index(std::string command,
 
 static void
 set_command_combo_box_option_cb(GtkWidget *widget,
-                            gpointer user_data)
+                                gpointer user_data)
 {
         Option *o = (Option *) user_data;
         WCM *wcm = o->plugin->wcm;
@@ -730,45 +730,16 @@ set_command_combo_box_option_cb(GtkWidget *widget,
         active = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
         option_name = get_command_from_index(o->name, section, active);
         option = section->get_option(option_name, "");
-        option->set_value(gtk_entry_get_text(GTK_ENTRY(o->binding_entry)));
+        option->set_value(gtk_button_get_label(GTK_BUTTON(o->data_widget)));
         wcm->wf_config->save_config(wcm->config_file);
 }
 
 static gboolean
 command_combo_box_focus_out_cb(GtkWidget *widget,
-                           GdkEventButton *event,
-                           gpointer user_data)
+                               GdkEventButton *event,
+                               gpointer user_data)
 {
         set_command_combo_box_option_cb(widget, user_data);
-
-        return GDK_EVENT_PROPAGATE;
-}
-
-static void
-set_command_string_option_cb(GtkWidget *widget,
-                     gpointer user_data)
-{
-        Option *o = (Option *) user_data;
-        WCM *wcm = o->plugin->wcm;
-        wayfire_config_section *section;
-        std::string option_name;
-        wf_option option;
-        int active;
-
-        section = wcm->wf_config->get_section(o->plugin->name);
-        active = gtk_combo_box_get_active(GTK_COMBO_BOX(o->command_combo));
-        option_name = get_command_from_index(o->name, section, active);
-        option = section->get_option(option_name, "");
-        option->set_value(gtk_entry_get_text(GTK_ENTRY(widget)));
-        wcm->wf_config->save_config(wcm->config_file);
-}
-
-static gboolean
-entry_command_focus_out_cb(GtkWidget *widget,
-                   GdkEventButton *event,
-                   gpointer user_data)
-{
-        set_command_string_option_cb(widget, user_data);
 
         return GDK_EVENT_PROPAGATE;
 }
@@ -818,215 +789,6 @@ main_panel_configure_cb(GtkWidget *widget,
         }
 
         return false;
-}
-
-static void
-setup_command_list(GtkWidget *widget, Option *o)
-{
-        WCM *wcm = o->plugin->wcm;
-        wayfire_config_section *section;
-        GtkWidget *option_layout, *combo_box, *label, *entry, *remove_button, *add_button, *add_button_layout;
-        GtkWidget *list_add_image = gtk_image_new_from_icon_name("list-add", GTK_ICON_SIZE_BUTTON);
-        GtkWidget *list_remove_image;
-        wf_option option;
-
-        section = wcm->wf_config->get_section(o->plugin->name);
-        std::vector<std::string> command_names;
-        const std::string exec_prefix = "command_";
-        for (auto command : section->options)
-        {
-                if (begins_with(command->name, exec_prefix))
-                        command_names.push_back(command->name.substr(exec_prefix.length()));
-        }
-        for (size_t i = 0; i < o->options.size(); i++) {
-                Option *opt = o->options[i];
-                free(opt->name);
-                free(opt->default_value.s);
-                delete opt;
-        }
-        o->options.clear();
-        for (size_t i = 0; i < command_names.size(); i++) {
-                auto command = exec_prefix + command_names[i];
-                auto regular_binding_name = "binding_" + command_names[i];
-                auto repeat_binding_name = "repeatable_binding_" + command_names[i];
-                auto always_binding_name = "always_binding_" + command_names[i];
-
-                auto executable = section->get_option(command, "")->as_string();
-                auto regular_opt = section->get_option(regular_binding_name, "")->as_string();
-                auto repeatable_opt = section->get_option(repeat_binding_name, "")->as_string();
-                auto always_opt = section->get_option(always_binding_name, "")->as_string();
-                GtkWidget *frame = gtk_frame_new(NULL);
-                GtkWidget *expander = gtk_expander_new((std::string("Command ") + command_names[i] + ": " + executable).c_str());
-                GtkWidget *expander_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
-                GtkWidget *options_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-                option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-                combo_box = gtk_combo_box_text_new();
-                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Regular");
-                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Repeat");
-                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Always");
-                if (!always_opt.empty())
-                    gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 2);
-                else if (!repeatable_opt.empty())
-                    gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 1);
-                else
-                    gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 0);
-                label = gtk_label_new("Type");
-                gtk_widget_set_margin_start(label, 10);
-                gtk_widget_set_margin_end(label, 10);
-                gtk_widget_set_size_request(label, 200, 1);
-                gtk_label_set_xalign(GTK_LABEL(label), 0);
-                gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
-                gtk_box_pack_start(GTK_BOX(option_layout), combo_box, true, true, 0);
-                gtk_box_pack_start(GTK_BOX(options_layout), option_layout, true, true, 0);
-                for (size_t j = 0; j < 2; j++) {
-                        Option *dyn_opt = new Option();
-                        option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-                        std::string label_text, opt_value;
-                        if (j == 0) {
-                                dyn_opt->name = strdup(regular_binding_name.c_str());
-                                label_text = std::string("Binding");
-                                opt_value = regular_opt;
-                        } else if (j == 1) {
-                                dyn_opt->name = strdup(command.c_str());
-                                label_text = std::string("Command");
-                                opt_value = executable;
-                        }
-                        if (std::string(o->default_value.s) == "string") {
-                                dyn_opt->type = OPTION_TYPE_STRING;
-                        } else {
-                                continue;
-                        }
-                        o->widget = dyn_opt->widget = widget;
-                        dyn_opt->parent = o;
-                        dyn_opt->default_value.s = strdup(label_text.c_str());
-                        dyn_opt->plugin = o->plugin;
-                        label = gtk_label_new(label_text.c_str());
-                        gtk_widget_set_margin_start(label, 10);
-                        gtk_widget_set_margin_end(label, 10);
-                        gtk_widget_set_size_request(label, 200, 1);
-                        gtk_label_set_xalign(GTK_LABEL(label), 0);
-                        entry = gtk_entry_new();
-                        gtk_entry_set_text(GTK_ENTRY(entry), opt_value.c_str());
-                        o->data_widget = entry;
-                        if (j == 0) {
-                            g_signal_connect(entry, "activate",
-                                            G_CALLBACK(set_command_string_option_cb), dyn_opt);
-                            g_signal_connect(entry, "focus-out-event",
-                                            G_CALLBACK(entry_command_focus_out_cb), dyn_opt);
-                            g_signal_connect(combo_box, "changed",
-                                            G_CALLBACK(set_command_combo_box_option_cb), dyn_opt);
-                            g_signal_connect(combo_box, "focus-out-event",
-                                            G_CALLBACK(command_combo_box_focus_out_cb), dyn_opt);
-                            dyn_opt->command_combo = combo_box;
-                            dyn_opt->binding_entry = entry;
-                        } else {
-                            g_signal_connect(entry, "activate",
-                                            G_CALLBACK(set_binding_string_option_cb), dyn_opt);
-                            g_signal_connect(entry, "focus-out-event",
-                                            G_CALLBACK(binding_entry_focus_out_cb), dyn_opt);
-                            dyn_opt->command_expander = expander;
-                        }
-                        if (j == 1) {
-                                remove_button = gtk_button_new();
-                                gtk_widget_set_margin_start(remove_button, 10);
-                                gtk_widget_set_margin_end(remove_button, 10);
-                                gtk_widget_set_tooltip_text(remove_button, "Remove from list");
-                                g_signal_connect(remove_button, "button-release-event",
-                                                G_CALLBACK(remove_command_item_button_cb), dyn_opt);
-                                list_remove_image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON);
-                                gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
-                                gtk_box_pack_end(GTK_BOX(option_layout), remove_button, false, false, 0);
-                        }
-                        gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
-                        gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
-                        gtk_box_pack_start(GTK_BOX(options_layout), option_layout, true, true, 0);
-                        o->options.push_back(dyn_opt);
-                }
-                gtk_container_add(GTK_CONTAINER(expander), options_layout);
-                gtk_container_add(GTK_CONTAINER(frame), expander);
-                gtk_container_add(GTK_CONTAINER(expander_layout), frame);
-                if (executable == std::string("<command>") || regular_opt == std::string("<binding>"))
-                        gtk_expander_set_expanded(GTK_EXPANDER(expander), true);
-                gtk_box_pack_start(GTK_BOX(widget), expander_layout, false, true, 0);
-        }
-        add_button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        add_button = gtk_button_new();
-        gtk_widget_set_margin_start(add_button, 10);
-        gtk_widget_set_margin_end(add_button, 10);
-        gtk_widget_set_tooltip_text(add_button, "Add new command");
-        g_signal_connect(add_button, "button-release-event",
-                        G_CALLBACK(add_command_item_button_cb), o);
-        gtk_button_set_image(GTK_BUTTON(add_button), list_add_image);
-        gtk_box_pack_end(GTK_BOX(add_button_layout), add_button, false, false, 0);
-        gtk_box_pack_end(GTK_BOX(widget), add_button_layout, false, true, 0);
-        gtk_widget_show_all(widget);
-}
-
-static void
-setup_autostart_list(GtkWidget *widget, Option *o)
-{
-        WCM *wcm = o->plugin->wcm;
-        wayfire_config_section *section;
-        GtkWidget *option_layout, *entry, *remove_button, *add_button, *add_button_layout;
-        GtkWidget *list_add_image = gtk_image_new_from_icon_name("list-add", GTK_ICON_SIZE_BUTTON);
-        GtkWidget *list_remove_image;
-        section = wcm->wf_config->get_section(o->plugin->name);
-        std::vector<std::string> autostart_names;
-        for (auto e : section->options)
-                autostart_names.push_back(e->name);
-        for (size_t i = 0; i < o->options.size(); i++) {
-                Option *opt = o->options[i];
-                free(opt->name);
-                free(opt->default_value.s);
-                delete opt;
-        }
-        o->options.clear();
-        for (size_t i = 0; i < autostart_names.size(); i++) {
-                auto e = autostart_names[i];
-                auto executable = section->get_option(e, "")->as_string();
-                Option *dyn_opt = new Option();
-                option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-                dyn_opt->name = strdup(e.c_str());
-                if (std::string(o->default_value.s) == "string") {
-                        dyn_opt->type = OPTION_TYPE_STRING;
-                } else {
-                        continue;
-                }
-                o->widget = dyn_opt->widget = widget;
-                dyn_opt->parent = o;
-                dyn_opt->default_value.s = strdup(executable.c_str());
-                dyn_opt->plugin = o->plugin;
-                entry = gtk_entry_new();
-                gtk_entry_set_text(GTK_ENTRY(entry), executable.c_str());
-                o->data_widget = entry;
-                g_signal_connect(entry, "activate",
-                                G_CALLBACK(set_string_option_cb), dyn_opt);
-                g_signal_connect(entry, "focus-out-event",
-                                G_CALLBACK(entry_focus_out_cb), dyn_opt);
-                remove_button = gtk_button_new();
-                gtk_widget_set_margin_start(remove_button, 10);
-                gtk_widget_set_margin_end(remove_button, 10);
-                gtk_widget_set_tooltip_text(remove_button, "Remove from list");
-                g_signal_connect(remove_button, "button-release-event",
-                                G_CALLBACK(remove_autostart_item_button_cb), dyn_opt);
-                list_remove_image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON);
-                gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
-                gtk_box_pack_end(GTK_BOX(option_layout), remove_button, false, false, 0);
-                gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
-                gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
-                o->options.push_back(dyn_opt);
-        }
-        add_button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        add_button = gtk_button_new();
-        gtk_widget_set_margin_start(add_button, 10);
-        gtk_widget_set_margin_end(add_button, 10);
-        gtk_widget_set_tooltip_text(add_button, "Add new command");
-        g_signal_connect(add_button, "button-release-event",
-                        G_CALLBACK(add_autostart_item_button_cb), o);
-        gtk_button_set_image(GTK_BUTTON(add_button), list_add_image);
-        gtk_box_pack_end(GTK_BOX(add_button_layout), add_button, false, false, 0);
-        gtk_box_pack_end(GTK_BOX(widget), add_button_layout, false, true, 0);
-        gtk_widget_show_all(widget);
 }
 
 static void
@@ -1361,7 +1123,8 @@ write_option(GtkWidget *widget,
 
         gtk_button_set_label(GTK_BUTTON(o->data_widget), option->as_string().c_str());
 
-        gtk_window_close(GTK_WINDOW(o->confirm_window));
+        if (o->confirm_window)
+                gtk_window_close(GTK_WINDOW(o->confirm_window));
         gtk_window_close(GTK_WINDOW(o->aux_window));
 }
 
@@ -1378,7 +1141,12 @@ binding_edit_confirm_cb(GtkWidget *widget,
                         GdkEventButton *event,
                         gpointer user_data)
 {
-        write_option(widget, user_data);
+        Option *o = (Option *) user_data;
+
+        if (o->command)
+                set_command_combo_box_option_cb(widget, user_data);
+        else
+                write_option(widget, user_data);
 }
 
 static void
@@ -1422,6 +1190,7 @@ write_option_check(GtkWidget *widget,
                 return;
         }
 
+        o->confirm_window = NULL;
         write_option(widget, user_data);
 }
 
@@ -1481,6 +1250,221 @@ binding_edit_button_cb(GtkWidget *widget,
         o->aux_window = edit_window;
 
         gtk_widget_show_all(edit_window);
+}
+
+static void
+setup_command_list(GtkWidget *widget, Option *o)
+{
+        WCM *wcm = o->plugin->wcm;
+        wayfire_config_section *section;
+        GtkWidget *option_layout, *combo_box, *label, *entry, *remove_button, *add_button, *add_button_layout;
+        GtkWidget *list_add_image = gtk_image_new_from_icon_name("list-add", GTK_ICON_SIZE_BUTTON);
+        GtkWidget *list_remove_image;
+        wf_option option;
+
+        section = wcm->wf_config->get_section(o->plugin->name);
+        std::vector<std::string> command_names;
+        const std::string exec_prefix = "command_";
+        for (auto command : section->options)
+        {
+                if (begins_with(command->name, exec_prefix))
+                        command_names.push_back(command->name.substr(exec_prefix.length()));
+        }
+        for (size_t i = 0; i < o->options.size(); i++) {
+                Option *opt = o->options[i];
+                free(opt->name);
+                free(opt->default_value.s);
+                delete opt;
+        }
+        o->options.clear();
+        for (size_t i = 0; i < command_names.size(); i++) {
+                auto command = exec_prefix + command_names[i];
+                auto regular_binding_name = "binding_" + command_names[i];
+                auto repeat_binding_name = "repeatable_binding_" + command_names[i];
+                auto always_binding_name = "always_binding_" + command_names[i];
+
+                auto executable = section->get_option(command, "")->as_string();
+                auto regular_opt = section->get_option(regular_binding_name, "")->as_string();
+                auto repeatable_opt = section->get_option(repeat_binding_name, "")->as_string();
+                auto always_opt = section->get_option(always_binding_name, "")->as_string();
+                GtkWidget *frame = gtk_frame_new(NULL);
+                GtkWidget *expander = gtk_expander_new((std::string("Command ") + command_names[i] + ": " + executable).c_str());
+                GtkWidget *expander_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+                GtkWidget *options_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+                option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+                combo_box = gtk_combo_box_text_new();
+                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Regular");
+                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Repeat");
+                gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Always");
+                if (!always_opt.empty())
+                    gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 2);
+                else if (!repeatable_opt.empty())
+                    gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 1);
+                else
+                    gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 0);
+                label = gtk_label_new("Type");
+                gtk_widget_set_margin_start(label, 10);
+                gtk_widget_set_margin_end(label, 10);
+                gtk_widget_set_size_request(label, 200, 1);
+                gtk_label_set_xalign(GTK_LABEL(label), 0);
+                gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
+                gtk_box_pack_start(GTK_BOX(option_layout), combo_box, true, true, 0);
+                gtk_box_pack_start(GTK_BOX(options_layout), option_layout, true, true, 0);
+                for (size_t j = 0; j < 2; j++) {
+                        Option *dyn_opt = new Option();
+                        dyn_opt->command = true;
+                        option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+                        std::string label_text, opt_value;
+                        if (j == 0) {
+                                dyn_opt->name = strdup(regular_binding_name.c_str());
+                                label_text = std::string("Binding");
+                                opt_value = regular_opt;
+                        } else if (j == 1) {
+                                dyn_opt->name = strdup(command.c_str());
+                                label_text = std::string("Command");
+                                opt_value = executable;
+                        }
+                        if (std::string(o->default_value.s) == "string") {
+                                dyn_opt->type = OPTION_TYPE_STRING;
+                        } else {
+                                continue;
+                        }
+                        o->widget = dyn_opt->widget = widget;
+                        dyn_opt->parent = o;
+                        dyn_opt->default_value.s = strdup(label_text.c_str());
+                        dyn_opt->plugin = o->plugin;
+                        label = gtk_label_new(label_text.c_str());
+                        gtk_widget_set_margin_start(label, 10);
+                        gtk_widget_set_margin_end(label, 10);
+                        gtk_widget_set_size_request(label, 200, 1);
+                        gtk_label_set_xalign(GTK_LABEL(label), 0);
+                        gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
+                        if (j == 0) {
+                                GtkWidget *edit_button = gtk_button_new_from_icon_name("gtk-edit", GTK_ICON_SIZE_BUTTON);
+                                g_signal_connect(edit_button, "button-release-event",
+                                                G_CALLBACK(binding_edit_button_cb), dyn_opt);
+                                GtkWidget *key_grab_button = gtk_button_new_with_label(opt_value.c_str());
+                                g_signal_connect(key_grab_button, "button-release-event",
+                                                G_CALLBACK(key_grab_button_cb), dyn_opt);
+                                gtk_box_pack_end(GTK_BOX(option_layout), edit_button, false, true, 0);
+                                gtk_widget_set_margin_start(edit_button, 10);
+                                gtk_widget_set_margin_end(edit_button, 10);
+                                g_signal_connect(combo_box, "changed",
+                                                G_CALLBACK(set_command_combo_box_option_cb), dyn_opt);
+                                g_signal_connect(combo_box, "focus-out-event",
+                                                G_CALLBACK(command_combo_box_focus_out_cb), dyn_opt);
+                                dyn_opt->command_combo = combo_box;
+                                dyn_opt->data_widget = key_grab_button;
+                                gtk_box_pack_end(GTK_BOX(option_layout), edit_button, false, false, 0);
+                                gtk_box_pack_end(GTK_BOX(option_layout), key_grab_button, false, false, 0);
+                        } else {
+                                entry = gtk_entry_new();
+                                gtk_entry_set_text(GTK_ENTRY(entry), opt_value.c_str());
+                                o->data_widget = entry;
+                                g_signal_connect(entry, "activate",
+                                                G_CALLBACK(set_binding_string_option_cb), dyn_opt);
+                                g_signal_connect(entry, "focus-out-event",
+                                                G_CALLBACK(binding_entry_focus_out_cb), dyn_opt);
+                                dyn_opt->command_expander = expander;
+                                remove_button = gtk_button_new();
+                                gtk_widget_set_margin_start(remove_button, 10);
+                                gtk_widget_set_margin_end(remove_button, 10);
+                                gtk_widget_set_tooltip_text(remove_button, "Remove from list");
+                                g_signal_connect(remove_button, "button-release-event",
+                                                G_CALLBACK(remove_command_item_button_cb), dyn_opt);
+                                list_remove_image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON);
+                                gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
+                                gtk_box_pack_end(GTK_BOX(option_layout), remove_button, false, false, 0);
+                                gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
+                        }
+                        gtk_box_pack_start(GTK_BOX(options_layout), option_layout, true, true, 0);
+                        o->options.push_back(dyn_opt);
+                }
+                gtk_container_add(GTK_CONTAINER(expander), options_layout);
+                gtk_container_add(GTK_CONTAINER(frame), expander);
+                gtk_container_add(GTK_CONTAINER(expander_layout), frame);
+                if (executable == std::string("<command>") || regular_opt == std::string("<binding>"))
+                        gtk_expander_set_expanded(GTK_EXPANDER(expander), true);
+                gtk_box_pack_start(GTK_BOX(widget), expander_layout, false, true, 0);
+        }
+        add_button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        add_button = gtk_button_new();
+        gtk_widget_set_margin_start(add_button, 10);
+        gtk_widget_set_margin_end(add_button, 10);
+        gtk_widget_set_tooltip_text(add_button, "Add new command");
+        g_signal_connect(add_button, "button-release-event",
+                        G_CALLBACK(add_command_item_button_cb), o);
+        gtk_button_set_image(GTK_BUTTON(add_button), list_add_image);
+        gtk_box_pack_end(GTK_BOX(add_button_layout), add_button, false, false, 0);
+        gtk_box_pack_end(GTK_BOX(widget), add_button_layout, false, true, 0);
+        gtk_widget_show_all(widget);
+}
+
+static void
+setup_autostart_list(GtkWidget *widget, Option *o)
+{
+        WCM *wcm = o->plugin->wcm;
+        wayfire_config_section *section;
+        GtkWidget *option_layout, *entry, *remove_button, *add_button, *add_button_layout;
+        GtkWidget *list_add_image = gtk_image_new_from_icon_name("list-add", GTK_ICON_SIZE_BUTTON);
+        GtkWidget *list_remove_image;
+        section = wcm->wf_config->get_section(o->plugin->name);
+        std::vector<std::string> autostart_names;
+        for (auto e : section->options)
+                autostart_names.push_back(e->name);
+        for (size_t i = 0; i < o->options.size(); i++) {
+                Option *opt = o->options[i];
+                free(opt->name);
+                free(opt->default_value.s);
+                delete opt;
+        }
+        o->options.clear();
+        for (size_t i = 0; i < autostart_names.size(); i++) {
+                auto e = autostart_names[i];
+                auto executable = section->get_option(e, "")->as_string();
+                Option *dyn_opt = new Option();
+                option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+                dyn_opt->name = strdup(e.c_str());
+                if (std::string(o->default_value.s) == "string") {
+                        dyn_opt->type = OPTION_TYPE_STRING;
+                } else {
+                        continue;
+                }
+                o->widget = dyn_opt->widget = widget;
+                dyn_opt->parent = o;
+                dyn_opt->default_value.s = strdup(executable.c_str());
+                dyn_opt->plugin = o->plugin;
+                entry = gtk_entry_new();
+                gtk_entry_set_text(GTK_ENTRY(entry), executable.c_str());
+                o->data_widget = entry;
+                g_signal_connect(entry, "activate",
+                                G_CALLBACK(set_string_option_cb), dyn_opt);
+                g_signal_connect(entry, "focus-out-event",
+                                G_CALLBACK(entry_focus_out_cb), dyn_opt);
+                remove_button = gtk_button_new();
+                gtk_widget_set_margin_start(remove_button, 10);
+                gtk_widget_set_margin_end(remove_button, 10);
+                gtk_widget_set_tooltip_text(remove_button, "Remove from list");
+                g_signal_connect(remove_button, "button-release-event",
+                                G_CALLBACK(remove_autostart_item_button_cb), dyn_opt);
+                list_remove_image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON);
+                gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
+                gtk_box_pack_end(GTK_BOX(option_layout), remove_button, false, false, 0);
+                gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
+                gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
+                o->options.push_back(dyn_opt);
+        }
+        add_button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        add_button = gtk_button_new();
+        gtk_widget_set_margin_start(add_button, 10);
+        gtk_widget_set_margin_end(add_button, 10);
+        gtk_widget_set_tooltip_text(add_button, "Add new command");
+        g_signal_connect(add_button, "button-release-event",
+                        G_CALLBACK(add_autostart_item_button_cb), o);
+        gtk_button_set_image(GTK_BUTTON(add_button), list_add_image);
+        gtk_box_pack_end(GTK_BOX(add_button_layout), add_button, false, false, 0);
+        gtk_box_pack_end(GTK_BOX(widget), add_button_layout, false, true, 0);
+        gtk_widget_show_all(widget);
 }
 
 static void
