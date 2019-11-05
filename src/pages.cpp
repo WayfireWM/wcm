@@ -1327,6 +1327,7 @@ setup_command_list(GtkWidget *widget, Option *o)
                 gtk_widget_set_margin_end(label, 10);
                 gtk_widget_set_size_request(label, 200, 1);
                 gtk_label_set_xalign(GTK_LABEL(label), 0);
+                gtk_widget_set_margin_end(combo_box, 10);
                 gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
                 gtk_box_pack_start(GTK_BOX(option_layout), combo_box, true, true, 0);
                 gtk_box_pack_start(GTK_BOX(options_layout), option_layout, true, true, 0);
@@ -1375,8 +1376,8 @@ setup_command_list(GtkWidget *widget, Option *o)
                                                 G_CALLBACK(command_combo_box_focus_out_cb), dyn_opt);
                                 dyn_opt->command_combo = combo_box;
                                 dyn_opt->data_widget = key_grab_button;
+                                gtk_box_pack_start(GTK_BOX(option_layout), key_grab_button, true, true, 0);
                                 gtk_box_pack_end(GTK_BOX(option_layout), edit_button, false, false, 0);
-                                gtk_box_pack_end(GTK_BOX(option_layout), key_grab_button, false, false, 0);
                         } else {
                                 entry = gtk_entry_new();
                                 gtk_entry_set_text(GTK_ENTRY(entry), opt_value.c_str());
@@ -1400,6 +1401,7 @@ setup_command_list(GtkWidget *widget, Option *o)
                         gtk_box_pack_start(GTK_BOX(options_layout), option_layout, true, true, 0);
                         o->options.push_back(dyn_opt);
                 }
+                gtk_box_set_spacing(GTK_BOX(options_layout), 10);
                 gtk_container_add(GTK_CONTAINER(expander), options_layout);
                 gtk_container_add(GTK_CONTAINER(frame), expander);
                 gtk_container_add(GTK_CONTAINER(expander_layout), frame);
@@ -1409,6 +1411,7 @@ setup_command_list(GtkWidget *widget, Option *o)
         }
         add_button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         add_button = gtk_button_new();
+        gtk_widget_set_margin_bottom(add_button, 10);
         gtk_widget_set_margin_start(add_button, 10);
         gtk_widget_set_margin_end(add_button, 10);
         gtk_widget_set_tooltip_text(add_button, "Add new command");
@@ -1476,6 +1479,7 @@ setup_autostart_list(GtkWidget *widget, Option *o)
         }
         add_button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         add_button = gtk_button_new();
+        gtk_widget_set_margin_bottom(add_button, 10);
         gtk_widget_set_margin_start(add_button, 10);
         gtk_widget_set_margin_end(add_button, 10);
         gtk_widget_set_tooltip_text(add_button, "Add new command");
