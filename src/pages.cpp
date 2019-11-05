@@ -880,7 +880,7 @@ write_binding_option_check(Option *o, std::string name)
         if (!o->plugin->wcm->screen_lock)
                 return;
 
-	if (o->mod_mask) {
+        if (o->mod_mask) {
                 o->confirm_window = NULL;
                 write_binding_option(o, name);
                 return;
@@ -1363,6 +1363,7 @@ setup_command_list(GtkWidget *widget, Option *o)
                         gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
                         if (j == 0) {
                                 GtkWidget *edit_button = gtk_button_new_from_icon_name("gtk-edit", GTK_ICON_SIZE_BUTTON);
+                                gtk_widget_set_tooltip_text(edit_button, "Edit binding");
                                 g_signal_connect(edit_button, "button-release-event",
                                                 G_CALLBACK(binding_edit_button_cb), dyn_opt);
                                 GtkWidget *key_grab_button = gtk_button_new_with_label(opt_value.c_str());
@@ -1604,6 +1605,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 case OPTION_TYPE_KEY: {
                         option = section->get_option(o->name, o->default_value.s);
                         GtkWidget *edit_button = gtk_button_new_from_icon_name("gtk-edit", GTK_ICON_SIZE_BUTTON);
+                        gtk_widget_set_tooltip_text(edit_button, "Edit binding");
                         g_signal_connect(edit_button, "button-release-event",
                                         G_CALLBACK(binding_edit_button_cb), o);
                         GtkWidget *key_grab_button = gtk_button_new_with_label(option->as_string().c_str());
