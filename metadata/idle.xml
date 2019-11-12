@@ -7,9 +7,26 @@
 		<_short>Toggle</_short>
 		<default>&lt;super&gt; &lt;shift&gt; KEY_I</default>
 	</option>
+	<option name="screensaver_timeout" type="int">
+		<_short>Screensaver Timeout</_short>
+		<default>-1</default>
+	</option>
 	<option name="dpms_timeout" type="int">
 		<_short>DPMS Timeout</_short>
 		<default>-1</default>
+	</option>
+	<option name="cube_zoom_speed" type="int">
+		<_short>Cube Zoom Speed</_short>
+		<default>1000</default>
+	</option>
+	<option name="cube_rotate_speed" type="double">
+		<_short>Cube Rotate Speed</_short>
+		<default>0.001</default>
+		<precision>0.001</precision>
+	</option>
+	<option name="cube_max_zoom" type="double">
+		<_short>Cube Max Zoom</_short>
+		<default>1.2</default>
 	</option>
 	</plugin>
 </wayfire>
