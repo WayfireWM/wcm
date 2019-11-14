@@ -45,6 +45,57 @@ load_config_file(WCM *wcm)
         return 0;
 }
 
+static void registry_add_object(void *data, struct wl_registry *registry,
+    uint32_t name, const char *interface, uint32_t version)
+{
+        WCM *wcm = (WCM *) data;
+
+        if (strcmp(interface, zwlr_input_inhibit_manager_v1_interface.name) == 0)
+        {
+                wcm->inhibitor_manager = (zwlr_input_inhibit_manager_v1*) wl_registry_bind(
+                        registry, name, &zwlr_input_inhibit_manager_v1_interface, 1u);
+        }
+}
+
+static void registry_remove_object(void *data, struct wl_registry *registry, uint32_t name)
+{
+}
+
+static struct wl_registry_listener registry_listener =
+{
+        &registry_add_object,
+        &registry_remove_object
+};
+
+static bool
+init_input_inhibitor(WCM *wcm)
+{
+        struct wl_display *display = gdk_wayland_display_get_wl_display(gdk_display_get_default());
+        if (!display)
+        {
+                std::cerr << "Failed to acquire wl_display for input inhibitor" << std::endl;
+                return false;
+        }
+        struct wl_registry *registry = wl_display_get_registry(display);
+        if (!registry)
+        {
+                std::cerr << "Failed to acquire wl_registry for input inhibitor" << std::endl;
+                return false;
+        }
+
+        wl_registry_add_listener(registry, &registry_listener, wcm);
+        wl_display_dispatch(display);
+        wl_display_roundtrip(display);
+        if (!wcm->inhibitor_manager)
+        {
+                std::cerr << "Compositor does not support " <<
+                    "wlr_input_inhibit_manager_v1" << std::endl;
+                return false;
+        }
+
+        return true;
+}
+
 static void
 activate(GtkApplication* app,
          gpointer user_data)
@@ -65,6 +116,9 @@ activate(GtkApplication* app,
 
         gtk_window_set_title(GTK_WINDOW(window), "Wayfire Config Manager");
         gtk_widget_show_all(window);
+
+        if (!init_input_inhibitor(wcm))
+                std::cerr << "binding grabs will not work" << std::endl;
 }
 
 static int

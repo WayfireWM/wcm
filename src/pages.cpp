@@ -24,8 +24,6 @@
  */
 
 #include <libevdev/libevdev.h>
-#include <gdk/gdkwayland.h>
-#include <iostream>
 #include "wcm.h"
 
 static int num_button_columns;
@@ -1014,53 +1012,13 @@ grab_binding_key_cb(GtkWidget *widget,
         return false;
 }
 
-static void registry_add_object(void *data, struct wl_registry *registry,
-    uint32_t name, const char *interface, uint32_t version)
-{
-        WCM *wcm = (WCM *) data;
-
-        if (strcmp(interface, zwlr_input_inhibit_manager_v1_interface.name) == 0)
-        {
-                wcm->inhibitor_manager = (zwlr_input_inhibit_manager_v1*) wl_registry_bind(
-                        registry, name, &zwlr_input_inhibit_manager_v1_interface, 1u);
-        }
-}
-
-static void registry_remove_object(void *data, struct wl_registry *registry, uint32_t name)
-{
-}
-
-static struct wl_registry_listener registry_listener =
-{
-        &registry_add_object,
-        &registry_remove_object
-};
-
 static bool
 lock_input(WCM *wcm)
 {
-
-        struct wl_display *display = gdk_wayland_display_get_wl_display(gdk_display_get_default());
-        if (!display)
-        {
-            std::cerr << "display == NULL" << std::endl;
-            return false;
-        }
-        struct wl_registry *registry = wl_display_get_registry(display);
-        if (!registry)
-        {
-            std::cerr << "registry == NULL" << std::endl;
-            return false;
-        }
-
-        wl_registry_add_listener(registry, &registry_listener, wcm);
-        wl_display_dispatch(display);
-        wl_display_roundtrip(display);
-
         if (!wcm->inhibitor_manager)
         {
             std::cerr << "Compositor does not support " <<
-                " wlr_input_inhibit_manager_v1!" << std::endl;
+                "wlr_input_inhibit_manager_v1!" << std::endl;
             return false;
         }
 

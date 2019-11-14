@@ -24,10 +24,12 @@
  */
 
 #include <vector>
+#include <iostream>
 #include <algorithm>
 #include <string.h>
 #include <gtk/gtk.h>
 #include <config.hpp>
+#include <gdk/gdkwayland.h>
 #include <wlr-input-inhibitor-unstable-v1-client-protocol.h>
 
 enum option_type
