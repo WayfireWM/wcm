@@ -912,6 +912,17 @@ write_binding_option_check(Option *o, std::string name)
 }
 
 static void
+unlock_input(WCM *wcm)
+{
+        if (!wcm->screen_lock)
+                return;
+
+        zwlr_input_inhibitor_v1_destroy(wcm->screen_lock);
+        wl_display_flush(gdk_wayland_display_get_wl_display(gdk_display_get_default()));
+        wcm->screen_lock = NULL;
+}
+
+static void
 grab_binding_button_cb(GtkWidget *widget,
                        GdkEventButton *event,
                        gpointer user_data)
@@ -942,11 +953,7 @@ grab_binding_button_cb(GtkWidget *widget,
         }
 
         gtk_window_close(GTK_WINDOW(widget));
-        if (o->plugin->wcm->screen_lock) {
-                zwlr_input_inhibitor_v1_destroy(o->plugin->wcm->screen_lock);
-                o->plugin->wcm->screen_lock = NULL;
-                wl_display_flush(gdk_wayland_display_get_wl_display(gdk_display_get_default()));
-        }
+        unlock_input(o->plugin->wcm);
 }
 
 #define HW_OFFSET 8
@@ -972,11 +979,7 @@ grab_binding_key_cb(GtkWidget *widget,
                         write_binding_option_check(o,
                                 libevdev_event_code_get_name(EV_KEY, event->hardware_keycode - HW_OFFSET));
                         gtk_window_close(GTK_WINDOW(widget));
-                        if (o->plugin->wcm->screen_lock) {
-                                zwlr_input_inhibitor_v1_destroy(o->plugin->wcm->screen_lock);
-                                o->plugin->wcm->screen_lock = NULL;
-                                wl_display_flush(gdk_wayland_display_get_wl_display(gdk_display_get_default()));
-                        }
+                        unlock_input(o->plugin->wcm);
                 }
         }
 
@@ -1038,12 +1041,7 @@ window_deleted_cb(GtkWidget *widget,
 {
         Option *o = (Option *) user_data;
 
-        if (!o->plugin->wcm->screen_lock)
-                 return false;
-
-        zwlr_input_inhibitor_v1_destroy(o->plugin->wcm->screen_lock);
-        o->plugin->wcm->screen_lock = NULL;
-        wl_display_flush(gdk_wayland_display_get_wl_display(gdk_display_get_default()));
+        unlock_input(o->plugin->wcm);
 
         return false;
 }
