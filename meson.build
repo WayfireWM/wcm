@@ -1,6 +1,7 @@
 project('wcm', 'c', 'cpp', version : '0.3')
 
-add_global_arguments('-DCONFIG_FILE_PATH="' + get_option('config_file_path') + '"', language : 'cpp')
+add_global_arguments('-DWAYFIRE_CONFIG_FILE_PATH="' + get_option('wayfire_config_file_path') + '"', language : 'cpp')
+add_global_arguments('-DWF_SHELL_CONFIG_FILE_PATH="' + get_option('wf_shell_config_file_path') + '"', language : 'cpp')
 
 share_dir = join_paths(get_option('prefix'), 'share')
 wayfire_share_dir = join_paths(share_dir, 'wayfire')

@@ -1,1 +1,2 @@
-option('config_file_path', type : 'string', value : '~/.config/wayfire.ini', description : 'Full path of config file')
+option('wayfire_config_file_path', type : 'string', value : '~/.config/wayfire.ini', description : 'Full path of wayfire config file')
+option('wf_shell_config_file_path', type : 'string', value : '~/.config/wf-shell.ini', description : 'Full path of wf-shell config file')

@@ -56,6 +56,7 @@ create_option(xmlNode *cur_node, Plugin *p)
                 } else if (std::string((char *) prop) == "string") {
                         o->type = OPTION_TYPE_STRING;
                         o->default_value.s = strdup("");
+                        o->data.hints = (hint_type) 0;
                 } else if (std::string((char *) prop) == "button") {
                         o->type = OPTION_TYPE_BUTTON;
                         o->default_value.s = strdup("");
@@ -131,6 +132,17 @@ create_option(xmlNode *cur_node, Plugin *p)
                         if (o->type != OPTION_TYPE_DOUBLE)
                                 printf("WARN: [%s] precision defined for option type !double\n", p->name);
                         o->data.precision = atof((char *) node->children->content);
+                } else if (std::string((char *) node->name) == "hint") {
+                        if (!node->children)
+                                continue;
+                        if (o->type != OPTION_TYPE_STRING && o->type != OPTION_TYPE_DYNAMIC_LIST)
+                                printf("WARN: [%s] hint defined for option type !string\n", p->name);
+                        if (std::string((char *) node->children->content) == "file") {
+                                o->data.hints = (hint_type) (o->data.hints | HINT_FILE);
+			}
+                        if (std::string((char *) node->children->content) == "directory") {
+                                o->data.hints = (hint_type) (o->data.hints | HINT_DIRECTORY);
+			}
                 } else if (std::string((char *) node->name) == "desc") {
                         if (o->type != OPTION_TYPE_INT && o->type != OPTION_TYPE_STRING)
                                 printf("WARN: [%s] desc defined for option type !int && !string\n", p->name);
@@ -277,13 +289,21 @@ parse_xml_files(WCM *wcm, const char *dir_name)
 
                         root_element = xmlDocGetRootElement(doc);
 
-                        if (root_element->type == XML_ELEMENT_NODE && std::string((char *) root_element->name) == "wayfire") {
-                                printf("Loading plugin: %s\n", name);
+                        if (root_element->type == XML_ELEMENT_NODE &&
+                                (std::string((char *) root_element->name) == "wayfire" ||
+                                std::string((char *) root_element->name) == "wf-shell")) {
+                                printf("Loading %s plugin: %s\n", root_element->name, name);
                                 Plugin *p = new Plugin();
                                 p->category = strdup("Uncategorized");
                                 p->wcm = wcm;
                                 get_plugin_data(p, NULL, NULL, doc, root_element);
                                 wcm->plugins.push_back(p);
+                                if (std::string((char *) root_element->name) == "wayfire")
+                                        p->type = PLUGIN_TYPE_WAYFIRE;
+                                else if (std::string((char *) root_element->name) == "wf-shell")
+                                        p->type = PLUGIN_TYPE_WF_SHELL;
+                                else
+                                        p->type = PLUGIN_TYPE_NONE;
                         }
 
                         xmlFreeDoc(doc);

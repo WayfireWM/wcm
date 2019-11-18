@@ -32,6 +32,13 @@
 #include <gdk/gdkwayland.h>
 #include <wlr-input-inhibitor-unstable-v1-client-protocol.h>
 
+enum plugin_type
+{
+        PLUGIN_TYPE_NONE,
+        PLUGIN_TYPE_WAYFIRE,
+        PLUGIN_TYPE_WF_SHELL
+};
+
 enum option_type
 {
         OPTION_TYPE_INT,
@@ -52,6 +59,12 @@ enum mod_type
         MOD_TYPE_CONTROL = 1 << 1,
         MOD_TYPE_ALT     = 1 << 2,
         MOD_TYPE_SUPER   = 1 << 3
+};
+
+enum hint_type
+{
+        HINT_FILE      = 1,
+        HINT_DIRECTORY = 2
 };
 
 class LabeledInt
@@ -75,6 +88,7 @@ class var_data
         double min;
         double max;
         double precision;
+        hint_type hints;
 };
 
 union opt_data
@@ -103,6 +117,7 @@ class Option
         GtkWidget *data_widget;
         GtkWidget *label_widget;
         GtkWidget *aux_window;
+        GtkWidget *hinted_entry;
         GtkWidget *confirm_window;
         GtkWidget *command_combo;
         GtkWidget *command_expander;
@@ -120,6 +135,7 @@ class Plugin
         char *name;
         char *disp_name;
         char *category;
+        plugin_type type;
         int x, y;
         int enabled;
         GtkWidget *t1, *t2;
@@ -136,13 +152,15 @@ class WCM
         GtkWidget *scrolled_plugin_layout;
         std::vector<Plugin *> plugins;
         wayfire_config *wf_config;
-        const char *config_file;
+        wayfire_config *wf_shell_config;
+        const char *wayfire_config_file;
+        const char *wf_shell_config_file;
         zwlr_input_inhibitor_v1 *screen_lock;
         zwlr_input_inhibit_manager_v1 *inhibitor_manager;
 };
 
 int
-load_config_file(WCM *wcm);
+load_config_files(WCM *wcm);
 
 int
 parse_xml_files(WCM *wcm, const char *dir_name);

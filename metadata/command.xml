@@ -8,6 +8,7 @@
 	<option name="command" type="dynamic_list">
 		<_short>Command</_short>
 		<type>string</type>
+		<hint>file</hint>
 	</option>
 	</group>
 	</plugin>

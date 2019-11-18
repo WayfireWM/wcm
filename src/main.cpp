@@ -30,17 +30,21 @@
 #include "wcm.h"
 
 int
-load_config_file(WCM *wcm)
+load_config_files(WCM *wcm)
 {
         wordexp_t exp;
 
-        wordexp(CONFIG_FILE_PATH, &exp, 0);
-
-        wcm->config_file = strdup(exp.we_wordv[0]);
-
+        wordexp(WAYFIRE_CONFIG_FILE_PATH, &exp, 0);
+        wcm->wayfire_config_file = strdup(exp.we_wordv[0]);
         wordfree(&exp);
 
-        wcm->wf_config = new wayfire_config(wcm->config_file);
+        wcm->wf_config = new wayfire_config(wcm->wayfire_config_file);
+
+        wordexp(WF_SHELL_CONFIG_FILE_PATH, &exp, 0);
+        wcm->wf_shell_config_file = strdup(exp.we_wordv[0]);
+        wordfree(&exp);
+
+        wcm->wf_shell_config = new wayfire_config(wcm->wf_shell_config_file);
 
         return 0;
 }
@@ -171,7 +175,7 @@ main(int argc, char **argv)
 
         wcm = new WCM();
 
-        if (load_config_file(wcm))
+        if (load_config_files(wcm))
                 return -1;
 
         if (parse_xml_files(wcm, METADATADIR))

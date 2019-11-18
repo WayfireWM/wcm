@@ -30,12 +30,40 @@ static int num_button_columns;
 
 #define NUM_CATEGORIES 5
 
+static bool
+save_config(WCM* wcm, Plugin *p)
+{
+        if (p->type == PLUGIN_TYPE_WAYFIRE) {
+                wcm->wf_config->save_config(wcm->wayfire_config_file);
+                return true;
+        } else if (p->type == PLUGIN_TYPE_WF_SHELL) {
+                wcm->wf_shell_config->save_config(wcm->wf_shell_config_file);
+                return true;
+        }
+
+        return false;
+}
+
 static void
 reload_config(WCM *wcm)
 {
         delete wcm->wf_config;
+        delete wcm->wf_shell_config;
 
-        load_config_file(wcm);
+        load_config_files(wcm);
+}
+
+static wayfire_config_section *
+get_config_section(Plugin *p)
+{
+	WCM *wcm = p->wcm;
+        if (p->type == PLUGIN_TYPE_WAYFIRE) {
+                return wcm->wf_config->get_section(p->name);
+        } else if (p->type == PLUGIN_TYPE_WF_SHELL) {
+                return wcm->wf_shell_config->get_section(p->name);
+        }
+
+        return NULL;
 }
 
 static void
@@ -166,7 +194,7 @@ add_command_item_button_cb(GtkWidget *widget,
         size_t count = 0;
         size_t i = 0, j = 0;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
 
         for (auto c : section->options) {
                 if (begins_with(c->name, exec_prefix)) {
@@ -219,9 +247,9 @@ add_command_item_button_cb(GtkWidget *widget,
                 option->set_value("");
         }
 
-        wcm->wf_config->save_config(wcm->config_file);
+        wcm->wf_config->save_config(wcm->wayfire_config_file);
         reload_config(wcm);
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
 
         i = 0;
         for (auto command : command_names) {
@@ -236,7 +264,7 @@ add_command_item_button_cb(GtkWidget *widget,
                 i++;
         }
 
-        wcm->wf_config->save_config(wcm->config_file);
+        wcm->wf_config->save_config(wcm->wayfire_config_file);
         reload_config(wcm);
 
         children = gtk_container_get_children(GTK_CONTAINER(o->widget));
@@ -262,7 +290,7 @@ remove_command_item_button_cb(GtkWidget *widget,
         GtkWidget *top_spacer;
         GList *children, *iter;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         for (size_t i = 0; i < o->parent->options.size(); i++) {
                 Option *opt = o->parent->options[i];
                 if (!strcmp(opt->name, o->name)) {
@@ -280,7 +308,7 @@ remove_command_item_button_cb(GtkWidget *widget,
                 }
         }
 
-        wcm->wf_config->save_config(wcm->config_file);
+        wcm->wf_config->save_config(wcm->wayfire_config_file);
         reload_config(wcm);
 
         children = gtk_container_get_children(GTK_CONTAINER(o->widget));
@@ -311,7 +339,7 @@ add_autostart_item_button_cb(GtkWidget *widget,
         std::vector<std::string> values;
         size_t i = 0;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
 
         for (auto c : section->options) {
                 if (begins_with(c->name, prefix)) {
@@ -342,7 +370,7 @@ add_autostart_item_button_cb(GtkWidget *widget,
         option = section->get_option(name, "");
         option->set_value("<command>");
 
-        wcm->wf_config->save_config(wcm->config_file);
+        wcm->wf_config->save_config(wcm->wayfire_config_file);
 
         children = gtk_container_get_children(GTK_CONTAINER(o->widget));
         for(iter = children; iter != NULL; iter = g_list_next(iter))
@@ -367,7 +395,7 @@ remove_autostart_item_button_cb(GtkWidget *widget,
         GtkWidget *top_spacer;
         GList *children, *iter;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         for (size_t i = 0; i < o->parent->options.size(); i++) {
                 Option *opt = o->parent->options[i];
                 if (!strcmp(opt->name, o->name)) {
@@ -376,7 +404,7 @@ remove_autostart_item_button_cb(GtkWidget *widget,
                 }
         }
 
-        wcm->wf_config->save_config(wcm->config_file);
+        wcm->wf_config->save_config(wcm->wayfire_config_file);
         reload_config(wcm);
 
         children = gtk_container_get_children(GTK_CONTAINER(o->widget));
@@ -406,32 +434,32 @@ reset_button_cb(GtkWidget *widget,
                                 gtk_combo_box_set_active(GTK_COMBO_BOX(o->data_widget), o->default_value.i);
                         else
                                 gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.i);
-                        section = wcm->wf_config->get_section(o->plugin->name);
+                        section = get_config_section(o->plugin);
                         option = section->get_option(o->name, "");
                         option->set_value(o->default_value.i);
-                        wcm->wf_config->save_config(wcm->config_file);
+                        save_config(wcm, o->plugin);
                         break;
                 case OPTION_TYPE_BOOL:
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(o->data_widget), o->default_value.i);
-                        section = wcm->wf_config->get_section(o->plugin->name);
+                        section = get_config_section(o->plugin);
                         option = section->get_option(o->name, "");
                         option->set_value(o->default_value.i);
-                        wcm->wf_config->save_config(wcm->config_file);
+                        save_config(wcm, o->plugin);
                         break;
                 case OPTION_TYPE_DOUBLE:
                         gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.d);
-                        section = wcm->wf_config->get_section(o->plugin->name);
+                        section = get_config_section(o->plugin);
                         option = section->get_option(o->name, "");
                         option->set_value(o->default_value.d);
-                        wcm->wf_config->save_config(wcm->config_file);
+                        save_config(wcm, o->plugin);
                         break;
                 case OPTION_TYPE_BUTTON:
                 case OPTION_TYPE_KEY:
                         gtk_button_set_label(GTK_BUTTON(o->data_widget), o->default_value.s);
-                        section = wcm->wf_config->get_section(o->plugin->name);
+                        section = get_config_section(o->plugin);
                         option = section->get_option(o->name, "");
                         option->set_value(o->default_value.s);
-                        wcm->wf_config->save_config(wcm->config_file);
+                        save_config(wcm, o->plugin);
                         break;
                 case OPTION_TYPE_STRING:
                         if (o->str_labels.size()) {
@@ -447,20 +475,20 @@ reset_button_cb(GtkWidget *widget,
                         } else {
                                 gtk_entry_set_text(GTK_ENTRY(o->data_widget), o->default_value.s);
                         }
-                        section = wcm->wf_config->get_section(o->plugin->name);
+                        section = get_config_section(o->plugin);
                         option = section->get_option(o->name, "");
                         option->set_value(o->default_value.s);
-                        wcm->wf_config->save_config(wcm->config_file);
+                        save_config(wcm, o->plugin);
                         break;
                 case OPTION_TYPE_COLOR:
                         GdkRGBA color;
                         if (sscanf(o->default_value.s, "%lf %lf %lf %lf", &color.red, &color.green, &color.blue, &color.alpha) != 4)
                                 break;
                         gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(o->data_widget), &color);
-                        section = wcm->wf_config->get_section(o->plugin->name);
+                        section = get_config_section(o->plugin);
                         option = section->get_option(o->name, "");
                         option->set_value(o->default_value.s);
-                        wcm->wf_config->save_config(wcm->config_file);
+                        save_config(wcm, o->plugin);
                         break;
                 default:
                         break;
@@ -478,7 +506,7 @@ set_string_combo_box_option_cb(GtkWidget *widget,
         LabeledString *ls = NULL;
         int i;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         option = section->get_option(o->name, "");
         for (i = 0; i < int(o->str_labels.size()); i++) {
                 ls = o->str_labels[i];
@@ -487,7 +515,7 @@ set_string_combo_box_option_cb(GtkWidget *widget,
         }
         if (ls) {
                 option->set_value(ls->value);
-                wcm->wf_config->save_config(wcm->config_file);
+                save_config(wcm, o->plugin);
         }
 }
 
@@ -510,10 +538,10 @@ set_int_combo_box_option_cb(GtkWidget *widget,
         wayfire_config_section *section;
         wf_option option;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         option = section->get_option(o->name, "");
         option->set_value(gtk_combo_box_get_active(GTK_COMBO_BOX(widget)));
-        wcm->wf_config->save_config(wcm->config_file);
+        save_config(wcm, o->plugin);
 }
 
 static gboolean
@@ -545,14 +573,14 @@ spawn_color_chooser_cb(GtkWidget *widget,
         if (gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_OK) {
                 gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(chooser), &color);
                 gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(widget), &color);
-                section = wcm->wf_config->get_section(o->plugin->name);
+                section = get_config_section(o->plugin);
                 option = section->get_option(o->name, "");
                 c.r = color.red;
                 c.g = color.green;
                 c.b = color.blue;
                 c.a = color.alpha;
                 option->set_value(c);
-                wcm->wf_config->save_config(wcm->config_file);
+                save_config(wcm, o->plugin);
         }
 
         gtk_widget_destroy(chooser);
@@ -567,10 +595,10 @@ set_double_spin_button_option_cb(GtkWidget *widget,
         wayfire_config_section *section;
         wf_option option;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         option = section->get_option(o->name, "");
         option->set_value(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
-        wcm->wf_config->save_config(wcm->config_file);
+        save_config(wcm, o->plugin);
 }
 
 static gboolean
@@ -592,10 +620,10 @@ set_int_spin_button_option_cb(GtkWidget *widget,
         wayfire_config_section *section;
         wf_option option;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         option = section->get_option(o->name, "");
         option->set_value((int)gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
-        wcm->wf_config->save_config(wcm->config_file);
+        save_config(wcm, o->plugin);
 }
 
 static gboolean
@@ -617,10 +645,10 @@ set_bool_check_button_option_cb(GtkWidget *widget,
         wayfire_config_section *section;
         wf_option option;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         option = section->get_option(o->name, "");
         option->set_value(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ? 1 : 0);
-        wcm->wf_config->save_config(wcm->config_file);
+        save_config(wcm, o->plugin);
 }
 
 static gboolean
@@ -642,10 +670,10 @@ set_string_option_cb(GtkWidget *widget,
         wayfire_config_section *section;
         wf_option option;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         option = section->get_option(o->name, "");
         option->set_value(gtk_entry_get_text(GTK_ENTRY(widget)));
-        wcm->wf_config->save_config(wcm->config_file);
+        save_config(wcm, o->plugin);
 }
 
 static gboolean
@@ -724,12 +752,12 @@ set_command_combo_box_option_cb(GtkWidget *widget,
         wf_option option;
         int active;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         active = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
         option_name = get_command_from_index(o->name, section, active);
         option = section->get_option(option_name, "");
         option->set_value(gtk_button_get_label(GTK_BUTTON(o->data_widget)));
-        wcm->wf_config->save_config(wcm->config_file);
+        save_config(wcm, o->plugin);
 }
 
 static gboolean
@@ -798,7 +826,7 @@ write_binding_option(Option *o, std::string name)
         bool first = true;
         wf_option option;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         option = section->get_option(o->name, "");
         if (o->mod_mask & MOD_TYPE_SHIFT) {
                 text += "<shift>";
@@ -827,7 +855,7 @@ write_binding_option(Option *o, std::string name)
         text += name;
 
         option->set_value(text.c_str());
-        wcm->wf_config->save_config(wcm->config_file);
+        save_config(wcm, o->plugin);
 
         gtk_button_set_label(GTK_BUTTON(o->data_widget), option->as_string().c_str());
 }
@@ -1088,7 +1116,7 @@ write_option(GtkWidget *widget,
         wf_option option;
         int active;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
 
         if (o->command) {
                 active = gtk_combo_box_get_active(GTK_COMBO_BOX(o->command_combo));
@@ -1100,7 +1128,7 @@ write_option(GtkWidget *widget,
 
         option->set_value(gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
         gtk_button_set_label(GTK_BUTTON(o->data_widget), option->as_string().c_str());
-        wcm->wf_config->save_config(wcm->config_file);
+        save_config(wcm, o->plugin);
 
         if (o->confirm_window) {
                 gtk_window_close(GTK_WINDOW(o->confirm_window));
@@ -1191,11 +1219,10 @@ binding_edit_button_cb(GtkWidget *widget,
                        gpointer user_data)
 {
         Option *o = (Option *) user_data;
-        WCM *wcm = o->plugin->wcm;
         wayfire_config_section *section;
         wf_option option;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         option = section->get_option(o->name, o->default_value.s);
 
         GtkWidget *edit_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -1214,7 +1241,7 @@ binding_edit_button_cb(GtkWidget *widget,
                 G_CALLBACK(binding_edit_cancel_cb), edit_window);
         g_signal_connect(button_ok, "button-release-event",
                 G_CALLBACK(binding_ok_cb), o);
-        g_signal_connect(entry, "activate",
+        g_signal_connect(entry, "changed",
                 G_CALLBACK(binding_entry_cb), o);
         gtk_entry_set_text(GTK_ENTRY(entry), option->as_string().c_str());
         gtk_box_pack_start(GTK_BOX(layout), entry, false, false, 0);
@@ -1229,16 +1256,85 @@ binding_edit_button_cb(GtkWidget *widget,
 }
 
 static void
+directory_chooser_button_cb(GtkWidget *widget,
+                            GdkEventButton *event,
+                            gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        GtkWidget *window = o->plugin->wcm->window;
+
+        GtkWidget *dialog;
+        GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER;
+        gint res;
+
+        dialog = gtk_file_chooser_dialog_new("Open Directory",
+                                             GTK_WINDOW(window),
+                                             action,
+                                             "_Cancel",
+                                             GTK_RESPONSE_CANCEL,
+                                             "_Open",
+                                             GTK_RESPONSE_ACCEPT,
+                                             NULL);
+
+        res = gtk_dialog_run(GTK_DIALOG(dialog));
+
+        if (res == GTK_RESPONSE_ACCEPT)
+        {
+                char *filename;
+                GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
+                filename = gtk_file_chooser_get_filename(chooser);
+                gtk_entry_set_text(GTK_ENTRY(o->hinted_entry), filename);
+                g_free(filename);
+        }
+
+        gtk_widget_destroy(dialog);
+}
+
+static void
+file_chooser_button_cb(GtkWidget *widget,
+                       GdkEventButton *event,
+                       gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        GtkWidget *window = o->plugin->wcm->window;
+
+        GtkWidget *dialog;
+        GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+        gint res;
+
+        dialog = gtk_file_chooser_dialog_new("Open File",
+                                             GTK_WINDOW(window),
+                                             action,
+                                             "_Cancel",
+                                             GTK_RESPONSE_CANCEL,
+                                             "_Open",
+                                             GTK_RESPONSE_ACCEPT,
+                                             NULL);
+
+        res = gtk_dialog_run(GTK_DIALOG(dialog));
+
+        if (res == GTK_RESPONSE_ACCEPT)
+        {
+                char *filename;
+                GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
+                filename = gtk_file_chooser_get_filename(chooser);
+                gtk_entry_set_text(GTK_ENTRY(o->hinted_entry), filename);
+                g_free(filename);
+        }
+
+        gtk_widget_destroy(dialog);
+}
+
+static void
 setup_command_list(GtkWidget *widget, Option *o)
 {
-        WCM *wcm = o->plugin->wcm;
         wayfire_config_section *section;
         GtkWidget *option_layout, *combo_box, *label, *entry, *remove_button, *add_button, *add_button_layout;
         GtkWidget *list_add_image = gtk_image_new_from_icon_name("list-add", GTK_ICON_SIZE_BUTTON);
         GtkWidget *list_remove_image;
         wf_option option;
 
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         std::vector<std::string> command_names;
         const std::string exec_prefix = "command_";
         for (auto command : section->options)
@@ -1339,7 +1435,7 @@ setup_command_list(GtkWidget *widget, Option *o)
                                 entry = gtk_entry_new();
                                 gtk_entry_set_text(GTK_ENTRY(entry), opt_value.c_str());
                                 o->data_widget = entry;
-                                g_signal_connect(entry, "activate",
+                                g_signal_connect(entry, "changed",
                                                 G_CALLBACK(set_binding_string_option_cb), dyn_opt);
                                 g_signal_connect(entry, "focus-out-event",
                                                 G_CALLBACK(binding_entry_focus_out_cb), dyn_opt);
@@ -1353,6 +1449,15 @@ setup_command_list(GtkWidget *widget, Option *o)
                                 list_remove_image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON);
                                 gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
                                 gtk_box_pack_end(GTK_BOX(option_layout), remove_button, false, false, 0);
+                                if (o->data.hints & HINT_FILE) {
+                                        GtkWidget *file_choose_button = gtk_button_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
+                                        gtk_widget_set_tooltip_text(file_choose_button, "Choose Executable");
+                                        g_signal_connect(file_choose_button, "button-release-event",
+                                                G_CALLBACK(file_chooser_button_cb), o);
+                                        gtk_widget_set_margin_start(file_choose_button, 10);
+                                        gtk_box_pack_end(GTK_BOX(option_layout), file_choose_button, false, false, 0);
+                                        o->hinted_entry = entry;
+                                }
                                 gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
                         }
                         gtk_box_pack_start(GTK_BOX(options_layout), option_layout, true, true, 0);
@@ -1383,12 +1488,11 @@ setup_command_list(GtkWidget *widget, Option *o)
 static void
 setup_autostart_list(GtkWidget *widget, Option *o)
 {
-        WCM *wcm = o->plugin->wcm;
         wayfire_config_section *section;
         GtkWidget *option_layout, *entry, *remove_button, *add_button, *add_button_layout;
         GtkWidget *list_add_image = gtk_image_new_from_icon_name("list-add", GTK_ICON_SIZE_BUTTON);
         GtkWidget *list_remove_image;
-        section = wcm->wf_config->get_section(o->plugin->name);
+        section = get_config_section(o->plugin);
         std::vector<std::string> autostart_names;
         for (auto e : section->options)
                 autostart_names.push_back(e->name);
@@ -1417,7 +1521,7 @@ setup_autostart_list(GtkWidget *widget, Option *o)
                 entry = gtk_entry_new();
                 gtk_entry_set_text(GTK_ENTRY(entry), executable.c_str());
                 o->data_widget = entry;
-                g_signal_connect(entry, "activate",
+                g_signal_connect(entry, "changed",
                                 G_CALLBACK(set_string_option_cb), dyn_opt);
                 g_signal_connect(entry, "focus-out-event",
                                 G_CALLBACK(entry_focus_out_cb), dyn_opt);
@@ -1430,6 +1534,15 @@ setup_autostart_list(GtkWidget *widget, Option *o)
                 list_remove_image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON);
                 gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
                 gtk_box_pack_end(GTK_BOX(option_layout), remove_button, false, false, 0);
+                if (o->data.hints & HINT_FILE) {
+                        GtkWidget *file_choose_button = gtk_button_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
+                        gtk_widget_set_tooltip_text(file_choose_button, "Choose Executable");
+                        g_signal_connect(file_choose_button, "button-release-event",
+                                G_CALLBACK(file_chooser_button_cb), o);
+                        gtk_widget_set_margin_start(file_choose_button, 10);
+                        gtk_box_pack_end(GTK_BOX(option_layout), file_choose_button, false, false, 0);
+                        o->hinted_entry = entry;
+                }
                 gtk_box_pack_end(GTK_BOX(option_layout), entry, true, true, 0);
                 gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
                 o->options.push_back(dyn_opt);
@@ -1451,7 +1564,6 @@ setup_autostart_list(GtkWidget *widget, Option *o)
 static void
 add_option_widget(GtkWidget *widget, Option *o)
 {
-        WCM *wcm = o->plugin->wcm;
         GtkWidget *option_layout, *label, *reset_button, *reset_image;
         wayfire_config_section *section;
         wf_option option;
@@ -1466,7 +1578,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 case OPTION_TYPE_KEY:
                 case OPTION_TYPE_STRING:
                 case OPTION_TYPE_COLOR:
-                        section = wcm->wf_config->get_section(o->plugin->name);
+                        section = get_config_section(o->plugin);
                         option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
                         label = gtk_label_new(o->disp_name);
                         gtk_widget_set_margin_start(label, 10);
@@ -1517,9 +1629,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                         } else {
                                 spin_button = gtk_spin_button_new(gtk_adjustment_new(option->as_int(), o->data.min, o->data.max, 1, 10, 0), 1, 0);
                                 o->data_widget = spin_button;
-                                g_signal_connect(spin_button, "activate",
-                                                 G_CALLBACK(set_int_spin_button_option_cb), o);
-                                g_signal_connect(spin_button, "changed",
+                                g_signal_connect(spin_button, "value-changed",
                                                  G_CALLBACK(set_int_spin_button_option_cb), o);
                                 g_signal_connect(spin_button, "focus-out-event",
                                                  G_CALLBACK(int_spin_button_focus_out_cb), o);
@@ -1531,7 +1641,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 case OPTION_TYPE_BOOL: {
                         option = section->get_option(o->name, std::to_string(o->default_value.i));
                         GtkWidget *check_button = gtk_check_button_new();
-                        section = wcm->wf_config->get_section(o->plugin->name);
+                        section = get_config_section(o->plugin);
                         option = section->get_option(o->name, std::to_string(o->default_value.i));
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), option->as_int() ? 1 : 0);
                         o->data_widget = check_button;
@@ -1547,9 +1657,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                         option = section->get_option(o->name, std::to_string(o->default_value.d));
                         GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(option->as_double(), o->data.min, o->data.max, o->data.precision, 0, 0), o->data.precision, 3);
                         o->data_widget = spin_button;
-                        g_signal_connect(spin_button, "activate",
-                                         G_CALLBACK(set_double_spin_button_option_cb), o);
-                        g_signal_connect(spin_button, "changed",
+                        g_signal_connect(spin_button, "value-changed",
                                          G_CALLBACK(set_double_spin_button_option_cb), o);
                         g_signal_connect(spin_button, "focus-out-event",
                                          G_CALLBACK(double_spin_button_focus_out_cb), o);
@@ -1597,9 +1705,27 @@ add_option_widget(GtkWidget *widget, Option *o)
                                 gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
                         } else {
                                 entry = gtk_entry_new();
+                                if (o->data.hints & HINT_FILE) {
+                                        GtkWidget *file_choose_button = gtk_button_new_from_icon_name("text-x-script", GTK_ICON_SIZE_BUTTON);
+                                        gtk_widget_set_tooltip_text(file_choose_button, "Choose File");
+                                        g_signal_connect(file_choose_button, "button-release-event",
+                                                G_CALLBACK(file_chooser_button_cb), o);
+                                        gtk_widget_set_margin_start(file_choose_button, 10);
+                                        gtk_box_pack_end(GTK_BOX(option_layout), file_choose_button, false, false, 0);
+                                        o->hinted_entry = entry;
+                                }
+                                if (o->data.hints & HINT_DIRECTORY) {
+                                        GtkWidget *directory_choose_button = gtk_button_new_from_icon_name("folder-open", GTK_ICON_SIZE_BUTTON);
+                                        gtk_widget_set_tooltip_text(directory_choose_button, "Choose Directory");
+                                        g_signal_connect(directory_choose_button, "button-release-event",
+                                                G_CALLBACK(directory_chooser_button_cb), o);
+                                        gtk_widget_set_margin_start(directory_choose_button, 10);
+                                        gtk_box_pack_end(GTK_BOX(option_layout), directory_choose_button, false, false, 0);
+                                        o->hinted_entry = entry;
+                                }
                                 gtk_entry_set_text(GTK_ENTRY(entry), option->as_string().c_str());
                                 o->data_widget = entry;
-                                g_signal_connect(entry, "activate",
+                                g_signal_connect(entry, "changed",
                                                  G_CALLBACK(set_string_option_cb), o);
                                 g_signal_connect(entry, "focus-out-event",
                                                  G_CALLBACK(entry_focus_out_cb), o);
@@ -1651,7 +1777,7 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
                 pos = plugins.find(std::string(p->name));
                 if (pos == std::string::npos) {
                         option->set_value(option->as_string() + " " + std::string(p->name));
-                        wcm->wf_config->save_config(wcm->config_file);
+                        save_config(wcm, p);
                 }
                 if (widget == p->t1)
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t2), true);
@@ -1672,7 +1798,7 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
                         if(plugins[i] == ' ' && plugins[i] == plugins[i - 1])
                                 plugins.erase(plugins.begin() + i);
                 option->set_value(plugins);
-                wcm->wf_config->save_config(wcm->config_file);
+                save_config(wcm, p);
                 if (widget == p->t1)
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t2), false);
                 else if (widget == p->t2)
@@ -1705,7 +1831,8 @@ plugin_button_cb(GtkWidget *widget,
         gtk_label_set_line_wrap(GTK_LABEL(label), true);
         gtk_label_set_max_width_chars(GTK_LABEL(label), 15);
         GtkWidget *enable_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        if (std::string(p->name) != "core" && std::string(p->name) != "input") {
+        if (std::string(p->name) != "core" && std::string(p->name) != "input" &&
+                p->type == PLUGIN_TYPE_WAYFIRE) {
                 enable_label = gtk_label_new(NULL);
                 gtk_label_set_markup(GTK_LABEL(enable_label), "<span size=\"10000\"><b>Use This Plugin</b></span>");
                 enabled_cb = gtk_check_button_new();
@@ -1766,7 +1893,8 @@ plugin_button_cb(GtkWidget *widget,
         }
         gtk_box_pack_start(GTK_BOX(plugin_buttons_layout), notebook, false, true, 10);
         gtk_box_pack_start(GTK_BOX(left_panel_layout), label, false, false, 0);
-        if (std::string(p->name) != "core" && std::string(p->name) != "input") {
+        if (std::string(p->name) != "core" && std::string(p->name) != "input" &&
+                p->type == PLUGIN_TYPE_WAYFIRE) {
                 gtk_box_pack_start(GTK_BOX(enable_layout), enabled_cb, false, false, 0);
                 gtk_box_pack_start(GTK_BOX(enable_layout), enable_label, false, false, 0);
         }
@@ -1818,7 +1946,8 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
         GtkWidget *button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *plugin_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *check_button;
-        if (std::string(p->name) != "core" && std::string(p->name) != "input") {
+        if (std::string(p->name) != "core" && std::string(p->name) != "input" &&
+                p->type == PLUGIN_TYPE_WAYFIRE) {
                 check_button = gtk_check_button_new();
                 g_object_set(check_button, "margin", 5, NULL);
                 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), p->enabled ? true : false);
@@ -1834,7 +1963,8 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
         gtk_box_pack_start(GTK_BOX(button_layout), button_icon, false, false, 0);
         gtk_box_pack_start(GTK_BOX(button_layout), button_label, false, false, 0);
         gtk_container_add(GTK_CONTAINER(plugin_button), button_layout);
-        if (std::string(p->name) != "core" && std::string(p->name) != "input")
+        if (std::string(p->name) != "core" && std::string(p->name) != "input" &&
+                p->type == PLUGIN_TYPE_WAYFIRE)
                 gtk_box_pack_start(GTK_BOX(plugin_layout), check_button, false, false, 0);
         else
                 gtk_widget_set_margin_start(plugin_button, 25);
