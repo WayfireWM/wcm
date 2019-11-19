@@ -3,9 +3,9 @@
 	<plugin name="tile">
 	<_short>Tile Windows</_short>
 	<category>Window Management</category>
-	<option name="tile_by_default" type="bool">
-		<_short>Tile by Default</_short>
-		<default>1</default>
+	<option name="tile_by_default" type="string">
+		<_short>Tile Match</_short>
+		<default>any</default>
 	</option>
 	<option name="keep_fullscreen_on_adjacent" type="bool">
 		<_short>Keep Fullscreen on Adjacent</_short>
