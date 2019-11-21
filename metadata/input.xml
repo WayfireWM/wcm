@@ -11,6 +11,10 @@
 		<_short>Disable while Typing</_short>
 		<default>false</default>
 	</option>
+	<option name="disable_touchpad_while_mouse" type="bool">
+		<_short>Disable Touchpad while using Mouse</_short>
+		<default>false</default>
+	</option>
 	<option name="natural_scroll" type="bool">
 		<_short>Natural Scroll</_short>
 		<default>false</default>
@@ -25,7 +29,7 @@
 	</option>
 	<option name="xkb_layout" type="string">
 		<_short>XKB Layout</_short>
-		<default></default>
+		<default>us</default>
 	</option>
 	<option name="xkb_option" type="string">
 		<_short>XKB Option</_short>
@@ -33,7 +37,7 @@
 	</option>
 	<option name="xkb_rule" type="string">
 		<_short>XKB Rule</_short>
-		<default></default>
+		<default>evdev</default>
 	</option>
 	<option name="kb_repeat_rate" type="int">
 		<_short>Key Repeat Rate</_short>
@@ -50,6 +54,36 @@
 	<option name="cursor_size" type="int">
 		<_short>Cursor Size</_short>
 		<default>24</default>
+	</option>
+	<option name="mouse_cursor_speed" type="double">
+		<_short>Mouse Cursor Speed</_short>
+		<default>0</default>
+		<min>-1</min>
+		<max>1</max>
+	</option>
+	<option name="touchpad_cursor_speed" type="double">
+		<_short>Touchpad Cursor Speed</_short>
+		<default>0</default>
+		<min>-1</min>
+		<max>1</max>
+	</option>
+	<option name="mouse_scroll_speed" type="double">
+		<_short>Mouse Scroll Speed</_short>
+		<default>1</default>
+		<min>0</min>
+	</option>
+	<option name="touchpad_scroll_speed" type="double">
+		<_short>Touchpad Scroll Speed</_short>
+		<default>1</default>
+		<min>0</min>
+	</option>
+	<option name="click_method" type="string">
+		<_short>Click Method</_short>
+		<default>default</default>
+	</option>
+	<option name="scroll_method" type="string">
+		<_short>Scroll Method</_short>
+		<default>default</default>
 	</option>
 	</plugin>
 </wayfire>
