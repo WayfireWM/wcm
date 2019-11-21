@@ -11,10 +11,6 @@
 		<_short>Spring K</_short>
 		<default>8</default>
 	</option>
-	<option name="mass" type="int">
-		<_short>Mass</_short>
-		<default>50</default>
-	</option>
 	<option name="grid_resolution" type="int">
 		<_short>Grid Resolution</_short>
 		<default>6</default>
