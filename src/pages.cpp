@@ -1159,7 +1159,7 @@ write_option_check(GtkWidget *widget,
 {
         char buf[256];
         Option *o = (Option *) user_data;
-        char *text = (char *) gtk_entry_get_text(GTK_ENTRY(o->label_widget));
+        char *text = strdup(gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
 
         while (strlen(text) && *text == ' ')
                 text++;
@@ -1191,9 +1191,11 @@ write_option_check(GtkWidget *widget,
                 gtk_widget_show_all(confirm_window);
                 o->confirm_window = confirm_window;
 
+                free(text);
                 return;
         }
 
+        free(text);
         o->confirm_window = NULL;
         write_option(widget, user_data);
 }
@@ -1237,13 +1239,13 @@ binding_edit_button_cb(GtkWidget *widget,
         gtk_widget_set_margin_bottom(layout, 10);
         gtk_widget_set_margin_start(layout, 10);
         gtk_widget_set_margin_end(layout, 10);
+        gtk_entry_set_text(GTK_ENTRY(entry), option->as_string().c_str());
         g_signal_connect(button_cancel, "button-release-event",
                 G_CALLBACK(binding_edit_cancel_cb), edit_window);
         g_signal_connect(button_ok, "button-release-event",
                 G_CALLBACK(binding_ok_cb), o);
         g_signal_connect(entry, "changed",
                 G_CALLBACK(binding_entry_cb), o);
-        gtk_entry_set_text(GTK_ENTRY(entry), option->as_string().c_str());
         gtk_box_pack_start(GTK_BOX(layout), entry, false, false, 0);
         gtk_box_pack_end(GTK_BOX(button_layout), button_ok, false, false, 0);
         gtk_box_pack_end(GTK_BOX(button_layout), button_cancel, false, false, 0);
