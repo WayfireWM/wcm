@@ -3,33 +3,29 @@
 	<plugin name="switcher">
 	<_short>Application Switcher</_short>
 	<category>Window Management</category>
-	<option name="duration" type="int">
-		<_short>Duration</_short>
-		<default>250</default>
+	<option name="view_thumbnail_scale" type="double">
+		<_short>View Thumbnail Size</_short>
+		<default>1.0</default>
 	</option>
-	<option name="initial_animation" type="int">
-		<_short>Initial Animation</_short>
-		<default>150</default>
+	<option name="touch_sensitivity" type="double">
+		<_short>Touch Sensitivity</_short>
+		<default>1.0</default>
 	</option>
-	<option name="view_thumbnail_size" type="double">
-		<_short>Thumbnail Size</_short>
-		<default>0.4</default>
+	<option name="speed" type="int">
+		<_short>Speed</_short>
+		<default>500</default>
 	</option>
-	<option name="activate" type="key">
-		<_short>Activate</_short>
-		<default>&lt;alt&gt; KEY_TAB</default>
+	<option name="next_view" type="key">
+		<_short>Next View</_short>
+		<default>&lt;super&gt; KEY_TAB</default>
 	</option>
-	<option name="next" type="key">
-		<_short>Next</_short>
-		<default>KEY_RIGHT</default>
+	<option name="prev_view" type="key">
+		<_short>Previous View</_short>
+		<default>&lt;super&gt; &lt;shift&gt; KEY_TAB</default>
 	</option>
-	<option name="prev" type="key">
-		<_short>Previous</_short>
-		<default>KEY_LEFT</default>
-	</option>
-	<option name="exit" type="key">
-		<_short>Exit</_short>
-		<default>KEY_ENTER</default>
+	<option name="gesture_toggle" type="string">
+		<_short>Gesture Toggle</_short>
+		<default>edge-swipe down 3</default>
 	</option>
 	</plugin>
 </wayfire>
