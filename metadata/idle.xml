@@ -21,12 +21,12 @@
 	</option>
 	<option name="cube_rotate_speed" type="double">
 		<_short>Cube Rotate Speed</_short>
-		<default>0.001</default>
-		<precision>0.001</precision>
+		<default>1.0</default>
+		<precision>0.01</precision>
 	</option>
 	<option name="cube_max_zoom" type="double">
 		<_short>Cube Max Zoom</_short>
-		<default>1.2</default>
+		<default>1.5</default>
 	</option>
 	</plugin>
 </wayfire>
