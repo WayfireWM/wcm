@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <wayfire>
-	<plugin name="tile">
+	<plugin name="simple-tile">
 	<_short>Tile Windows</_short>
 	<category>Window Management</category>
 	<option name="tile_by_default" type="string">
@@ -32,15 +32,15 @@
 		<default>&lt;super&gt; KEY_H</default>
 	</option>
 	<option name="key_focus_right" type="key">
-		<_short>Key Focus Left</_short>
+		<_short>Key Focus Right</_short>
 		<default>&lt;super&gt; KEY_L</default>
 	</option>
 	<option name="key_focus_above" type="key">
-		<_short>Key Focus Left</_short>
+		<_short>Key Focus Above</_short>
 		<default>&lt;super&gt; KEY_K</default>
 	</option>
 	<option name="key_focus_below" type="key">
-		<_short>Key Focus Left</_short>
+		<_short>Key Focus Below</_short>
 		<default>&lt;super&gt; KEY_J</default>
 	</option>
 	</plugin>
