@@ -28,7 +28,8 @@
 #include <algorithm>
 #include <string.h>
 #include <gtk/gtk.h>
-#include <config.hpp>
+//#include <config.hpp>
+#include <wayfire/config/file.hpp>
 #include <gdk/gdkwayland.h>
 #include <wlr-input-inhibitor-unstable-v1-client-protocol.h>
 
@@ -151,9 +152,11 @@ class WCM
         GtkWidget *left_panel_layout;
         GtkWidget *scrolled_plugin_layout;
         std::vector<Plugin *> plugins;
-        wayfire_config *wf_config;
-        wayfire_config *wf_shell_config;
-        const char *wayfire_config_file;
+        //wayfire_config *wf_config;
+        //wayfire_config *wf_shell_config;
+        wf::config::config_manager_t wf_config_mgr;
+        wf::config::config_manager_t wf_shell_config_mgr;
+        const char *wf_config_file;
         const char *wf_shell_config_file;
         zwlr_input_inhibitor_v1 *screen_lock;
         zwlr_input_inhibit_manager_v1 *inhibitor_manager;
