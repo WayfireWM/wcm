@@ -647,7 +647,7 @@ set_bool_check_button_option_cb(GtkWidget *widget,
 
         section = get_config_section(o->plugin);
         option = section->get_option(o->name);
-        option->set_value_str(wf::option_type::to_string<int>(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ? 1 : 0));
+        option->set_value_str(wf::option_type::to_string<bool>(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))));
         save_config(wcm, o->plugin);
 }
 
@@ -1621,7 +1621,10 @@ add_option_widget(GtkWidget *widget, Option *o)
                                         li = o->int_labels[i];
                                         gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), li->name);
                                 }
-                                gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), wf::option_type::from_string<int>(option->get_value_str()).value());
+                                auto v = wf::option_type::from_string<int>(option->get_value_str()).value();
+                                if (!v)
+                                        return;
+                                gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), v);
                                 o->data_widget = combo_box;
                                 g_signal_connect(combo_box, "changed",
                                                  G_CALLBACK(set_int_combo_box_option_cb), o);
@@ -1629,7 +1632,10 @@ add_option_widget(GtkWidget *widget, Option *o)
                                                  G_CALLBACK(int_combo_box_focus_out_cb), o);
                                 gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
                         } else {
-                                spin_button = gtk_spin_button_new(gtk_adjustment_new(wf::option_type::from_string<int>(option->get_value_str()).value(), o->data.min, o->data.max, 1, 10, 0), 1, 0);
+                                auto v = wf::option_type::from_string<int>(option->get_value_str()).value();
+                                if (!v)
+                                        return;
+                                spin_button = gtk_spin_button_new(gtk_adjustment_new(v, o->data.min, o->data.max, 1, 10, 0), 1, 0);
                                 o->data_widget = spin_button;
                                 g_signal_connect(spin_button, "value-changed",
                                                  G_CALLBACK(set_int_spin_button_option_cb), o);
@@ -1645,7 +1651,10 @@ add_option_widget(GtkWidget *widget, Option *o)
                         GtkWidget *check_button = gtk_check_button_new();
                         section = get_config_section(o->plugin);
                         option = section->get_option(o->name);
-                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), wf::option_type::from_string<int>(option->get_value_str()).value() ? 1 : 0);
+                        auto v = wf::option_type::from_string<bool>(option->get_value_str()).value();
+                        if (!v)
+                                return;
+                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), v);
                         o->data_widget = check_button;
                         g_signal_connect(check_button, "toggled",
                                          G_CALLBACK(set_bool_check_button_option_cb), o);
@@ -1657,7 +1666,10 @@ add_option_widget(GtkWidget *widget, Option *o)
                         break;
                 case OPTION_TYPE_DOUBLE: {
                         option = section->get_option(o->name);
-                        GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(wf::option_type::from_string<double>(option->get_value_str()).value(), o->data.min, o->data.max, o->data.precision, 0, 0), o->data.precision, 3);
+                        auto v = wf::option_type::from_string<double>(option->get_value_str()).value();
+                        if (!v)
+                                return;
+                        GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(v, o->data.min, o->data.max, o->data.precision, 0, 0), o->data.precision, 3);
                         o->data_widget = spin_button;
                         g_signal_connect(spin_button, "value-changed",
                                          G_CALLBACK(set_double_spin_button_option_cb), o);

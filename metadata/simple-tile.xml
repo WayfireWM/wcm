@@ -11,11 +11,11 @@
 		<_short>Keep Fullscreen on Adjacent</_short>
 		<default>1</default>
 	</option>
-	<option name="button_move" type="key">
+	<option name="button_move" type="button">
 		<_short>Button Move</_short>
 		<default>&lt;super&gt; BTN_LEFT</default>
 	</option>
-	<option name="button_resize" type="key">
+	<option name="button_resize" type="button">
 		<_short>Button Resize</_short>
 		<default>&lt;super&gt; BTN_RIGHT</default>
 	</option>
