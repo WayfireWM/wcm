@@ -436,21 +436,21 @@ reset_button_cb(GtkWidget *widget,
                                 gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.i);
                         section = get_config_section(o->plugin);
                         option = section->get_option(o->name);
-                        option->set_value_str(std::to_string(o->default_value.i));
+                        option->set_value_str(wf::option_type::to_string<int>(o->default_value.i));
                         save_config(wcm, o->plugin);
                         break;
                 case OPTION_TYPE_BOOL:
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(o->data_widget), o->default_value.i);
                         section = get_config_section(o->plugin);
                         option = section->get_option(o->name);
-                        option->set_value_str(std::to_string(o->default_value.i));
+                        option->set_value_str(wf::option_type::to_string<int>(o->default_value.i));
                         save_config(wcm, o->plugin);
                         break;
                 case OPTION_TYPE_DOUBLE:
                         gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.d);
                         section = get_config_section(o->plugin);
                         option = section->get_option(o->name);
-                        option->set_value_str(std::to_string(o->default_value.d));
+                        option->set_value_str(wf::option_type::to_string<double>(o->default_value.d));
                         save_config(wcm, o->plugin);
                         break;
                 case OPTION_TYPE_BUTTON:
@@ -540,7 +540,7 @@ set_int_combo_box_option_cb(GtkWidget *widget,
 
         section = get_config_section(o->plugin);
         option = section->get_option(o->name);
-        option->set_value_str(std::to_string(gtk_combo_box_get_active(GTK_COMBO_BOX(widget))));
+        option->set_value_str(wf::option_type::to_string<int>(gtk_combo_box_get_active(GTK_COMBO_BOX(widget))));
         save_config(wcm, o->plugin);
 }
 
@@ -579,10 +579,7 @@ spawn_color_chooser_cb(GtkWidget *widget,
                 c.g = color.green;
                 c.b = color.blue;
                 c.a = color.alpha;
-                option->set_value_str(std::to_string(c.r) + " " +
-                        std::to_string(c.g) + " " +
-                        std::to_string(c.b) + " " +
-                        std::to_string(c.a));
+                option->set_value_str(wf::option_type::to_string<wf::color_t>(c));
                 save_config(wcm, o->plugin);
         }
 
@@ -600,7 +597,7 @@ set_double_spin_button_option_cb(GtkWidget *widget,
 
         section = get_config_section(o->plugin);
         option = section->get_option(o->name);
-        option->set_value_str(std::to_string(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))));
+        option->set_value_str(wf::option_type::to_string<int>(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))));
         save_config(wcm, o->plugin);
 }
 
@@ -625,7 +622,7 @@ set_int_spin_button_option_cb(GtkWidget *widget,
 
         section = get_config_section(o->plugin);
         option = section->get_option(o->name);
-        option->set_value_str(std::to_string((int)gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))));
+        option->set_value_str(wf::option_type::to_string<int>((int) gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))));
         save_config(wcm, o->plugin);
 }
 
@@ -650,7 +647,7 @@ set_bool_check_button_option_cb(GtkWidget *widget,
 
         section = get_config_section(o->plugin);
         option = section->get_option(o->name);
-        option->set_value_str(std::to_string(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ? 1 : 0));
+        option->set_value_str(wf::option_type::to_string<int>(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) ? 1 : 0));
         save_config(wcm, o->plugin);
 }
 
@@ -1624,7 +1621,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                                         li = o->int_labels[i];
                                         gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), li->name);
                                 }
-                                gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), std::stoi(option->get_value_str()));
+                                gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), wf::option_type::from_string<int>(option->get_value_str()).value());
                                 o->data_widget = combo_box;
                                 g_signal_connect(combo_box, "changed",
                                                  G_CALLBACK(set_int_combo_box_option_cb), o);
@@ -1632,7 +1629,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                                                  G_CALLBACK(int_combo_box_focus_out_cb), o);
                                 gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
                         } else {
-                                spin_button = gtk_spin_button_new(gtk_adjustment_new(std::stoi(option->get_value_str()), o->data.min, o->data.max, 1, 10, 0), 1, 0);
+                                spin_button = gtk_spin_button_new(gtk_adjustment_new(wf::option_type::from_string<int>(option->get_value_str()).value(), o->data.min, o->data.max, 1, 10, 0), 1, 0);
                                 o->data_widget = spin_button;
                                 g_signal_connect(spin_button, "value-changed",
                                                  G_CALLBACK(set_int_spin_button_option_cb), o);
@@ -1648,7 +1645,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                         GtkWidget *check_button = gtk_check_button_new();
                         section = get_config_section(o->plugin);
                         option = section->get_option(o->name);
-                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), std::stoi(option->get_value_str()) ? 1 : 0);
+                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), wf::option_type::from_string<int>(option->get_value_str()).value() ? 1 : 0);
                         o->data_widget = check_button;
                         g_signal_connect(check_button, "toggled",
                                          G_CALLBACK(set_bool_check_button_option_cb), o);
@@ -1660,7 +1657,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                         break;
                 case OPTION_TYPE_DOUBLE: {
                         option = section->get_option(o->name);
-                        GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(std::stod(option->get_value_str()), o->data.min, o->data.max, o->data.precision, 0, 0), o->data.precision, 3);
+                        GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(wf::option_type::from_string<double>(option->get_value_str()).value(), o->data.min, o->data.max, o->data.precision, 0, 0), o->data.precision, 3);
                         o->data_widget = spin_button;
                         g_signal_connect(spin_button, "value-changed",
                                          G_CALLBACK(set_double_spin_button_option_cb), o);
@@ -1743,15 +1740,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                         wf::color_t c;
                         GdkRGBA color;
                         option = section->get_option(o->name);
-                        auto color_str = option->get_value_str();
-                        char *v = strtok((char *) color_str.c_str(), " ");
-                        c.r = std::stod(v);
-                        v = strtok(NULL, " ");
-                        c.g = std::stod(v);
-                        v = strtok(NULL, " ");
-                        c.b = std::stod(v);
-                        v = strtok(NULL, " ");
-                        c.a = std::stod(v);
+                        c = wf::option_type::from_string<wf::color_t>(option->get_value_str()).value();
                         color.red = c.r;
                         color.green = c.g;
                         color.blue = c.b;
