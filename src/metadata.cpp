@@ -24,9 +24,7 @@
  */
 
 #include <stdio.h>
-#include <dirent.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
+#include <wayfire/config/xml.hpp>
 #include "wcm.h"
 
 static Option *
@@ -262,56 +260,32 @@ get_plugin_data(Plugin *p, Option *opt, Option *main_group, xmlDoc *doc, xmlNode
 int
 parse_xml_files(WCM *wcm, const char *dir_name)
 {
-        int len;
-        DIR *dir;
-        char *name;
-        struct dirent *file;
-        std::string path, filename;
-        xmlDoc *doc = NULL;
-        xmlNode *root_element = NULL;
+        for (auto& s : wcm->wf_config_mgr.get_all_sections()) {
+                xmlNode *root_element = wf::config::xml::get_section_xml_node(s);
+                xmlDoc *doc = NULL;
 
-        path = std::string(dir_name);
-        dir = opendir((path).c_str());
-        if (!dir) {
-                printf("Error: Could not open %s\n", (path).c_str());
-                return -1;
-        }
-        while ((file = readdir(dir))) {
-                name = file->d_name;
-                len = std::string(name).length();
-                if (len > 3 && std::string(&name[len - 4]) == ".xml") {
-                        filename = path + "/" + std::string(name);
-                        doc = xmlReadFile(filename.c_str(), NULL, 0);
-                        if (!doc) {
-                                printf("Error: Could not parse file %s\n", filename.c_str());
-                                continue;
-                        }
+                if (!root_element)
+                        continue;
 
-                        root_element = xmlDocGetRootElement(doc);
+                root_element = root_element->parent;
 
-                        if (root_element->type == XML_ELEMENT_NODE &&
-                                (std::string((char *) root_element->name) == "wayfire" ||
-                                std::string((char *) root_element->name) == "wf-shell")) {
-                                printf("Loading %s plugin: %s\n", root_element->name, name);
-                                Plugin *p = new Plugin();
-                                p->category = strdup("Uncategorized");
-                                p->wcm = wcm;
-                                get_plugin_data(p, NULL, NULL, doc, root_element);
-                                wcm->plugins.push_back(p);
-                                if (std::string((char *) root_element->name) == "wayfire")
-                                        p->type = PLUGIN_TYPE_WAYFIRE;
-                                else if (std::string((char *) root_element->name) == "wf-shell")
-                                        p->type = PLUGIN_TYPE_WF_SHELL;
-                                else
-                                        p->type = PLUGIN_TYPE_NONE;
-                        }
-
-                        xmlFreeDoc(doc);
-                        xmlCleanupParser();
+                if (root_element->type == XML_ELEMENT_NODE &&
+                        (std::string((char *) root_element->name) == "wayfire" ||
+                        std::string((char *) root_element->name) == "wf-shell")) {
+                        printf("Loading %s plugin: %s\n", root_element->name, s->get_name().c_str());
+                        Plugin *p = new Plugin();
+                        p->category = strdup("Uncategorized");
+                        p->wcm = wcm;
+                        get_plugin_data(p, NULL, NULL, doc, root_element);
+                        wcm->plugins.push_back(p);
+                        if (std::string((char *) root_element->name) == "wayfire")
+                                p->type = PLUGIN_TYPE_WAYFIRE;
+                        else if (std::string((char *) root_element->name) == "wf-shell")
+                                p->type = PLUGIN_TYPE_WF_SHELL;
+                        else
+                                p->type = PLUGIN_TYPE_NONE;
                 }
-        }
-
-        closedir(dir);
+	}
 
         return 0;
 }
