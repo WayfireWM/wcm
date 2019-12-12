@@ -35,16 +35,16 @@ load_config_files(WCM *wcm)
         wordexp_t exp;
 
         wordexp(WAYFIRE_CONFIG_FILE_PATH, &exp, 0);
-        wcm->wayfire_config_file = strdup(exp.we_wordv[0]);
+        wcm->wf_config_file = strdup(exp.we_wordv[0]);
         wordfree(&exp);
 
-        wcm->wf_config = new wayfire_config(wcm->wayfire_config_file);
+        wcm->wf_config_mgr = wf::config::build_configuration("/opt/wayfire/share/metadata", "", wcm->wf_config_file);
 
         wordexp(WF_SHELL_CONFIG_FILE_PATH, &exp, 0);
         wcm->wf_shell_config_file = strdup(exp.we_wordv[0]);
         wordfree(&exp);
 
-        wcm->wf_shell_config = new wayfire_config(wcm->wf_shell_config_file);
+        wcm->wf_shell_config_mgr = wf::config::build_configuration("/opt/wayfire/share/metadata", "", wcm->wf_shell_config_file);
 
         return 0;
 }
@@ -154,15 +154,13 @@ init(WCM *wcm)
         Plugin *p;
         int i;
 
-        wayfire_config_section *section;
-        wf_option option;
-
-        section = wcm->wf_config->get_section("core");
-        option = section->get_option("plugins", "default");
+        auto section = wcm->wf_config_mgr.get_section("core");
+        auto option = section->get_option("plugins");
+        auto plugins = option->get_value_str();
 
         for (i = 0; i < int(wcm->plugins.size()); i++) {
                 p = wcm->plugins[i];
-                p->enabled = plugin_enabled(p, option->as_string());
+                p->enabled = plugin_enabled(p, plugins);
         }
 }
 
@@ -188,7 +186,8 @@ main(int argc, char **argv)
         status = g_application_run(G_APPLICATION(app), argc, argv);
         g_object_unref(app);
 
-        delete wcm->wf_config;
+        //delete wcm->wf_config;
+        //delete wcm->wf_shell_config;
         delete wcm;
 
         return status;
