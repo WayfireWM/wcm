@@ -597,7 +597,7 @@ set_double_spin_button_option_cb(GtkWidget *widget,
 
         section = get_config_section(o->plugin);
         option = section->get_option(o->name);
-        option->set_value_str(wf::option_type::to_string<int>(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))));
+        option->set_value_str(wf::option_type::to_string<double>(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))));
         save_config(wcm, o->plugin);
 }
 
