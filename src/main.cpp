@@ -38,13 +38,13 @@ load_config_files(WCM *wcm)
         wcm->wf_config_file = strdup(exp.we_wordv[0]);
         wordfree(&exp);
 
-        wcm->wf_config_mgr = wf::config::build_configuration("/opt/wayfire/share/metadata", "", wcm->wf_config_file);
+        wcm->wf_config_mgr = wf::config::build_configuration(METADATADIR, "", wcm->wf_config_file);
 
         wordexp(WF_SHELL_CONFIG_FILE_PATH, &exp, 0);
         wcm->wf_shell_config_file = strdup(exp.we_wordv[0]);
         wordfree(&exp);
 
-        wcm->wf_shell_config_mgr = wf::config::build_configuration("/opt/wayfire/share/metadata", "", wcm->wf_shell_config_file);
+        wcm->wf_shell_config_mgr = wf::config::build_configuration(METADATADIR, "", wcm->wf_shell_config_file);
 
         return 0;
 }
