@@ -46,6 +46,7 @@ enum option_type
         OPTION_TYPE_BOOL,
         OPTION_TYPE_DOUBLE,
         OPTION_TYPE_STRING,
+        OPTION_TYPE_ACTIVATOR,
         OPTION_TYPE_BUTTON,
         OPTION_TYPE_KEY,
         OPTION_TYPE_COLOR,

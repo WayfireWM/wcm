@@ -453,6 +453,7 @@ reset_button_cb(GtkWidget *widget,
                         option->set_value_str(wf::option_type::to_string<double>(o->default_value.d));
                         save_config(wcm, o->plugin);
                         break;
+                case OPTION_TYPE_ACTIVATOR:
                 case OPTION_TYPE_BUTTON:
                 case OPTION_TYPE_KEY:
                         gtk_button_set_label(GTK_BUTTON(o->data_widget), o->default_value.s);
@@ -1576,6 +1577,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 case OPTION_TYPE_INT:
                 case OPTION_TYPE_BOOL:
                 case OPTION_TYPE_DOUBLE:
+                case OPTION_TYPE_ACTIVATOR:
                 case OPTION_TYPE_BUTTON:
                 case OPTION_TYPE_KEY:
                 case OPTION_TYPE_STRING:
@@ -1679,6 +1681,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                         gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
                 }
                         break;
+                case OPTION_TYPE_ACTIVATOR:
                 case OPTION_TYPE_BUTTON:
                 case OPTION_TYPE_KEY: {
                         option = section->get_option(o->name);
