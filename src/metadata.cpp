@@ -58,11 +58,15 @@ create_option(xmlNode *cur_node, Plugin *p)
                 } else if (std::string((char *) prop) == "button") {
                         o->type = OPTION_TYPE_BUTTON;
                         o->default_value.s = strdup("");
+                } else if (std::string((char *) prop) == "activator") {
+                        o->type = OPTION_TYPE_ACTIVATOR;
+                        o->default_value.s = strdup("");
                 } else if (std::string((char *) prop) == "color") {
                         o->type = OPTION_TYPE_COLOR;
                         o->default_value.s = strdup("");
                 } else if (std::string((char *) prop) == "key") {
                         o->type = OPTION_TYPE_KEY;
+                        o->default_value.s = strdup("");
                 } else if (std::string((char *) prop) == "dynamic_list") {
                         o->type = OPTION_TYPE_DYNAMIC_LIST;
                 } else {

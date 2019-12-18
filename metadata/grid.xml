@@ -7,10 +7,6 @@
 		<_short>Duration</_short>
 		<default>300</default>
 	</option>
-	<option name="restore" type="activator">
-		<_short>Restore</_short>
-		<default>&lt;ctrl&gt; &lt;alt&gt; KEY_KP5</default>
-	</option>
 	<option name="type" type="string">
 		<_short>Type</_short>
 		<default>simple</default>
@@ -62,6 +58,10 @@
 	<option name="slot_tr" type="activator">
 		<_short>Top Right</_short>
 		<default>&lt;ctrl&gt; &lt;alt&gt; KEY_KP9</default>
+	</option>
+	<option name="restore" type="activator">
+		<_short>Restore</_short>
+		<default>&lt;ctrl&gt; &lt;alt&gt; KEY_KP5</default>
 	</option>
 	</plugin>
 </wayfire>
