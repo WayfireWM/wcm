@@ -3,7 +3,7 @@
 	<plugin name="idle">
 	<_short>Idle</_short>
 	<category>Desktop</category>
-	<option name="toggle" type="string">
+	<option name="toggle" type="activator">
 		<_short>Toggle</_short>
 		<default>&lt;super&gt; &lt;shift&gt; KEY_I</default>
 	</option>

@@ -3,11 +3,11 @@
 	<plugin name="fisheye">
 	<_short>Fisheye</_short>
 	<category>Effects</category>
-	<option name="toggle" type="key">
+	<option name="toggle" type="activator">
 		<_short>Toggle</_short>
 		<default>&lt;super&gt; KEY_F</default>
 	</option>
-	<option name="radius" type="int">
+	<option name="radius" type="double">
 		<_short>Radius</_short>
 		<min>1</min>
 		<default>300</default>

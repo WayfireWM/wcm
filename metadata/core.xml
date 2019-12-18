@@ -3,9 +3,13 @@
 	<plugin name="core">
 	<_short>General Options</_short>
 	<category>General</category>
-	<option name="close_top_view" type="key">
+	<option name="close_top_view" type="activator">
 		<_short>Close Window</_short>
-		<default>&lt;super&gt; KEY_Q | &lt;alt&gt; KEY_FN_F4</default>
+		<default>&lt;super&gt; KEY_Q | &lt;alt&gt; KEY_F4</default>
+	</option>
+	<option name="xwayland" type="bool">
+		<_short>Xwayland</_short>
+		<default>true</default>
 	</option>
 	<option name="vwidth" type="int">
 		<_short>Horizontal Virtual Size</_short>

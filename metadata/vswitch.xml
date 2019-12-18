@@ -3,35 +3,35 @@
 	<plugin name="vswitch">
 	<_short>Viewport Switcher</_short>
 	<category>Desktop</category>
-	<option name="binding_left" type="key">
+	<option name="binding_left" type="activator">
 		<_short>Left</_short>
 		<default>&lt;super&gt; KEY_LEFT</default>
 	</option>
-	<option name="binding_right" type="key">
+	<option name="binding_right" type="activator">
 		<_short>Right</_short>
 		<default>&lt;super&gt; KEY_RIGHT</default>
 	</option>
-	<option name="binding_up" type="key">
+	<option name="binding_up" type="activator">
 		<_short>Up</_short>
 		<default>&lt;super&gt; KEY_UP</default>
 	</option>
-	<option name="binding_down" type="key">
+	<option name="binding_down" type="activator">
 		<_short>Down</_short>
 		<default>&lt;super&gt; KEY_DOWN</default>
 	</option>
-	<option name="binding_win_left" type="key">
+	<option name="binding_win_left" type="activator">
 		<_short>Left with Window</_short>
 		<default>&lt;super&gt; &lt;shift&gt; KEY_LEFT</default>
 	</option>
-	<option name="binding_win_right" type="key">
+	<option name="binding_win_right" type="activator">
 		<_short>Right with Window</_short>
 		<default>&lt;super&gt; &lt;shift&gt; KEY_RIGHT</default>
 	</option>
-	<option name="binding_win_up" type="key">
+	<option name="binding_win_up" type="activator">
 		<_short>Up with Window</_short>
 		<default>&lt;super&gt; &lt;shift&gt; KEY_UP</default>
 	</option>
-	<option name="binding_win_down" type="key">
+	<option name="binding_win_down" type="activator">
 		<_short>Down with Window</_short>
 		<default>&lt;super&gt; &lt;shift&gt; KEY_DOWN</default>
 	</option>
