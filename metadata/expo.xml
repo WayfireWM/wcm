@@ -3,7 +3,7 @@
 	<plugin name="expo">
 	<_short>Expo</_short>
 	<category>Desktop</category>
-	<option name="toggle" type="key">
+	<option name="toggle" type="activator">
 		<_short>Toggle</_short>
 		<default>&lt;super&gt; KEY_E</default>
 	</option>
@@ -11,7 +11,11 @@
 		<_short>Duration</_short>
 		<default>300</default>
 	</option>
-	<option name="offset" type="int">
+	<option name="background" type="color">
+		<_short>Background</_short>
+		<default>#0000</default>
+	</option>
+	<option name="offset" type="double">
 		<_short>Offset</_short>
 		<default>10</default>
 	</option>

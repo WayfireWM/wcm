@@ -23,7 +23,7 @@
 		<_short>Number of Fingers</_short>
 		<default>4</default>
 	</option>
-	<option name="gap" type="int">
+	<option name="gap" type="double">
 		<_short>Gap</_short>
 		<default>32</default>
 	</option>
@@ -31,11 +31,11 @@
 		<_short>Threshold</_short>
 		<default>0.35</default>
 	</option>
-	<option name="delta_threshold" type="int">
+	<option name="delta_threshold" type="double">
 		<_short>Delta Threshold</_short>
 		<default>24</default>
 	</option>
-	<option name="speed_factor" type="int">
+	<option name="speed_factor" type="double">
 		<_short>Speed Factor</_short>
 		<default>256</default>
 	</option>
