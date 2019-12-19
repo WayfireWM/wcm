@@ -100,6 +100,17 @@ init_input_inhibitor(WCM *wcm)
         return true;
 }
 
+bool
+is_core_plugin(Plugin *p)
+{
+        if (std::string(p->name) == "core" ||
+                std::string(p->name) == "input" ||
+                std::string(p->name) == "workarounds")
+                return true;
+
+        return false;
+}
+
 static void
 activate(GtkApplication* app,
          gpointer user_data)
@@ -131,7 +142,7 @@ plugin_enabled(Plugin *p, std::string plugins)
         char c1, c2;
         std::string::size_type pos;
 
-        if (!strcmp(p->name, "core") || !strcmp(p->name, "input"))
+        if (is_core_plugin(p))
                 return 1;
 
         pos = plugins.find(std::string(p->name));
@@ -186,8 +197,10 @@ main(int argc, char **argv)
         status = g_application_run(G_APPLICATION(app), argc, argv);
         g_object_unref(app);
 
-        //delete wcm->wf_config;
-        //delete wcm->wf_shell_config;
+        // TODO: Do these need to be deleted?
+        //delete wcm->wf_config_mgr;
+        //delete wcm->wf_shell_config_mgr;
+
         delete wcm;
 
         return status;

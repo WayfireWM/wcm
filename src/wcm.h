@@ -28,7 +28,6 @@
 #include <algorithm>
 #include <string.h>
 #include <gtk/gtk.h>
-//#include <config.hpp>
 #include <wayfire/config/file.hpp>
 #include <gdk/gdkwayland.h>
 #include <wlr-input-inhibitor-unstable-v1-client-protocol.h>
@@ -153,8 +152,6 @@ class WCM
         GtkWidget *left_panel_layout;
         GtkWidget *scrolled_plugin_layout;
         std::vector<Plugin *> plugins;
-        //wayfire_config *wf_config;
-        //wayfire_config *wf_shell_config;
         wf::config::config_manager_t wf_config_mgr;
         wf::config::config_manager_t wf_shell_config_mgr;
         const char *wf_config_file;
@@ -171,3 +168,6 @@ parse_xml_files(WCM *wcm, const char *dir_name);
 
 GtkWidget *
 create_main_layout(WCM *wcm);
+
+bool
+is_core_plugin(Plugin *plugin);
