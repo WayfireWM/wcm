@@ -1617,15 +1617,16 @@ add_option_widget(GtkWidget *widget, Option *o)
                         option = section->get_option(o->name);
                         GtkWidget *combo_box;
                         GtkWidget *spin_button;
+                        auto wf_opt = wf::option_type::from_string<int>(option->get_value_str());
+                        if (!wf_opt)
+                                return;
+                        auto v = wf_opt.value();
                         if (o->int_labels.size()) {
                                 combo_box = gtk_combo_box_text_new();
                                 for (i = 0; i < int(o->int_labels.size()); i++) {
                                         li = o->int_labels[i];
                                         gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), li->name);
                                 }
-                                auto v = wf::option_type::from_string<int>(option->get_value_str()).value();
-                                if (!v)
-                                        return;
                                 gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), v);
                                 o->data_widget = combo_box;
                                 g_signal_connect(combo_box, "changed",
@@ -1634,9 +1635,6 @@ add_option_widget(GtkWidget *widget, Option *o)
                                                  G_CALLBACK(int_combo_box_focus_out_cb), o);
                                 gtk_box_pack_end(GTK_BOX(option_layout), combo_box, true, true, 0);
                         } else {
-                                auto v = wf::option_type::from_string<int>(option->get_value_str()).value();
-                                if (!v)
-                                        return;
                                 spin_button = gtk_spin_button_new(gtk_adjustment_new(v, o->data.min, o->data.max, 1, 10, 0), 1, 0);
                                 o->data_widget = spin_button;
                                 g_signal_connect(spin_button, "value-changed",
