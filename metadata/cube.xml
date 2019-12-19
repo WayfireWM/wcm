@@ -87,11 +87,11 @@
 		<_short>Activate</_short>
 		<default>&lt;alt&gt; &lt;ctrl&gt; BTN_LEFT</default>
 	</option>
-	<option name="rotate_left" type="key">
+	<option name="rotate_left" type="activator">
 		<_short>Rotate Left</_short>
 		<default>&lt;alt&gt; &lt;ctrl&gt; KEY_LEFT</default>
 	</option>
-	<option name="rotate_right" type="key">
+	<option name="rotate_right" type="activator">
 		<_short>Rotate Right</_short>
 		<default>&lt;alt&gt; &lt;ctrl&gt; KEY_RIGHT</default>
 	</option>

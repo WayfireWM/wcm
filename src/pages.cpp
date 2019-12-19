@@ -29,7 +29,7 @@
 
 static int num_button_columns;
 
-#define NUM_CATEGORIES 5
+#define NUM_CATEGORIES 6
 
 static bool
 save_config(WCM* wcm, Plugin *p)
@@ -1848,8 +1848,7 @@ plugin_button_cb(GtkWidget *widget,
         gtk_label_set_line_wrap(GTK_LABEL(label), true);
         gtk_label_set_max_width_chars(GTK_LABEL(label), 15);
         GtkWidget *enable_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        if (std::string(p->name) != "core" && std::string(p->name) != "input" &&
-                p->type == PLUGIN_TYPE_WAYFIRE) {
+        if (!is_core_plugin(p) && p->type == PLUGIN_TYPE_WAYFIRE) {
                 enable_label = gtk_label_new(NULL);
                 gtk_label_set_markup(GTK_LABEL(enable_label), "<span size=\"10000\"><b>Use This Plugin</b></span>");
                 enabled_cb = gtk_check_button_new();
@@ -1910,8 +1909,7 @@ plugin_button_cb(GtkWidget *widget,
         }
         gtk_box_pack_start(GTK_BOX(plugin_buttons_layout), notebook, false, true, 10);
         gtk_box_pack_start(GTK_BOX(left_panel_layout), label, false, false, 0);
-        if (std::string(p->name) != "core" && std::string(p->name) != "input" &&
-                p->type == PLUGIN_TYPE_WAYFIRE) {
+        if (!is_core_plugin(p) && p->type == PLUGIN_TYPE_WAYFIRE) {
                 gtk_box_pack_start(GTK_BOX(enable_layout), enabled_cb, false, false, 0);
                 gtk_box_pack_start(GTK_BOX(enable_layout), enable_label, false, false, 0);
         }
@@ -1937,6 +1935,8 @@ get_icon_name_from_category(std::string category)
                 return "preferences-desktop";
         else if (category == "Effects")
                 return "applications-graphics";
+        else if (category == "Utility")
+                return "applications-accessories";
         else if (category == "Window Management")
                 return "applications-office";
         else
@@ -1963,8 +1963,7 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
         GtkWidget *button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *plugin_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         GtkWidget *check_button;
-        if (std::string(p->name) != "core" && std::string(p->name) != "input" &&
-                p->type == PLUGIN_TYPE_WAYFIRE) {
+        if (!is_core_plugin(p) && p->type == PLUGIN_TYPE_WAYFIRE) {
                 check_button = gtk_check_button_new();
                 g_object_set(check_button, "margin", 5, NULL);
                 gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), p->enabled ? true : false);
@@ -1980,8 +1979,7 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
         gtk_box_pack_start(GTK_BOX(button_layout), button_icon, false, false, 0);
         gtk_box_pack_start(GTK_BOX(button_layout), button_label, false, false, 0);
         gtk_container_add(GTK_CONTAINER(plugin_button), button_layout);
-        if (std::string(p->name) != "core" && std::string(p->name) != "input" &&
-                p->type == PLUGIN_TYPE_WAYFIRE)
+        if (!is_core_plugin(p) && p->type == PLUGIN_TYPE_WAYFIRE)
                 gtk_box_pack_start(GTK_BOX(plugin_layout), check_button, false, false, 0);
         else
                 gtk_widget_set_margin_start(plugin_button, 25);
@@ -2011,10 +2009,12 @@ create_plugins_layout(WCM *wcm)
                         add_plugin_to_category(p, &categories[1], &layout[1]);
                 else if (std::string(p->category) == "Effects")
                         add_plugin_to_category(p, &categories[2], &layout[2]);
-                else if (std::string(p->category) == "Window Management")
+                else if (std::string(p->category) == "Utility")
                         add_plugin_to_category(p, &categories[3], &layout[3]);
-                else
+                else if (std::string(p->category) == "Window Management")
                         add_plugin_to_category(p, &categories[4], &layout[4]);
+                else
+                        add_plugin_to_category(p, &categories[5], &layout[5]);
         }
         for (i = 0; i < NUM_CATEGORIES; i++) {
                 int add_separator = 0;
