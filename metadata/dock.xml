@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <wf-shell>
 	<plugin name="dock">
-	<_short>Shell Dock</_short>
+	<_short>Dock</_short>
+	<category>Shell</category>
 	<option name="position" type="string">
 		<_short>Position</_short>
 		<default>bottom</default>

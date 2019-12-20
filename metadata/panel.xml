@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <wf-shell>
 	<plugin name="panel">
-	<_short>Shell Panel</_short>
+	<_short>Panel</_short>
+	<category>Shell</category>
 	<group>
 	<_short>General</_short>
 	<option name="widgets_left" type="string">
