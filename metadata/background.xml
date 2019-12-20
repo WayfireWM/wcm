@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <wf-shell>
 	<plugin name="background">
-	<_short>Shell Background</_short>
+	<_short>Background</_short>
+	<category>Shell</category>
 	<option name="image" type="string">
 		<_short>Background</_short>
 		<default>&lt;file or directory&gt;</default>
