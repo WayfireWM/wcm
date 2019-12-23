@@ -95,5 +95,9 @@
 		<min>1</min>
 		<max>5</max>
 	</option>
+	<option name="toggle" type="button">
+		<_short>Toggle</_short>
+		<default>&lt;super&gt; &lt;alt&gt; BTN_LEFT</default>
+	</option>
 	</plugin>
 </wayfire>

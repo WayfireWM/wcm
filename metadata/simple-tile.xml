@@ -19,7 +19,7 @@
 		<_short>Button Resize</_short>
 		<default>&lt;super&gt; BTN_RIGHT</default>
 	</option>
-	<option name="key_toggle" type="key">
+	<option name="key_toggle_tile" type="key">
 		<_short>Key Toggle</_short>
 		<default>&lt;super&gt; KEY_T</default>
 	</option>
