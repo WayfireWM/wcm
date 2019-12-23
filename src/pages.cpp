@@ -93,13 +93,13 @@ position_plugin_buttons(WCM *wcm)
                         get_button_position(p, &x[1], &y[1]);
                 else if (std::string(p->category) == "Desktop")
                         get_button_position(p, &x[2], &y[2]);
-                else if (std::string(p->category) == "Effects")
+                else if (std::string(p->category) == "Shell")
                         get_button_position(p, &x[3], &y[3]);
-                else if (std::string(p->category) == "Utility")
+                else if (std::string(p->category) == "Effects")
                         get_button_position(p, &x[4], &y[4]);
                 else if (std::string(p->category) == "Window Management")
                         get_button_position(p, &x[5], &y[5]);
-                else if (std::string(p->category) == "Shell")
+                else if (std::string(p->category) == "Utility")
                         get_button_position(p, &x[6], &y[6]);
                 else
                         get_button_position(p, &x[7], &y[7]);
@@ -1939,14 +1939,14 @@ get_icon_name_from_category(std::string category)
                 return "preferences-desktop-accessibility";
         else if (category == "Desktop")
                 return "preferences-desktop";
-        else if (category == "Effects")
-                return "applications-graphics";
-        else if (category == "Utility")
-                return "applications-accessories";
-        else if (category == "Window Management")
-                return "applications-office";
         else if (category == "Shell")
                 return "user-desktop";
+        else if (category == "Effects")
+                return "applications-graphics";
+        else if (category == "Window Management")
+                return "applications-office";
+        else if (category == "Utility")
+                return "applications-accessories";
         else
                 return "applications-other";
 }
@@ -2017,13 +2017,13 @@ create_plugins_layout(WCM *wcm)
                         add_plugin_to_category(p, &categories[1], &layout[1]);
                 else if (std::string(p->category) == "Desktop")
                         add_plugin_to_category(p, &categories[2], &layout[2]);
-                else if (std::string(p->category) == "Effects")
+                else if (std::string(p->category) == "Shell")
                         add_plugin_to_category(p, &categories[3], &layout[3]);
-                else if (std::string(p->category) == "Utility")
+                else if (std::string(p->category) == "Effects")
                         add_plugin_to_category(p, &categories[4], &layout[4]);
                 else if (std::string(p->category) == "Window Management")
                         add_plugin_to_category(p, &categories[5], &layout[5]);
-                else if (std::string(p->category) == "Shell")
+                else if (std::string(p->category) == "Utility")
                         add_plugin_to_category(p, &categories[6], &layout[6]);
                 else
                         add_plugin_to_category(p, &categories[7], &layout[7]);
