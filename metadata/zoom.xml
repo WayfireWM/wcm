@@ -2,7 +2,7 @@
 <wayfire>
 	<plugin name="zoom">
 	<_short>Desktop Zoom</_short>
-	<category>Desktop</category>
+	<category>Accessibility</category>
 	<option name="modifier" type="key">
 		<_short>Scroll using this modifier to zoom in/out</_short>
 		<default>&lt;super&gt;</default>

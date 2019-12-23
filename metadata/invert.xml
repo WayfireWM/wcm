@@ -2,7 +2,7 @@
 <wayfire>
 	<plugin name="invert">
 	<_short>Invert Colors</_short>
-	<category>Effects</category>
+	<category>Accessibility</category>
 	<option name="toggle" type="activator">
 		<_short>Toggle</_short>
 		<default>&lt;super&gt; KEY_I</default>
