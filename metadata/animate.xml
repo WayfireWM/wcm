@@ -51,5 +51,29 @@
 		<_short>Startup Duration</_short>
 		<default>600</default>
 	</option>
+	<option name="enabled_for" type="string">
+		<_short>Animation Enabled For</_short>
+		<default>(type is toplevel || (type is x-or &amp;&amp; focuseable is true))</default>
+	</option>
+	<option name="fade_enabled_for" type="string">
+		<_short>Fade Enabled For</_short>
+		<default>type is overlay</default>
+	</option>
+	<option name="zoom_enabled_for" type="string">
+		<_short>Zoom Enabled For</_short>
+		<default>none</default>
+	</option>
+	<option name="fire_enabled_for" type="string">
+		<_short>Fire Enabled For</_short>
+		<default>none</default>
+	</option>
+	<option name="fire_particles" type="int">
+		<_short>Fire Particles</_short>
+		<default>2000</default>
+	</option>
+	<option name="fire_particle_size" type="double">
+		<_short>Fire Particle Size</_short>
+		<default>16</default>
+	</option>
 	</plugin>
 </wayfire>
