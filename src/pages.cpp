@@ -701,48 +701,44 @@ get_command_from_index(std::string command,
                        std::shared_ptr<wf::config::section_t> section,
                        int index)
 {
-    std::string option_name, b;
+    std::string option_name;
     std::shared_ptr<wf::config::option_base_t> option;
 
-    b = "binding";
     option_name = command;
 
     switch (index) {
         case 0:
-            option_name.replace(option_name.find(b),
-                std::string(b).length(), "repeatable_binding");
+            option_name.replace(0, command.find_last_of('_'), "repeatable_binding");
             option = section->get_option_or(option_name);
             section->unregister_option(option);
             option_name = command;
-            option_name.replace(option_name.find(b),
-                std::string(b).length(), "always_binding");
+            option_name.replace(0, command.find_last_of('_'), "always_binding");
             option = section->get_option_or(option_name);
             section->unregister_option(option);
             option_name = command;
+            option_name.replace(0, command.find_last_of('_'), "binding");
             break;
         case 1:
+            option_name.replace(0, command.find_last_of('_'), "binding");
             option = section->get_option_or(option_name);
             section->unregister_option(option);
             option_name = command;
-            option_name.replace(option_name.find(b),
-                std::string(b).length(), "always_binding");
+            option_name.replace(0, command.find_last_of('_'), "always_binding");
             option = section->get_option_or(option_name);
             section->unregister_option(option);
             option_name = command;
-            option_name.replace(option_name.find(b),
-                std::string(b).length(), "repeatable_binding");
+            option_name.replace(0, command.find_last_of('_'), "repeatable_binding");
             break;
         case 2:
+            option_name.replace(0, command.find_last_of('_'), "binding");
             option = section->get_option_or(option_name);
             section->unregister_option(option);
             option_name = command;
-            option_name.replace(option_name.find(b),
-                std::string(b).length(), "repeatable_binding");
+            option_name.replace(0, command.find_last_of('_'), "repeatable_binding");
             option = section->get_option_or(option_name);
             section->unregister_option(option);
             option_name = command;
-            option_name.replace(option_name.find(b),
-                std::string(b).length(), "always_binding");
+            option_name.replace(0, command.find_last_of('_'), "always_binding");
             break;
         default:
             break;
@@ -765,8 +761,18 @@ set_command_combo_box_option_cb(GtkWidget *widget,
         section = get_config_section(o->plugin);
         active = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
         option_name = get_command_from_index(o->name, section, active);
+        free(o->name);
+        o->name = strdup(option_name.c_str());
         option = section->get_option_or(option_name);
-        option->set_value_str(gtk_button_get_label(GTK_BUTTON(o->data_widget)));
+
+        if (!option) {
+                option = std::make_shared<wf::config::option_t<std::string>>(option_name, "");
+                option->set_value_str(gtk_button_get_label(GTK_BUTTON(o->data_widget)));
+                section->register_new_option(option);
+        } else {
+                option->set_value_str(gtk_button_get_label(GTK_BUTTON(o->data_widget)));
+        }
+
         save_config(wcm, o->plugin);
 }
 
@@ -864,7 +870,14 @@ write_binding_option(Option *o, std::string name)
                 text += " ";
         text += name;
 
-        option->set_value_str(text.c_str());
+        if (!option) {
+                option = std::make_shared<wf::config::option_t<std::string>>(o->name, "");
+                option->set_value_str(text);
+                section->register_new_option(option);
+        } else {
+                option->set_value_str(text);
+        }
+
         save_config(wcm, o->plugin);
 
         gtk_button_set_label(GTK_BUTTON(o->data_widget), option->get_value_str().c_str());
@@ -1131,12 +1144,21 @@ write_option(GtkWidget *widget,
         if (o->command) {
                 active = gtk_combo_box_get_active(GTK_COMBO_BOX(o->command_combo));
                 option_name = get_command_from_index(o->name, section, active);
+                free(o->name);
+                o->name = strdup(option_name.c_str());
                 option = section->get_option_or(option_name);
         } else {
                 option = section->get_option_or(o->name);
         }
+        if (!option) {
+                option = std::make_shared<wf::config::option_t<std::string>>(
+                        o->command ? option_name : o->name, "");
+                option->set_value_str(gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
+                section->register_new_option(option);
+        } else {
+                option->set_value_str(gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
+        }
 
-        option->set_value_str(gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
         gtk_button_set_label(GTK_BUTTON(o->data_widget), option->get_value_str().c_str());
         save_config(wcm, o->plugin);
 
@@ -1254,7 +1276,7 @@ binding_edit_button_cb(GtkWidget *widget,
                 G_CALLBACK(binding_edit_cancel_cb), edit_window);
         g_signal_connect(button_ok, "button-release-event",
                 G_CALLBACK(binding_ok_cb), o);
-        g_signal_connect(entry, "changed",
+        g_signal_connect(entry, "activate",
                 G_CALLBACK(binding_entry_cb), o);
         gtk_box_pack_start(GTK_BOX(layout), entry, false, false, 0);
         gtk_box_pack_end(GTK_BOX(button_layout), button_ok, false, false, 0);
@@ -1409,11 +1431,20 @@ setup_command_list(GtkWidget *widget, Option *o)
                         dyn_opt->command = true;
                         dyn_opt->binding = NULL;
                         option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-                        std::string label_text, opt_value;
+                        std::string label_text, opt_value, binding_name;
                         if (j == 0) {
-                                dyn_opt->name = strdup(regular_binding_name.c_str());
+                                if (!always.empty()) {
+                                    binding_name = always_binding_name;
+                                    opt_value = always;
+                                } else if (!repeatable.empty()) {
+                                    binding_name = repeat_binding_name;
+                                    opt_value = repeatable;
+                                } else {
+                                    binding_name = regular_binding_name;
+                                    opt_value = regular;
+                                }
+                                dyn_opt->name = strdup(binding_name.c_str());
                                 label_text = std::string("Binding");
-                                opt_value = regular;
                         } else if (j == 1) {
                                 dyn_opt->name = strdup(command.c_str());
                                 label_text = std::string("Command");
