@@ -208,17 +208,17 @@ add_command_item_button_cb(GtkWidget *widget,
                         auto slot = strtol(name.c_str(), NULL, 0);
                         if (!all_chars_are(name, '0') && !slot) {
                                 alpha_names.push_back(c->get_name());
-                                alpha_values.push_back(section->get_option(c->get_name())->get_value_str());
+                                alpha_values.push_back(section->get_option_or(c->get_name())->get_value_str());
                         }
                         else if (not_in_list(reorder_list, slot)) {
                                 reorder_list.push_back(slot);
                                 command_names.push_back(c->get_name());
-                                command_values.push_back(section->get_option(c->get_name())->get_value_str());
+                                command_values.push_back(section->get_option_or(c->get_name())->get_value_str());
                                 count++;
                         }
                 } else {
                         alpha_names.push_back(c->get_name());
-                        alpha_values.push_back(section->get_option(c->get_name())->get_value_str());
+                        alpha_values.push_back(section->get_option_or(c->get_name())->get_value_str());
                 }
                 i++;
         }
@@ -249,8 +249,8 @@ add_command_item_button_cb(GtkWidget *widget,
         }
         for (auto command : section->get_registered_options())
         {
-                option = section->get_option(command->get_name());
-                option->set_value_str("");
+                option = section->get_option_or(command->get_name());
+                section->unregister_option(option);
         }
 
         wf::config::save_configuration_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
@@ -259,14 +259,16 @@ add_command_item_button_cb(GtkWidget *widget,
 
         i = 0;
         for (auto command : command_names) {
-                option = section->get_option(command);
+                option = std::make_shared<wf::config::option_t<std::string>>(command, "");
                 option->set_value_str(command_values[i]);
+                section->register_new_option(option);
                 i++;
         }
         i = 0;
         for (auto alpha_name : alpha_names) {
-                option = section->get_option(alpha_name);
+                option = std::make_shared<wf::config::option_t<std::string>>(alpha_name, "");
                 option->set_value_str(alpha_values[i]);
+                section->register_new_option(option);
                 i++;
         }
 
@@ -300,17 +302,17 @@ remove_command_item_button_cb(GtkWidget *widget,
         for (size_t i = 0; i < o->parent->options.size(); i++) {
                 Option *opt = o->parent->options[i];
                 if (!strcmp(opt->name, o->name)) {
-                        option = section->get_option(std::string(opt->name));
-                        option->set_value_str("");
+                        option = section->get_option_or(std::string(opt->name));
+                        section->unregister_option(option);
                         auto binding = std::string("binding_") + std::string(opt->name).substr(std::string("command_").length());
-                        option = section->get_option(binding);
-                        option->set_value_str("");
+                        option = section->get_option_or(binding);
+                        section->unregister_option(option);
                         auto repeatable_binding = std::string("repeatable_binding_") + std::string(opt->name).substr(std::string("command_").length());
-                        option = section->get_option(repeatable_binding);
-                        option->set_value_str("");
+                        option = section->get_option_or(repeatable_binding);
+                        section->unregister_option(option);
                         auto always_binding = std::string("always_binding_") + std::string(opt->name).substr(std::string("command_").length());
-                        option = section->get_option(always_binding);
-                        option->set_value_str("");
+                        option = section->get_option_or(always_binding);
+                        section->unregister_option(option);
                 }
         }
 
@@ -353,16 +355,16 @@ add_autostart_item_button_cb(GtkWidget *widget,
                         auto slot = strtol(name.c_str(), NULL, 0);
                         if (!all_chars_are(name, '0') && !slot) {
                                 names.push_back(c->get_name());
-                                values.push_back(section->get_option(c->get_name())->get_value_str());
+                                values.push_back(section->get_option_or(c->get_name())->get_value_str());
                         }
                         else if (not_in_list(slot_list, slot)) {
                                 slot_list.push_back(slot);
                                 names.push_back(c->get_name());
-                                values.push_back(section->get_option(c->get_name())->get_value_str());
+                                values.push_back(section->get_option_or(c->get_name())->get_value_str());
                         }
                 } else {
                         names.push_back(c->get_name());
-                        values.push_back(section->get_option(c->get_name())->get_value_str());
+                        values.push_back(section->get_option_or(c->get_name())->get_value_str());
                 }
                 i++;
         }
@@ -373,8 +375,9 @@ add_autostart_item_button_cb(GtkWidget *widget,
         }
 
         auto name = std::string("a") + std::to_string(i);
-        option = section->get_option(name);
+        option = std::make_shared<wf::config::option_t<std::string>>(name, "");
         option->set_value_str("<command>");
+        section->register_new_option(option);
 
         wf::config::save_configuration_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
 
@@ -405,8 +408,8 @@ remove_autostart_item_button_cb(GtkWidget *widget,
         for (size_t i = 0; i < o->parent->options.size(); i++) {
                 Option *opt = o->parent->options[i];
                 if (!strcmp(opt->name, o->name)) {
-                        option = section->get_option(std::string(opt->name));
-                        option->set_value_str("");
+                        option = section->get_option_or(std::string(opt->name));
+                        section->unregister_option(option);
                 }
         }
 
@@ -441,21 +444,21 @@ reset_button_cb(GtkWidget *widget,
                         else
                                 gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.i);
                         section = get_config_section(o->plugin);
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         option->set_value_str(wf::option_type::to_string<int>(o->default_value.i));
                         save_config(wcm, o->plugin);
                         break;
                 case OPTION_TYPE_BOOL:
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(o->data_widget), o->default_value.i);
                         section = get_config_section(o->plugin);
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         option->set_value_str(wf::option_type::to_string<int>(o->default_value.i));
                         save_config(wcm, o->plugin);
                         break;
                 case OPTION_TYPE_DOUBLE:
                         gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget), o->default_value.d);
                         section = get_config_section(o->plugin);
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         option->set_value_str(wf::option_type::to_string<double>(o->default_value.d));
                         save_config(wcm, o->plugin);
                         break;
@@ -464,7 +467,7 @@ reset_button_cb(GtkWidget *widget,
                 case OPTION_TYPE_KEY:
                         gtk_button_set_label(GTK_BUTTON(o->data_widget), o->default_value.s);
                         section = get_config_section(o->plugin);
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         option->set_value_str(o->default_value.s);
                         save_config(wcm, o->plugin);
                         break;
@@ -483,7 +486,7 @@ reset_button_cb(GtkWidget *widget,
                                 gtk_entry_set_text(GTK_ENTRY(o->data_widget), o->default_value.s);
                         }
                         section = get_config_section(o->plugin);
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         option->set_value_str(o->default_value.s);
                         save_config(wcm, o->plugin);
                         break;
@@ -493,7 +496,7 @@ reset_button_cb(GtkWidget *widget,
                                 break;
                         gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(o->data_widget), &color);
                         section = get_config_section(o->plugin);
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         option->set_value_str(o->default_value.s);
                         save_config(wcm, o->plugin);
                         break;
@@ -514,7 +517,7 @@ set_string_combo_box_option_cb(GtkWidget *widget,
         int i;
 
         section = get_config_section(o->plugin);
-        option = section->get_option(o->name);
+        option = section->get_option_or(o->name);
         for (i = 0; i < int(o->str_labels.size()); i++) {
                 ls = o->str_labels[i];
                 if (ls->id == gtk_combo_box_get_active(GTK_COMBO_BOX(widget)))
@@ -546,7 +549,7 @@ set_int_combo_box_option_cb(GtkWidget *widget,
         std::shared_ptr<wf::config::option_base_t> option;
 
         section = get_config_section(o->plugin);
-        option = section->get_option(o->name);
+        option = section->get_option_or(o->name);
         option->set_value_str(wf::option_type::to_string<int>(gtk_combo_box_get_active(GTK_COMBO_BOX(widget))));
         save_config(wcm, o->plugin);
 }
@@ -581,7 +584,7 @@ spawn_color_chooser_cb(GtkWidget *widget,
                 gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(chooser), &color);
                 gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(widget), &color);
                 section = get_config_section(o->plugin);
-                option = section->get_option(o->name);
+                option = section->get_option_or(o->name);
                 c.r = color.red;
                 c.g = color.green;
                 c.b = color.blue;
@@ -603,7 +606,7 @@ set_double_spin_button_option_cb(GtkWidget *widget,
         std::shared_ptr<wf::config::option_base_t> option;
 
         section = get_config_section(o->plugin);
-        option = section->get_option(o->name);
+        option = section->get_option_or(o->name);
         option->set_value_str(wf::option_type::to_string<double>(gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))));
         save_config(wcm, o->plugin);
 }
@@ -628,7 +631,7 @@ set_int_spin_button_option_cb(GtkWidget *widget,
         std::shared_ptr<wf::config::option_base_t> option;
 
         section = get_config_section(o->plugin);
-        option = section->get_option(o->name);
+        option = section->get_option_or(o->name);
         option->set_value_str(wf::option_type::to_string<int>((int) gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget))));
         save_config(wcm, o->plugin);
 }
@@ -653,7 +656,7 @@ set_bool_check_button_option_cb(GtkWidget *widget,
         std::shared_ptr<wf::config::option_base_t> option;
 
         section = get_config_section(o->plugin);
-        option = section->get_option(o->name);
+        option = section->get_option_or(o->name);
         option->set_value_str(wf::option_type::to_string<bool>(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))));
         save_config(wcm, o->plugin);
 }
@@ -678,7 +681,7 @@ set_string_option_cb(GtkWidget *widget,
         std::shared_ptr<wf::config::option_base_t> option;
 
         section = get_config_section(o->plugin);
-        option = section->get_option(o->name);
+        option = section->get_option_or(o->name);
         option->set_value_str(gtk_entry_get_text(GTK_ENTRY(widget)));
         save_config(wcm, o->plugin);
 }
@@ -708,35 +711,35 @@ get_command_from_index(std::string command,
         case 0:
             option_name.replace(option_name.find(b),
                 std::string(b).length(), "repeatable_binding");
-            option = section->get_option(option_name);
-            option->set_value_str("");
+            option = section->get_option_or(option_name);
+            section->unregister_option(option);
             option_name = command;
             option_name.replace(option_name.find(b),
                 std::string(b).length(), "always_binding");
-            option = section->get_option(option_name);
-            option->set_value_str("");
+            option = section->get_option_or(option_name);
+            section->unregister_option(option);
             option_name = command;
             break;
         case 1:
-            option = section->get_option(option_name);
-            option->set_value_str("");
+            option = section->get_option_or(option_name);
+            section->unregister_option(option);
             option_name = command;
             option_name.replace(option_name.find(b),
                 std::string(b).length(), "always_binding");
-            option = section->get_option(option_name);
-            option->set_value_str("");
+            option = section->get_option_or(option_name);
+            section->unregister_option(option);
             option_name = command;
             option_name.replace(option_name.find(b),
                 std::string(b).length(), "repeatable_binding");
             break;
         case 2:
-            option = section->get_option(option_name);
-            option->set_value_str("");
+            option = section->get_option_or(option_name);
+            section->unregister_option(option);
             option_name = command;
             option_name.replace(option_name.find(b),
                 std::string(b).length(), "repeatable_binding");
-            option = section->get_option(option_name);
-            option->set_value_str("");
+            option = section->get_option_or(option_name);
+            section->unregister_option(option);
             option_name = command;
             option_name.replace(option_name.find(b),
                 std::string(b).length(), "always_binding");
@@ -762,7 +765,7 @@ set_command_combo_box_option_cb(GtkWidget *widget,
         section = get_config_section(o->plugin);
         active = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
         option_name = get_command_from_index(o->name, section, active);
-        option = section->get_option(option_name);
+        option = section->get_option_or(option_name);
         option->set_value_str(gtk_button_get_label(GTK_BUTTON(o->data_widget)));
         save_config(wcm, o->plugin);
 }
@@ -834,7 +837,7 @@ write_binding_option(Option *o, std::string name)
         std::shared_ptr<wf::config::option_base_t> option;
 
         section = get_config_section(o->plugin);
-        option = section->get_option(o->name);
+        option = section->get_option_or(o->name);
         if (o->mod_mask & MOD_TYPE_SHIFT) {
                 text += "<shift>";
                 first = false;
@@ -1128,9 +1131,9 @@ write_option(GtkWidget *widget,
         if (o->command) {
                 active = gtk_combo_box_get_active(GTK_COMBO_BOX(o->command_combo));
                 option_name = get_command_from_index(o->name, section, active);
-                option = section->get_option(option_name);
+                option = section->get_option_or(option_name);
         } else {
-                option = section->get_option(o->name);
+                option = section->get_option_or(o->name);
         }
 
         option->set_value_str(gtk_entry_get_text(GTK_ENTRY(o->label_widget)));
@@ -1232,7 +1235,7 @@ binding_edit_button_cb(GtkWidget *widget,
         std::shared_ptr<wf::config::option_base_t> option;
 
         section = get_config_section(o->plugin);
-        option = section->get_option(o->name);
+        option = section->get_option_or(o->name);
 
         GtkWidget *edit_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
         gtk_window_set_title(GTK_WINDOW(edit_window), "Edit Binding");
@@ -1364,10 +1367,19 @@ setup_command_list(GtkWidget *widget, Option *o)
                 auto repeat_binding_name = "repeatable_binding_" + command_names[i];
                 auto always_binding_name = "always_binding_" + command_names[i];
 
-                auto executable = section->get_option(command)->get_value_str();
-                auto regular_opt = section->get_option(regular_binding_name)->get_value_str();
-                auto repeatable_opt = section->get_option(repeat_binding_name)->get_value_str();
-                auto always_opt = section->get_option(always_binding_name)->get_value_str();
+                std::string executable, regular, repeatable, always;
+                auto executable_opt = section->get_option_or(command);
+                if (executable_opt)
+                    executable = executable_opt->get_value_str();
+                auto regular_opt = section->get_option_or(regular_binding_name);
+                if (regular_opt)
+                    regular = regular_opt->get_value_str();
+                auto repeatable_opt = section->get_option_or(repeat_binding_name);
+                if (repeatable_opt)
+                    repeatable = repeatable_opt->get_value_str();
+                auto always_opt = section->get_option_or(always_binding_name);
+                if (always_opt)
+                    always = always_opt->get_value_str();
                 GtkWidget *frame = gtk_frame_new(NULL);
                 GtkWidget *expander = gtk_expander_new((std::string("Command ") + command_names[i] + ": " + executable).c_str());
                 GtkWidget *expander_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
@@ -1377,9 +1389,9 @@ setup_command_list(GtkWidget *widget, Option *o)
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Regular");
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Repeat");
                 gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), "Always");
-                if (!always_opt.empty())
+                if (!always.empty())
                     gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 2);
-                else if (!repeatable_opt.empty())
+                else if (!repeatable.empty())
                     gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 1);
                 else
                     gtk_combo_box_set_active(GTK_COMBO_BOX(combo_box), 0);
@@ -1401,7 +1413,7 @@ setup_command_list(GtkWidget *widget, Option *o)
                         if (j == 0) {
                                 dyn_opt->name = strdup(regular_binding_name.c_str());
                                 label_text = std::string("Binding");
-                                opt_value = regular_opt;
+                                opt_value = regular;
                         } else if (j == 1) {
                                 dyn_opt->name = strdup(command.c_str());
                                 label_text = std::string("Command");
@@ -1476,7 +1488,7 @@ setup_command_list(GtkWidget *widget, Option *o)
                 gtk_container_add(GTK_CONTAINER(expander), options_layout);
                 gtk_container_add(GTK_CONTAINER(frame), expander);
                 gtk_container_add(GTK_CONTAINER(expander_layout), frame);
-                if (executable == std::string("<command>") || regular_opt == std::string("<binding>"))
+                if (executable == std::string("<command>") || regular == std::string("<binding>"))
                         gtk_expander_set_expanded(GTK_EXPANDER(expander), true);
                 gtk_box_pack_start(GTK_BOX(widget), expander_layout, false, true, 0);
         }
@@ -1514,7 +1526,7 @@ setup_autostart_list(GtkWidget *widget, Option *o)
         o->options.clear();
         for (size_t i = 0; i < autostart_names.size(); i++) {
                 auto e = autostart_names[i];
-                auto executable = section->get_option(e)->get_value_str();
+                auto executable = section->get_option_or(e)->get_value_str();
                 Option *dyn_opt = new Option();
                 option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
                 dyn_opt->name = strdup(e.c_str());
@@ -1620,7 +1632,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 case OPTION_TYPE_INT: {
                         int i;
                         LabeledInt *li;
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         GtkWidget *combo_box;
                         GtkWidget *spin_button;
                         auto wf_opt = wf::option_type::from_string<int>(option->get_value_str());
@@ -1653,10 +1665,10 @@ add_option_widget(GtkWidget *widget, Option *o)
                 }
                         break;
                 case OPTION_TYPE_BOOL: {
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         GtkWidget *check_button = gtk_check_button_new();
                         section = get_config_section(o->plugin);
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         auto v = wf::option_type::from_string<bool>(option->get_value_str()).value();
                         if (!v)
                                 return;
@@ -1671,7 +1683,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 }
                         break;
                 case OPTION_TYPE_DOUBLE: {
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         auto v = wf::option_type::from_string<double>(option->get_value_str()).value();
                         if (!v)
                                 return;
@@ -1688,7 +1700,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 case OPTION_TYPE_ACTIVATOR:
                 case OPTION_TYPE_BUTTON:
                 case OPTION_TYPE_KEY: {
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         GtkWidget *edit_button = gtk_button_new_from_icon_name("gtk-edit", GTK_ICON_SIZE_BUTTON);
                         gtk_widget_set_tooltip_text(edit_button, "Edit binding");
                         g_signal_connect(edit_button, "button-release-event",
@@ -1708,7 +1720,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                         LabeledString *ls;
                         GtkWidget *combo_box;
                         GtkWidget *entry;
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         if (o->str_labels.size()) {
                                 combo_box = gtk_combo_box_text_new();
                                 for (i = 0; i < int(o->str_labels.size()); i++) {
@@ -1758,7 +1770,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 case OPTION_TYPE_COLOR: {
                         wf::color_t c;
                         GdkRGBA color;
-                        option = section->get_option(o->name);
+                        option = section->get_option_or(o->name);
                         c = wf::option_type::from_string<wf::color_t>(option->get_value_str()).value();
                         color.red = c.r;
                         color.green = c.g;
@@ -1789,7 +1801,7 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
         size_t pos;
 
         section = wcm->wf_config_mgr.get_section("core");
-        option = section->get_option("plugins");
+        option = section->get_option_or("plugins");
 
         p->enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
         plugins = option->get_value_str();
