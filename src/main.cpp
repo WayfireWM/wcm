@@ -33,16 +33,26 @@ int
 load_config_files(WCM *wcm)
 {
         wordexp_t exp;
+        char *wf_config_file_override = getenv("WAYFIRE_CONFIG_FILE");
+        char *wf_shell_config_file_override = getenv("WF_SHELL_CONFIG_FILE");
 
-        wordexp(WAYFIRE_CONFIG_FILE_PATH, &exp, 0);
-        wcm->wf_config_file = strdup(exp.we_wordv[0]);
-        wordfree(&exp);
+        if (wf_config_file_override) {
+                wcm->wf_config_file = wf_config_file_override;
+        } else {
+                wordexp(WAYFIRE_CONFIG_FILE, &exp, 0);
+                wcm->wf_config_file = strdup(exp.we_wordv[0]);
+                wordfree(&exp);
+        }
 
         wcm->wf_config_mgr = wf::config::build_configuration(METADATADIR, "", wcm->wf_config_file);
 
-        wordexp(WF_SHELL_CONFIG_FILE_PATH, &exp, 0);
-        wcm->wf_shell_config_file = strdup(exp.we_wordv[0]);
-        wordfree(&exp);
+        if (wf_shell_config_file_override) {
+                wcm->wf_shell_config_file = wf_shell_config_file_override;
+        } else {
+                wordexp(WF_SHELL_CONFIG_FILE, &exp, 0);
+                wcm->wf_shell_config_file = strdup(exp.we_wordv[0]);
+                wordfree(&exp);
+        }
 
         wcm->wf_shell_config_mgr = wf::config::build_configuration(METADATADIR, "", wcm->wf_shell_config_file);
 
@@ -54,8 +64,7 @@ static void registry_add_object(void *data, struct wl_registry *registry,
 {
         WCM *wcm = (WCM *) data;
 
-        if (strcmp(interface, zwlr_input_inhibit_manager_v1_interface.name) == 0)
-        {
+        if (strcmp(interface, zwlr_input_inhibit_manager_v1_interface.name) == 0) {
                 wcm->inhibitor_manager = (zwlr_input_inhibit_manager_v1*) wl_registry_bind(
                         registry, name, &zwlr_input_inhibit_manager_v1_interface, 1u);
         }
@@ -75,14 +84,12 @@ static bool
 init_input_inhibitor(WCM *wcm)
 {
         struct wl_display *display = gdk_wayland_display_get_wl_display(gdk_display_get_default());
-        if (!display)
-        {
+        if (!display) {
                 std::cerr << "Failed to acquire wl_display for input inhibitor" << std::endl;
                 return false;
         }
         struct wl_registry *registry = wl_display_get_registry(display);
-        if (!registry)
-        {
+        if (!registry) {
                 std::cerr << "Failed to acquire wl_registry for input inhibitor" << std::endl;
                 return false;
         }
@@ -90,8 +97,7 @@ init_input_inhibitor(WCM *wcm)
         wl_registry_add_listener(registry, &registry_listener, wcm);
         wl_display_dispatch(display);
         wl_display_roundtrip(display);
-        if (!wcm->inhibitor_manager)
-        {
+        if (!wcm->inhibitor_manager) {
                 std::cerr << "Compositor does not support " <<
                     "wlr_input_inhibit_manager_v1" << std::endl;
                 return false;
