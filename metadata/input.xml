@@ -11,9 +11,17 @@
 		<_short>Mouse Cursor Speed</_short>
 		<default>0</default>
 	</option>
+	<option name="mouse_accel_profile" type="string">
+		<_short>Mouse Acceleration Profile</_short>
+		<default>default</default>
+	</option>
 	<option name="touchpad_cursor_speed" type="double">
 		<_short>Touchpad Cursor Speed</_short>
 		<default>0</default>
+	</option>
+	<option name="touchpad_accel_profile" type="string">
+		<_short>Touchpad Acceleration Profile</_short>
+		<default>default</default>
 	</option>
 	<option name="touchpad_scroll_speed" type="double">
 		<_short>Touchpad Scroll Speed</_short>
