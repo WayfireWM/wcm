@@ -2045,6 +2045,10 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout, GtkS
         gtk_button_set_relief(GTK_BUTTON(plugin_button), GTK_RELIEF_NONE);
         GtkWidget *button_icon = gtk_image_new_from_file((ICONDIR "/plugin-" + std::string(p->name) + ".svg").c_str());
         GtkWidget *button_label = gtk_label_new(p->disp_name);
+        gtk_label_set_ellipsize(GTK_LABEL(button_label), PANGO_ELLIPSIZE_END);
+        gtk_label_set_max_width_chars(GTK_LABEL(button_label), 25);
+        if (strlen(p->disp_name) > 25)
+                gtk_widget_set_tooltip_text(plugin_button, p->disp_name);
         gtk_box_pack_start(GTK_BOX(button_layout), button_icon, false, false, 0);
         gtk_box_pack_start(GTK_BOX(button_layout), button_label, false, false, 0);
         gtk_container_add(GTK_CONTAINER(plugin_button), button_layout);
