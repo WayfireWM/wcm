@@ -203,10 +203,6 @@ main(int argc, char **argv)
         status = g_application_run(G_APPLICATION(app), argc, argv);
         g_object_unref(app);
 
-        // TODO: Do these need to be deleted?
-        //delete wcm->wf_config_mgr;
-        //delete wcm->wf_shell_config_mgr;
-
         delete wcm;
 
         return status;
