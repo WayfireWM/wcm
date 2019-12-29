@@ -28,6 +28,7 @@
 #include "wcm.h"
 
 static int num_button_columns;
+static int button_width;
 
 #define NUM_CATEGORIES 8
 
@@ -814,6 +815,11 @@ binding_entry_focus_out_cb(GtkWidget *widget,
 static GtkWidget *
 create_plugins_layout(WCM *wcm);
 
+static void
+button_size_allocate_cb(GtkWidget *widget, GtkAllocation *allocation, void *data) {
+        button_width = allocation->width;
+}
+
 static gboolean
 main_panel_configure_cb(GtkWidget *widget,
                         GdkEvent *event,
@@ -822,8 +828,8 @@ main_panel_configure_cb(GtkWidget *widget,
         WCM *wcm = (WCM *) user_data;
         int width = gtk_widget_get_allocated_width(widget) - gtk_widget_get_allocated_width(wcm->left_panel_layout);
 
-        if ((width / 250) != num_button_columns) {
-                num_button_columns = width / 250;
+        if ((width / (button_width + 75)) != num_button_columns) {
+                num_button_columns = width / (button_width + 75);
                 position_plugin_buttons(wcm);
                 gtk_widget_destroy(gtk_bin_get_child(GTK_BIN(wcm->scrolled_plugin_layout)));
                 gtk_container_add(GTK_CONTAINER(wcm->scrolled_plugin_layout), create_plugins_layout(wcm));
@@ -1995,13 +2001,12 @@ get_icon_name_from_category(std::string category)
 }
 
 static void
-add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
+add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout, GtkSizeGroup **size_group)
 {
         if (!*category) {
                 *layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
                 GtkWidget *header_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
                 *category = gtk_grid_new();
-                gtk_grid_set_row_homogeneous(GTK_GRID(*category), true);
                 GtkWidget *icon = gtk_image_new_from_icon_name(get_icon_name_from_category(std::string(p->category)), GTK_ICON_SIZE_DND);
                 GtkWidget *label = gtk_label_new(NULL);
                 gtk_label_set_markup(GTK_LABEL(label), ("<span size=\"14000\" color=\"#AAA\"><b>" + std::string(p->category) + "</b></span>").c_str());
@@ -2024,7 +2029,6 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
         }
         GtkWidget *plugin_button = gtk_button_new();
         gtk_button_set_relief(GTK_BUTTON(plugin_button), GTK_RELIEF_NONE);
-        gtk_widget_set_size_request(plugin_button, 200, 1);
         GtkWidget *button_icon = gtk_image_new_from_file((ICONDIR "/plugin-" + std::string(p->name) + ".svg").c_str());
         GtkWidget *button_label = gtk_label_new(p->disp_name);
         gtk_box_pack_start(GTK_BOX(button_layout), button_icon, false, false, 0);
@@ -2034,11 +2038,14 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout)
                 gtk_box_pack_start(GTK_BOX(plugin_layout), check_button, false, false, 0);
         else
                 gtk_widget_set_margin_start(plugin_button, 25);
+        gtk_size_group_add_widget(*size_group, plugin_button);
         gtk_box_pack_start(GTK_BOX(plugin_layout), plugin_button, false, false, 0);
         g_object_set(plugin_layout, "margin", 5, NULL);
         gtk_grid_attach(GTK_GRID(*category), plugin_layout, p->x, p->y, 1, 1);
         g_signal_connect(plugin_button, "button-release-event",
                          G_CALLBACK(plugin_button_cb), p);
+        g_signal_connect(plugin_button, "size-allocate",
+                         G_CALLBACK(button_size_allocate_cb), NULL);
 }
 
 static GtkWidget *
@@ -2048,6 +2055,7 @@ create_plugins_layout(WCM *wcm)
         int i;
 
         GtkWidget *plugin_buttons_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+        GtkSizeGroup *size_group = gtk_size_group_new(GTK_SIZE_GROUP_BOTH);
 
         GtkWidget *categories[NUM_CATEGORIES] = {};
         GtkWidget *layout[NUM_CATEGORIES] = {};
@@ -2055,21 +2063,21 @@ create_plugins_layout(WCM *wcm)
         for (i = 0; i < int(wcm->plugins.size()); i++) {
                 p = wcm->plugins[i];
                 if (std::string(p->category) == "General")
-                        add_plugin_to_category(p, &categories[0], &layout[0]);
+                        add_plugin_to_category(p, &categories[0], &layout[0], &size_group);
                 else if (std::string(p->category) == "Accessibility")
-                        add_plugin_to_category(p, &categories[1], &layout[1]);
+                        add_plugin_to_category(p, &categories[1], &layout[1], &size_group);
                 else if (std::string(p->category) == "Desktop")
-                        add_plugin_to_category(p, &categories[2], &layout[2]);
+                        add_plugin_to_category(p, &categories[2], &layout[2], &size_group);
                 else if (std::string(p->category) == "Shell")
-                        add_plugin_to_category(p, &categories[3], &layout[3]);
+                        add_plugin_to_category(p, &categories[3], &layout[3], &size_group);
                 else if (std::string(p->category) == "Effects")
-                        add_plugin_to_category(p, &categories[4], &layout[4]);
+                        add_plugin_to_category(p, &categories[4], &layout[4], &size_group);
                 else if (std::string(p->category) == "Window Management")
-                        add_plugin_to_category(p, &categories[5], &layout[5]);
+                        add_plugin_to_category(p, &categories[5], &layout[5], &size_group);
                 else if (std::string(p->category) == "Utility")
-                        add_plugin_to_category(p, &categories[6], &layout[6]);
+                        add_plugin_to_category(p, &categories[6], &layout[6], &size_group);
                 else
-                        add_plugin_to_category(p, &categories[7], &layout[7]);
+                        add_plugin_to_category(p, &categories[7], &layout[7], &size_group);
         }
         for (i = 0; i < NUM_CATEGORIES; i++) {
                 if (!categories[i])
