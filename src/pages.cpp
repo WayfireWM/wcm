@@ -815,10 +815,7 @@ binding_entry_focus_out_cb(GtkWidget *widget,
 static GtkWidget *
 create_plugins_layout(WCM *wcm);
 
-static void
-button_size_allocate_cb(GtkWidget *widget, GtkAllocation *allocation, void *data) {
-        button_width = allocation->width;
-}
+#define padding 75
 
 static gboolean
 main_panel_configure_cb(GtkWidget *widget,
@@ -826,10 +823,10 @@ main_panel_configure_cb(GtkWidget *widget,
                         gpointer user_data)
 {
         WCM *wcm = (WCM *) user_data;
-        int width = gtk_widget_get_allocated_width(widget) - gtk_widget_get_allocated_width(wcm->left_panel_layout);
+        int width = event->configure.width - gtk_widget_get_allocated_width(wcm->left_panel_layout);
 
-        if ((width / (button_width + 75)) != num_button_columns) {
-                num_button_columns = width / (button_width + 75);
+        if ((width / (button_width + padding)) != num_button_columns) {
+                num_button_columns = width / (button_width + padding);
                 position_plugin_buttons(wcm);
                 gtk_widget_destroy(gtk_bin_get_child(GTK_BIN(wcm->scrolled_plugin_layout)));
                 gtk_container_add(GTK_CONTAINER(wcm->scrolled_plugin_layout), create_plugins_layout(wcm));
@@ -838,6 +835,23 @@ main_panel_configure_cb(GtkWidget *widget,
 
         return false;
 }
+
+static void
+button_size_allocate_cb(GtkWidget *widget, GtkAllocation *allocation, gpointer user_data)
+{
+        WCM *wcm = (WCM *) user_data;
+	GtkWidget *window = wcm->window;
+
+	if (button_width)
+	        return;
+
+        /* Set the size of the window to allow for 3 buttons per row by default */
+        button_width = allocation->width;
+        gtk_window_set_default_size(GTK_WINDOW(window), (button_width + padding) * 3 +
+                gtk_widget_get_allocated_width(wcm->left_panel_layout), 580);
+}
+
+#undef padding
 
 static void
 write_binding_option(Option *o, std::string name)
@@ -2045,7 +2059,7 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout, GtkS
         g_signal_connect(plugin_button, "button-release-event",
                          G_CALLBACK(plugin_button_cb), p);
         g_signal_connect(plugin_button, "size-allocate",
-                         G_CALLBACK(button_size_allocate_cb), NULL);
+                         G_CALLBACK(button_size_allocate_cb), p->wcm);
 }
 
 static GtkWidget *
