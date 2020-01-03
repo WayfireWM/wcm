@@ -1,4 +1,4 @@
-project('wcm', 'c', 'cpp', version : '0.3')
+project('wcm', 'c', 'cpp', version : '0.3.1')
 
 add_global_arguments('-DWAYFIRE_CONFIG_FILE_PATH="' + get_option('wayfire_config_file_path') + '"', language : 'cpp')
 add_global_arguments('-DWF_SHELL_CONFIG_FILE_PATH="' + get_option('wf_shell_config_file_path') + '"', language : 'cpp')
