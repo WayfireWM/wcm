@@ -1946,7 +1946,7 @@ plugin_button_cb(GtkWidget *widget,
         GtkWidget *top_spacer;
         for (i = 0; i < int(p->options.size()); i++) {
                 g = p->options[i];
-                if (g->type != OPTION_TYPE_GROUP)
+                if (g->type != OPTION_TYPE_GROUP || g->hidden)
                         continue;
                 options_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
                 top_spacer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1954,12 +1954,16 @@ plugin_button_cb(GtkWidget *widget,
                 gtk_box_pack_start(GTK_BOX(options_layout), top_spacer, false, false, 0);
                 for (j = 0; j < int(g->options.size()); j++) {
                         o = g->options[j];
+                        if (o->hidden)
+                                continue;
                         if (o->type == OPTION_TYPE_SUBGROUP && int(o->options.size())) {
                                 GtkWidget *frame = gtk_frame_new(NULL);
                                 GtkWidget *expander = gtk_expander_new(o->name);
                                 GtkWidget *expander_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
                                 for (k = 0; k < int(o->options.size()); k++) {
                                         s = o->options[k];
+                                        if (s->hidden)
+                                                continue;
                                         add_option_widget(expander_layout, s);
                                 }
                                 gtk_container_add(GTK_CONTAINER(expander), expander_layout);

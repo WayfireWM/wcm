@@ -78,6 +78,11 @@ create_option(xmlNode *cur_node, Plugin *p)
                 o->type = (option_type) -1;
         }
         free(prop);
+        o->hidden = false;
+        prop = xmlGetProp(cur_node, (xmlChar *) "hidden");
+        if (prop && std::string((char *) prop) == "true")
+                o->hidden = true;
+        free(prop);
         for (node = cur_node->children; node; node = node->next) {
                 if (node->type != XML_ELEMENT_NODE)
                         continue;

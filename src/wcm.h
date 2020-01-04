@@ -114,6 +114,7 @@ class Option
         var_data data;
         Option *parent;
         bool command;
+        bool hidden;
         GtkWidget *widget;
         GtkWidget *data_widget;
         GtkWidget *label_widget;
