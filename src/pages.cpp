@@ -1720,9 +1720,10 @@ add_option_widget(GtkWidget *widget, Option *o)
                         GtkWidget *check_button = gtk_check_button_new();
                         section = get_config_section(o->plugin);
                         option = section->get_option_or(o->name);
-                        auto v = wf::option_type::from_string<bool>(option->get_value_str()).value();
-                        if (!v)
+                        auto wf_opt = wf::option_type::from_string<bool>(option->get_value_str());
+                        if (!wf_opt)
                                 return;
+                        auto v = wf_opt.value();
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(check_button), v);
                         o->data_widget = check_button;
                         g_signal_connect(check_button, "toggled",
@@ -1735,9 +1736,10 @@ add_option_widget(GtkWidget *widget, Option *o)
                         break;
                 case OPTION_TYPE_DOUBLE: {
                         option = section->get_option_or(o->name);
-                        auto v = wf::option_type::from_string<double>(option->get_value_str()).value();
-                        if (!v)
+                        auto wf_opt = wf::option_type::from_string<double>(option->get_value_str());
+                        if (!wf_opt)
                                 return;
+                        auto v = wf_opt.value();
                         GtkWidget *spin_button = gtk_spin_button_new(gtk_adjustment_new(v, o->data.min, o->data.max, o->data.precision, 0, 0), o->data.precision, 3);
                         o->data_widget = spin_button;
                         g_signal_connect(spin_button, "value-changed",
@@ -1822,7 +1824,10 @@ add_option_widget(GtkWidget *widget, Option *o)
                         wf::color_t c;
                         GdkRGBA color;
                         option = section->get_option_or(o->name);
-                        c = wf::option_type::from_string<wf::color_t>(option->get_value_str()).value();
+                        auto wf_opt = wf::option_type::from_string<wf::color_t>(option->get_value_str());
+                        if (!wf_opt)
+                                return;
+                        c = wf_opt.value();
                         color.red = c.r;
                         color.green = c.g;
                         color.blue = c.b;
