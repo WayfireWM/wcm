@@ -5,12 +5,14 @@ add_global_arguments('-DWF_SHELL_CONFIG_FILE="' + get_option('wf_shell_config_fi
 
 wayfire = dependency('wayfire')
 metadata_dir = wayfire.get_variable(pkgconfig: 'metadatadir')
+sysconf_dir = wayfire.get_variable(pkgconfig: 'metadatadir')
 
 share_dir = join_paths(get_option('prefix'), 'share')
 wayfire_share_dir = join_paths(share_dir, 'wayfire')
 icon_dir = join_paths(wayfire_share_dir, 'icons')
 
 add_global_arguments('-DMETADATADIR="' + metadata_dir + '"', language : 'cpp')
+add_global_arguments('-DSYSCONFDIR="' + sysconf_dir + '"', language : 'cpp')
 add_global_arguments('-DICONDIR="' + icon_dir + '"', language : 'cpp')
 
 dependency('pkg-config', required : true)

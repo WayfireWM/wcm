@@ -44,7 +44,8 @@ load_config_files(WCM *wcm)
                 wordfree(&exp);
         }
 
-        wcm->wf_config_mgr = wf::config::build_configuration(METADATADIR, "", wcm->wf_config_file);
+        wcm->wf_config_mgr = wf::config::build_configuration(METADATADIR,
+                SYSCONFDIR "/wayfire/defaults.ini", wcm->wf_config_file);
 
         if (wf_shell_config_file_override) {
                 wcm->wf_shell_config_file = wf_shell_config_file_override;
@@ -54,7 +55,8 @@ load_config_files(WCM *wcm)
                 wordfree(&exp);
         }
 
-        wcm->wf_shell_config_mgr = wf::config::build_configuration(METADATADIR, "", wcm->wf_shell_config_file);
+        wcm->wf_shell_config_mgr = wf::config::build_configuration(METADATADIR,
+                SYSCONFDIR "/wayfire/wf-shell-defaults.ini", wcm->wf_shell_config_file);
 
         return 0;
 }
