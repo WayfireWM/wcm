@@ -23,6 +23,9 @@
  * SOFTWARE.
  */
 
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <libevdev/libevdev.h>
 #include <wayfire/config/types.hpp>
 #include "wcm.h"
@@ -391,6 +394,40 @@ add_autostart_item_button_cb(GtkWidget *widget,
         gtk_widget_set_size_request(top_spacer, 1, 5);
         gtk_box_pack_start(GTK_BOX(o->widget), top_spacer, false, false, 0);
         add_option_widget(o->widget, o);
+}
+
+static void
+run_autostart_item_button_cb(GtkWidget *widget,
+                           GdkEventButton *event,
+                           gpointer user_data)
+{
+        Option *o = (Option *) user_data;
+        char *command;
+        std::shared_ptr<wf::config::section_t> section;
+        std::shared_ptr<wf::config::option_base_t> option;
+
+        section = get_config_section(o->plugin);
+        option = section->get_option_or(o->name);
+        command = strdup(option->get_value_str().c_str());
+
+        pid_t pid = fork();
+
+        if (!pid) {
+                if (!fork()) {
+                        int dev_null = open("/dev/null", O_WRONLY);
+                        dup2(dev_null, 1);
+                        dup2(dev_null, 2);
+
+                        _exit(execl("/bin/sh", "/bin/bash", "-c", command, NULL));
+                } else {
+                        _exit(0);
+                }
+        } else {
+                int status;
+                waitpid(pid, &status, 0);
+        }
+
+        free(command);
 }
 
 static void
@@ -1561,9 +1598,9 @@ static void
 setup_autostart_list(GtkWidget *widget, Option *o)
 {
         std::shared_ptr<wf::config::section_t> section;
-        GtkWidget *option_layout, *entry, *remove_button, *add_button, *add_button_layout;
+        GtkWidget *option_layout, *entry, *run_button, *remove_button, *add_button, *add_button_layout;
         GtkWidget *list_add_image = gtk_image_new_from_icon_name("list-add", GTK_ICON_SIZE_BUTTON);
-        GtkWidget *list_remove_image;
+        GtkWidget *list_remove_image, *run_image;
         section = get_config_section(o->plugin);
         std::vector<std::string> autostart_names;
         for (auto e : section->get_registered_options())
@@ -1605,7 +1642,15 @@ setup_autostart_list(GtkWidget *widget, Option *o)
                                 G_CALLBACK(remove_autostart_item_button_cb), dyn_opt);
                 list_remove_image = gtk_image_new_from_icon_name("list-remove", GTK_ICON_SIZE_BUTTON);
                 gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
+                run_button = gtk_button_new();
+                gtk_widget_set_margin_start(run_button, 10);
+                gtk_widget_set_tooltip_text(run_button, "Run command");
+                g_signal_connect(run_button, "button-release-event",
+                                G_CALLBACK(run_autostart_item_button_cb), dyn_opt);
+                run_image = gtk_image_new_from_icon_name("media-playback-start", GTK_ICON_SIZE_BUTTON);
+                gtk_button_set_image(GTK_BUTTON(run_button), run_image);
                 gtk_box_pack_end(GTK_BOX(option_layout), remove_button, false, false, 0);
+                gtk_box_pack_end(GTK_BOX(option_layout), run_button, false, false, 0);
                 if (o->data.hints & HINT_FILE) {
                         GtkWidget *file_choose_button = gtk_button_new_from_icon_name("application-x-executable", GTK_ICON_SIZE_BUTTON);
                         gtk_widget_set_tooltip_text(file_choose_button, "Choose Executable");
