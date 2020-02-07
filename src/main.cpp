@@ -55,7 +55,7 @@ load_config_files(WCM *wcm)
                 wordfree(&exp);
         }
 
-        wcm->wf_shell_config_mgr = wf::config::build_configuration(METADATADIR,
+        wcm->wf_shell_config_mgr = wf::config::build_configuration(METADATADIR "/wf-shell",
                 SYSCONFDIR "/wayfire/wf-shell-defaults.ini", wcm->wf_shell_config_file);
 
         return 0;
@@ -195,7 +195,10 @@ main(int argc, char **argv)
         if (load_config_files(wcm))
                 return -1;
 
-        if (parse_xml_files(wcm, METADATADIR))
+        if (parse_xml_files(wcm, &wcm->wf_config_mgr))
+                return -1;
+
+        if (parse_xml_files(wcm, &wcm->wf_shell_config_mgr))
                 return -1;
 
         init(wcm);

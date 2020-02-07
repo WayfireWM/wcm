@@ -165,7 +165,7 @@ int
 load_config_files(WCM *wcm);
 
 int
-parse_xml_files(WCM *wcm, const char *dir_name);
+parse_xml_files(WCM *wcm, wf::config::config_manager_t *config_manager);
 
 GtkWidget *
 create_main_layout(WCM *wcm);

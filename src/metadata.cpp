@@ -267,9 +267,9 @@ get_plugin_data(Plugin *p, Option *opt, Option *main_group, xmlDoc *doc, xmlNode
 }
 
 int
-parse_xml_files(WCM *wcm, const char *dir_name)
+parse_xml_files(WCM *wcm, wf::config::config_manager_t *config_manager)
 {
-        for (auto& s : wcm->wf_config_mgr.get_all_sections()) {
+        for (auto& s : config_manager->get_all_sections()) {
                 xmlNode *root_element = wf::config::xml::get_section_xml_node(s);
                 xmlDoc *doc = NULL;
 
