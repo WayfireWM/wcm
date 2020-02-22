@@ -107,6 +107,7 @@ class Option
         Plugin *plugin;
         char *name;
         char *disp_name;
+        char *tooltip;
         char *binding;
         option_type type;
         mod_type mod_mask;
@@ -136,6 +137,7 @@ class Plugin
         WCM *wcm;
         char *name;
         char *disp_name;
+        char *tooltip;
         char *category;
         plugin_type type;
         int x, y;

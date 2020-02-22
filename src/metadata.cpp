@@ -88,6 +88,8 @@ create_option(xmlNode *cur_node, Plugin *p)
                         continue;
                 if (std::string((char *) node->name) == "_short") {
                         o->disp_name = strdup((char *) node->children->content);
+                } else if (std::string((char *) node->name) == "_long") {
+                        o->tooltip = strdup((char *) node->children->content);
                 } else if (std::string((char *) node->name) == "default") {
                         if (!node->children)
                                 continue;
@@ -212,6 +214,8 @@ get_plugin_data(Plugin *p, Option *opt, Option *main_group, xmlDoc *doc, xmlNode
                         free(prop);
                 } else if (std::string((char *) cur_node->name) == "_short") {
                         p->disp_name = strdup((char *) cur_node->children->content);
+                } else if (std::string((char *) cur_node->name) == "_long") {
+                        p->tooltip = strdup((char *) cur_node->children->content);
                 } else if (std::string((char *) cur_node->name) == "category") {
                         if (!cur_node->children)
                                 continue;

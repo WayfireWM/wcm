@@ -1699,9 +1699,9 @@ add_option_widget(GtkWidget *widget, Option *o)
                         section = get_config_section(o->plugin);
                         option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
                         label = gtk_label_new(o->disp_name);
+                        gtk_widget_set_tooltip_text(label, o->tooltip);
                         gtk_widget_set_margin_start(label, 10);
                         gtk_widget_set_margin_end(label, 10);
-                        gtk_widget_set_tooltip_text(label, o->name);
                         gtk_widget_set_size_request(label, 200, 1);
                         gtk_label_set_xalign(GTK_LABEL(label), 0);
                         reset_button = gtk_button_new();
@@ -1961,6 +1961,7 @@ plugin_button_cb(GtkWidget *widget,
         GtkWidget *plugin_buttons_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         GtkWidget *label = gtk_label_new(NULL);
         gtk_label_set_markup(GTK_LABEL(label), ("<span size=\"12000\"><b>" + std::string(p->disp_name) + "</b></span>").c_str());
+        gtk_widget_set_tooltip_text(label, p->tooltip);
         g_object_set(label, "margin", 50, NULL);
         gtk_label_set_line_wrap(GTK_LABEL(label), true);
         gtk_label_set_max_width_chars(GTK_LABEL(label), 15);
@@ -2099,10 +2100,9 @@ add_plugin_to_category(Plugin *p, GtkWidget **category, GtkWidget **layout, GtkS
         gtk_button_set_relief(GTK_BUTTON(plugin_button), GTK_RELIEF_NONE);
         GtkWidget *button_icon = gtk_image_new_from_file((ICONDIR "/plugin-" + std::string(p->name) + ".svg").c_str());
         GtkWidget *button_label = gtk_label_new(p->disp_name);
+        gtk_widget_set_tooltip_text(plugin_button, p->tooltip);
         gtk_label_set_ellipsize(GTK_LABEL(button_label), PANGO_ELLIPSIZE_END);
         gtk_label_set_max_width_chars(GTK_LABEL(button_label), 25);
-        if (strlen(p->disp_name) > 25)
-                gtk_widget_set_tooltip_text(plugin_button, p->disp_name);
         gtk_box_pack_start(GTK_BOX(button_layout), button_icon, false, false, 0);
         gtk_box_pack_start(GTK_BOX(button_layout), button_label, false, false, 0);
         gtk_container_add(GTK_CONTAINER(plugin_button), button_layout);
