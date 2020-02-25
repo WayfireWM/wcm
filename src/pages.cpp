@@ -1891,6 +1891,21 @@ add_option_widget(GtkWidget *widget, Option *o)
 }
 
 static void
+format_whitespace(std::string &str)
+{
+        size_t pos;
+        int i;
+        /* Remove trailing spaces */
+        pos = str.find_last_not_of(" ");
+        if (pos != std::string::npos)
+                str.substr(0, pos + 1);
+        /* Remove duplicate spaces */
+        for (i = str.size() - 1; i >= 0; i--)
+                if(str[i] == ' ' && str[i] == str[i - 1])
+                        str.erase(str.begin() + i);
+}
+
+static void
 toggle_plugin_enabled_cb(GtkWidget *widget,
                          gpointer user_data)
 {
@@ -1908,27 +1923,21 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
         plugins = option->get_value_str();
 
         if (p->enabled) {
+                /* Add plugin if it does not exist */
                 pos = plugins.find(std::string(p->name));
-                if (pos == std::string::npos) {
-                        option->set_value_str(option->get_value_str() + " " + std::string(p->name));
-                        save_config(wcm, p);
-                }
+                if (pos == std::string::npos)
+		        plugins.append(" " + std::string(p->name));
+                format_whitespace(plugins);
+                option->set_value_str(plugins);
+                save_config(wcm, p);
                 if (widget == p->t2)
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t1), true);
         } else {
-                int i;
-                /* Remove plugin name string */
+                /* Remove plugin from string */
                 pos = plugins.find(std::string(p->name));
                 if (pos != std::string::npos)
                         plugins.erase(pos, std::string(p->name).length());
-                /* Remove trailing spaces */
-                pos = plugins.find_last_not_of(" ");
-                if (pos != std::string::npos)
-                        plugins.substr(0, pos + 1);
-                /* Remove duplicate spaces */
-                for (i = plugins.size() - 1; i >= 0; i--)
-                        if(plugins[i] == ' ' && plugins[i] == plugins[i - 1])
-                                plugins.erase(plugins.begin() + i);
+                format_whitespace(plugins);
                 option->set_value_str(plugins);
                 save_config(wcm, p);
                 if (widget == p->t2)
