@@ -1913,9 +1913,7 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
                         option->set_value_str(option->get_value_str() + " " + std::string(p->name));
                         save_config(wcm, p);
                 }
-                if (widget == p->t1)
-                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t2), true);
-                else if (widget == p->t2)
+                if (widget == p->t2)
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t1), true);
         } else {
                 int i;
@@ -1933,9 +1931,7 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
                                 plugins.erase(plugins.begin() + i);
                 option->set_value_str(plugins);
                 save_config(wcm, p);
-                if (widget == p->t1)
-                        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t2), false);
-                else if (widget == p->t2)
+                if (widget == p->t2)
                         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t1), false);
         }
 }
