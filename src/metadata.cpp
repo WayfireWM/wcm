@@ -107,6 +107,7 @@ create_option(xmlNode *cur_node, Plugin *p)
                                         if (o->default_value.i < 0 && o->default_value.i > 1)
                                                 printf("WARN: [%s] unknown bool option default\n", p->name);
                                         break;
+                                case OPTION_TYPE_ACTIVATOR:
                                 case OPTION_TYPE_STRING:
                                 case OPTION_TYPE_BUTTON:
                                 case OPTION_TYPE_COLOR:
