@@ -509,6 +509,7 @@ reset_button_cb(GtkWidget *widget,
                         option->set_value_str(o->default_value.s);
                         save_config(wcm, o->plugin);
                         break;
+                case OPTION_TYPE_GESTURE:
                 case OPTION_TYPE_STRING:
                         if (o->str_labels.size()) {
                                 LabeledString *ls;
@@ -1692,6 +1693,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                 case OPTION_TYPE_BOOL:
                 case OPTION_TYPE_DOUBLE:
                 case OPTION_TYPE_ACTIVATOR:
+                case OPTION_TYPE_GESTURE:
                 case OPTION_TYPE_BUTTON:
                 case OPTION_TYPE_KEY:
                 case OPTION_TYPE_STRING:
@@ -1813,6 +1815,7 @@ add_option_widget(GtkWidget *widget, Option *o)
                         gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
                 }
                         break;
+                case OPTION_TYPE_GESTURE:
                 case OPTION_TYPE_STRING: {
                         int i;
                         LabeledString *ls;

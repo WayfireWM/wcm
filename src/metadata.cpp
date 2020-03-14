@@ -58,6 +58,9 @@ create_option(xmlNode *cur_node, Plugin *p)
                 } else if (std::string((char *) prop) == "button") {
                         o->type = OPTION_TYPE_BUTTON;
                         o->default_value.s = strdup("");
+                } else if (std::string((char *) prop) == "gesture") {
+                        o->type = OPTION_TYPE_GESTURE;
+                        o->default_value.s = strdup("");
                 } else if (std::string((char *) prop) == "activator") {
                         o->type = OPTION_TYPE_ACTIVATOR;
                         o->default_value.s = strdup("");
@@ -108,6 +111,7 @@ create_option(xmlNode *cur_node, Plugin *p)
                                                 printf("WARN: [%s] unknown bool option default\n", p->name);
                                         break;
                                 case OPTION_TYPE_ACTIVATOR:
+                                case OPTION_TYPE_GESTURE:
                                 case OPTION_TYPE_STRING:
                                 case OPTION_TYPE_BUTTON:
                                 case OPTION_TYPE_COLOR:
