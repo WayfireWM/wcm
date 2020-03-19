@@ -1615,6 +1615,8 @@ setup_autostart_list(GtkWidget *widget, Option *o)
         o->options.clear();
         for (size_t i = 0; i < autostart_names.size(); i++) {
                 auto e = autostart_names[i];
+                if (e == "autostart_wf_shell")
+                        continue;
                 auto executable = section->get_option_or(e)->get_value_str();
                 Option *dyn_opt = new Option();
                 option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
