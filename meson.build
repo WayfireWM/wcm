@@ -18,7 +18,6 @@ add_global_arguments('-DICONDIR="' + icon_dir + '"', language : 'cpp')
 dependency('pkg-config', required : true)
 evdev = dependency('libevdev')
 
-icon_dir = join_paths(wayfire_share_dir, 'icons')
 add_project_arguments('-DICONDIR="' + icon_dir + '"', language : 'cpp')
 
 subdir('icons')
