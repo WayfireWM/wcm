@@ -26,6 +26,7 @@
  * 
  */
 
+#include <sstream>
 #include <wordexp.h>
 #include "wcm.h"
 
@@ -44,8 +45,17 @@ load_config_files(WCM *wcm)
                 wordfree(&exp);
         }
 
-        wcm->wf_config_mgr = wf::config::build_configuration(METADATADIR,
-                SYSCONFDIR "/wayfire/defaults.ini", wcm->wf_config_file);
+        std::vector<std::string> wayfire_xmldirs;
+        if (char *plugin_xml_path = getenv("WAYFIRE_PLUGIN_XML_PATH")) {
+                std::stringstream ss (plugin_xml_path);
+                std::string entry;
+                while (std::getline(ss, entry, ':'))
+                        wayfire_xmldirs.push_back(entry);
+        }
+        wayfire_xmldirs.push_back(WAYFIRE_METADATADIR);
+
+        wcm->wf_config_mgr = wf::config::build_configuration(wayfire_xmldirs,
+                WAYFIRE_SYSCONFDIR "/wayfire/defaults.ini", wcm->wf_config_file);
 
         if (wf_shell_config_file_override) {
                 wcm->wf_shell_config_file = wf_shell_config_file_override;
@@ -55,8 +65,9 @@ load_config_files(WCM *wcm)
                 wordfree(&exp);
         }
 
-        wcm->wf_shell_config_mgr = wf::config::build_configuration(METADATADIR "/wf-shell",
-                SYSCONFDIR "/wayfire/wf-shell-defaults.ini", wcm->wf_shell_config_file);
+        std::vector<std::string> wf_shell_xmldirs(1, WFSHELL_METADATADIR);
+        wcm->wf_shell_config_mgr = wf::config::build_configuration(wf_shell_xmldirs,
+                WFSHELL_SYSCONFDIR "/wayfire/wf-shell-defaults.ini", wcm->wf_shell_config_file);
 
         return 0;
 }
