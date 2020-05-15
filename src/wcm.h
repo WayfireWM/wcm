@@ -160,6 +160,7 @@ class WCM
         wf::config::config_manager_t wf_shell_config_mgr;
         const char *wf_config_file;
         const char *wf_shell_config_file;
+        cairo_surface_t *grab_window_surface;
         zwlr_input_inhibitor_v1 *screen_lock;
         zwlr_input_inhibit_manager_v1 *inhibitor_manager;
 };

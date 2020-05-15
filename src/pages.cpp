@@ -60,7 +60,7 @@ reload_config(WCM *wcm)
 static std::shared_ptr<wf::config::section_t>
 get_config_section(Plugin *p)
 {
-	WCM *wcm = p->wcm;
+        WCM *wcm = p->wcm;
         if (p->type == PLUGIN_TYPE_WAYFIRE) {
                 return wcm->wf_config_mgr.get_section(p->name);
         } else if (p->type == PLUGIN_TYPE_WF_SHELL) {
@@ -878,10 +878,10 @@ static void
 button_size_allocate_cb(GtkWidget *widget, GtkAllocation *allocation, gpointer user_data)
 {
         WCM *wcm = (WCM *) user_data;
-	GtkWidget *window = wcm->window;
+        GtkWidget *window = wcm->window;
 
-	if (button_width)
-	        return;
+        if (button_width)
+                return;
 
         /* Set the size of the window to allow for 3 buttons per row by default */
         button_width = allocation->width;
@@ -1020,6 +1020,25 @@ write_binding_option_check(Option *o, std::string name)
         o->binding = strdup(name.c_str());
 }
 
+static bool
+lock_input(WCM *wcm)
+{
+        if (!wcm->inhibitor_manager)
+        {
+                std::cerr << "Compositor does not support " <<
+                    "wlr_input_inhibit_manager_v1!" << std::endl;
+                return false;
+        }
+
+        if (wcm->screen_lock)
+                return false;
+
+        /* Lock input */
+        wcm->screen_lock = zwlr_input_inhibit_manager_v1_get_inhibitor(wcm->inhibitor_manager);
+
+        return true;
+}
+
 static void
 unlock_input(WCM *wcm)
 {
@@ -1105,42 +1124,26 @@ grab_binding_key_cb(GtkWidget *widget,
                 }
         }
 
-        std::string modifiers = "";
+        std::string text = "";
 
         if (o->mod_mask & MOD_TYPE_SHIFT)
-                modifiers += "<Shift>";
+                text += "<Shift>";
 
         if (o->mod_mask & MOD_TYPE_CONTROL)
-                modifiers += "<Control>";
+                text += "<Control>";
 
         if (o->mod_mask & MOD_TYPE_ALT)
-                modifiers += "<Alt>";
+                text += "<Alt>";
 
         if (o->mod_mask & MOD_TYPE_SUPER)
-                modifiers += "<Super>";
+                text += "<Super>";
 
-        gtk_label_set_text(GTK_LABEL(o->label_widget), modifiers.c_str());
+        if (text.empty())
+                text = "(No modifiers pressed)";
+
+        gtk_label_set_text(GTK_LABEL(o->label_widget), text.c_str());
 
         return false;
-}
-
-static bool
-lock_input(WCM *wcm)
-{
-        if (!wcm->inhibitor_manager)
-        {
-            std::cerr << "Compositor does not support " <<
-                "wlr_input_inhibit_manager_v1!" << std::endl;
-            return false;
-        }
-
-        /* Lock input */
-        if (wcm->inhibitor_manager)
-        {
-            wcm->screen_lock = zwlr_input_inhibit_manager_v1_get_inhibitor(wcm->inhibitor_manager);
-        }
-
-        return true;
 }
 
 static gboolean
@@ -1178,10 +1181,13 @@ key_grab_button_cb(GtkWidget *widget,
                                          G_CALLBACK(window_deleted_cb), o);
 
         GtkWidget *layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        GtkWidget *label = gtk_label_new(NULL);
+        GtkWidget *label = gtk_label_new("(No modifiers pressed)");
         gtk_box_pack_start(GTK_BOX(layout), label, true, true, 0);
         gtk_container_add(GTK_CONTAINER(grab_binding_window), layout);
         o->label_widget = label;
+
+        gtk_window_fullscreen(GTK_WINDOW(grab_binding_window));
+        gtk_window_set_decorated(GTK_WINDOW(grab_binding_window), false);
 
         gtk_widget_show_all(grab_binding_window);
 }
@@ -1931,7 +1937,7 @@ toggle_plugin_enabled_cb(GtkWidget *widget,
                 /* Add plugin if it does not exist */
                 pos = plugins.find(std::string(p->name));
                 if (pos == std::string::npos)
-		        plugins.append(" " + std::string(p->name));
+                        plugins.append(" " + std::string(p->name));
                 format_whitespace(plugins);
                 option->set_value_str(plugins);
                 save_config(wcm, p);
