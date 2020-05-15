@@ -1187,7 +1187,6 @@ key_grab_button_cb(GtkWidget *widget,
         o->label_widget = label;
 
         gtk_window_fullscreen(GTK_WINDOW(grab_binding_window));
-        gtk_window_set_decorated(GTK_WINDOW(grab_binding_window), false);
 
         gtk_widget_show_all(grab_binding_window);
 }
