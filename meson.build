@@ -4,21 +4,25 @@ add_global_arguments('-DWAYFIRE_CONFIG_FILE="' + get_option('wayfire_config_file
 add_global_arguments('-DWF_SHELL_CONFIG_FILE="' + get_option('wf_shell_config_file_path') + '"', language : 'cpp')
 
 wayfire = dependency('wayfire')
-metadata_dir = wayfire.get_variable(pkgconfig: 'metadatadir')
-sysconf_dir = wayfire.get_variable(pkgconfig: 'metadatadir')
+wf_shell = dependency('wf-shell')
+
+wayfire_metadata_dir = wayfire.get_variable(pkgconfig: 'metadatadir')
+wayfire_sysconf_dir = wayfire.get_variable(pkgconfig: 'sysconfdir')
+wf_shell_metadata_dir = wf_shell.get_variable(pkgconfig: 'metadatadir')
+wf_shell_sysconf_dir = wf_shell.get_variable(pkgconfig: 'sysconfdir')
 
 share_dir = join_paths(get_option('prefix'), 'share')
-wayfire_share_dir = join_paths(share_dir, 'wayfire')
-icon_dir = join_paths(wayfire_share_dir, 'icons')
+icon_dir = join_paths(share_dir, 'wayfire', 'icons')
 
-add_global_arguments('-DMETADATADIR="' + metadata_dir + '"', language : 'cpp')
-add_global_arguments('-DSYSCONFDIR="' + sysconf_dir + '"', language : 'cpp')
+add_global_arguments('-DWAYFIRE_METADATADIR="' + wayfire_metadata_dir + '"', language : 'cpp')
+add_global_arguments('-DWAYFIRE_SYSCONFDIR="' + wayfire_sysconf_dir + '"', language : 'cpp')
+add_global_arguments('-DWFSHELL_METADATADIR="' + wf_shell_metadata_dir + '"', language : 'cpp')
+add_global_arguments('-DWFSHELL_SYSCONFDIR="' + wf_shell_sysconf_dir + '"', language : 'cpp')
 add_global_arguments('-DICONDIR="' + icon_dir + '"', language : 'cpp')
 
 dependency('pkg-config', required : true)
 evdev = dependency('libevdev')
 
-icon_dir = join_paths(wayfire_share_dir, 'icons')
 add_project_arguments('-DICONDIR="' + icon_dir + '"', language : 'cpp')
 
 subdir('icons')
