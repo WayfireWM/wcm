@@ -64,11 +64,11 @@ load_config_files(WCM *wcm)
                 wcm->wf_shell_config_file = strdup(exp.we_wordv[0]);
                 wordfree(&exp);
         }
-
+#if HAVE_WFSHELL
         std::vector<std::string> wf_shell_xmldirs(1, WFSHELL_METADATADIR);
         wcm->wf_shell_config_mgr = wf::config::build_configuration(wf_shell_xmldirs,
                 WFSHELL_SYSCONFDIR "/wayfire/wf-shell-defaults.ini", wcm->wf_shell_config_file);
-
+#endif
         return 0;
 }
 
@@ -208,10 +208,10 @@ main(int argc, char **argv)
 
         if (parse_xml_files(wcm, &wcm->wf_config_mgr))
                 return -1;
-
+#if HAVE_WFSHELL
         if (parse_xml_files(wcm, &wcm->wf_shell_config_mgr))
                 return -1;
-
+#endif
         init(wcm);
 
         app = gtk_application_new("org.gtk.wayfire-config-manager", G_APPLICATION_FLAGS_NONE);
