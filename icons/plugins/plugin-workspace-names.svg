@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" inkscape:export-ydpi="90.000000" inkscape:export-xdpi="90.000000" inkscape:export-filename="/home/patrick/Desktop/visual-effects.png" width="32" height="32" id="svg11300" sodipodi:version="0.32" inkscape:version="0.46+devel r22355" sodipodi:docname="plugin-workspacenames.svg" inkscape:output_extension="org.inkscape.output.svg.inkscape" version="1.0">
+  <sodipodi:namedview stroke="#ef2929" fill="#eeeeec" id="base" pagecolor="#ffffff" bordercolor="#666666" borderopacity="0.25490196" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:zoom="13.28125" inkscape:cx="16" inkscape:cy="16.514689" inkscape:current-layer="layer1" showgrid="false" inkscape:grid-bbox="true" inkscape:document-units="px" inkscape:showpageshadow="false" inkscape:window-width="906" inkscape:window-height="680" inkscape:window-x="137" inkscape:window-y="49" showguides="true" inkscape:guide-bbox="true" inkscape:window-maximized="0">
+    <inkscape:grid type="xygrid" id="grid8736" visible="true" enabled="true"/>
+  </sodipodi:namedview>
+  <defs id="defs3">
+    <inkscape:perspective sodipodi:type="inkscape:persp3d" inkscape:vp_x="0 : 16 : 1" inkscape:vp_y="0 : 1000 : 0" inkscape:vp_z="32 : 16 : 1" inkscape:persp3d-origin="16 : 10.666667 : 1" id="perspective33"/>
+    <linearGradient id="linearGradient8764">
+      <stop style="stop-color: rgb(46, 52, 54); stop-opacity: 1;" offset="0" id="stop8766"/>
+      <stop style="stop-color: rgb(136, 138, 133); stop-opacity: 1;" offset="1" id="stop8768"/>
+    </linearGradient>
+    <linearGradient id="linearGradient3268">
+      <stop id="stop3270" offset="0" style="stop-color: rgb(211, 215, 207); stop-opacity: 1;"/>
+      <stop id="stop3272" offset="1" style="stop-color: rgb(136, 138, 133); stop-opacity: 1;"/>
+    </linearGradient>
+    <linearGradient id="linearGradient3262">
+      <stop id="stop3264" offset="0" style="stop-color: rgb(186, 189, 182); stop-opacity: 1;"/>
+      <stop id="stop3266" offset="1" style="stop-color: rgb(238, 238, 236); stop-opacity: 1;"/>
+    </linearGradient>
+    <radialGradient inkscape:collect="always" xlink:href="#linearGradient3268" id="radialGradient3196" cx="14.779834" cy="11.346951" fx="14.779834" fy="11.346951" r="9.597476" gradientTransform="matrix(0.576198, 4.47666, -3.221, 1.0378, 30.7274, -74.9666)" gradientUnits="userSpaceOnUse"/>
+    <radialGradient inkscape:collect="always" xlink:href="#linearGradient3262" id="radialGradient7961" gradientUnits="userSpaceOnUse" gradientTransform="matrix(0.297906, -3.01241, 2.68096, 0.535898, -4.49158, 94.3258)" cx="23.752611" cy="9.6368351" fx="23.752611" fy="9.6368351" r="7.484375"/>
+  </defs>
+  <metadata id="metadata4">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Patrick Niklaus</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:source/>
+        <cc:license rdf:resource="http://creativecommons.org/licenses/GPL/2.0/"/>
+        <dc:title/>
+        <dc:subject>
+          <rdf:Bag/>
+        </dc:subject>
+      </cc:Work>
+      <cc:License rdf:about="http://creativecommons.org/licenses/GPL/2.0/">
+        <cc:permits rdf:resource="http://web.resource.org/cc/Reproduction"/>
+        <cc:permits rdf:resource="http://web.resource.org/cc/Distribution"/>
+        <cc:requires rdf:resource="http://web.resource.org/cc/Notice"/>
+        <cc:permits rdf:resource="http://web.resource.org/cc/DerivativeWorks"/>
+        <cc:requires rdf:resource="http://web.resource.org/cc/ShareAlike"/>
+        <cc:requires rdf:resource="http://web.resource.org/cc/SourceCode"/>
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <g inkscape:groupmode="layer" id="layer1" inkscape:label="Layer 1">
+    <path style="fill: url(#radialGradient7961) rgb(0, 0, 0); fill-opacity: 1; fill-rule: evenodd; stroke: rgb(136, 138, 133); stroke-width: 1.55776; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 4; stroke-opacity: 1; stroke-dasharray: none; stroke-dashoffset: 0pt;" d="m 5.4971984,1.3641548 c -2.1308681,0 -3.8468821,2.3948681 -3.8468821,5.294635 l 0,18.8512252 c 0,2.899766 1.716014,5.294633 3.8468821,5.294633 l 21.2806226,0 c 2.130862,0 3.887803,-2.394863 3.887803,-5.294633 l 0,-18.8512252 c -1e-6,-2.8997669 -1.756937,-5.294635 -3.887803,-5.294635 l -21.2806226,0 z" id="path7955" sodipodi:nodetypes="ccccccccc"/>
+    <path style="opacity: 0.836585; fill: url(#radialGradient3196) rgb(0, 0, 0); fill-opacity: 1; fill-rule: evenodd; stroke: none;" d="m 5.1718172,2.9939012 c -1.0387144,0 -1.8857561,1.2240681 -1.8857561,2.7971162 l 0.023637,8.9281616 12.0806359,0.04065 0.04273,-11.7659177 -10.2612454,0 z m 11.7315588,0.036641 0.01021,11.7158332 12.094033,0.0031 0,-8.9952622 C 29.007676,4.1811659 28.160637,2.9571053 27.121922,2.9571053 L 16.9034,3.0303881 z m -2.93137,25.7589712 0,0 z m 2.935739,-11.716119 -0.0044,11.725277 10.224431,0 c 1.038715,0 1.879847,-1.25874 1.879847,-2.831792 l 0.0059,-8.908538 -12.10582,0.01511 z" id="path10739" sodipodi:nodetypes="cccccccccccccccccccc"/>
+    <g id="layer2" inkscape:label="new" transform="matrix(1.31826, 0, 0, 1.84077, -77.9379, -22.4598)"/>
+    <path sodipodi:type="inkscape:offset" inkscape:radius="-0.93750006" inkscape:original="M 16.40625 13.21875 C 14.279689 13.21875 12.5625 14.902001 12.5625 16.9375 L 12.5625 30.1875 C 12.5625 32.222999 14.27969 33.90625 16.40625 33.90625 L 37.65625 33.90625 C 39.782809 33.906251 41.531251 32.223001 41.53125 30.1875 L 41.53125 16.9375 C 41.53125 14.902001 39.782812 13.21875 37.65625 13.21875 L 16.40625 13.21875 z " style="opacity: 0.82439; fill: none; stroke: rgb(255, 255, 255); stroke-width: 1.35163; stroke-linecap: round; stroke-linejoin: round; stroke-miterlimit: 4; stroke-opacity: 0.736334; stroke-dasharray: none; stroke-dashoffset: 0pt;" id="path8740" d="m 16.40625,14.15625 c -1.631851,0 -2.90625,1.273014 -2.90625,2.78125 l 0,13.25 c 0,1.508236 1.274401,2.78125 2.90625,2.78125 l 21.25,0 c 1.631848,10e-7 2.937501,-1.282608 2.9375,-2.78125 l 0,-13.25 c 0,-1.498641 -1.305648,-2.78125 -2.9375,-2.78125 l -21.25,0 z" transform="matrix(0.974948, 0, 0, 1.36241, -10.2227, -16.0386)"/>
+    <path sodipodi:nodetypes="cccccc" id="path8760" d="m 15.399463,17.049008 -0.0092,11.740504 -10.1347695,0 c -1.084846,0 -1.9695113,-1.300595 -1.9695098,-2.891227 l -0.00844,-8.83405 12.1217593,-0.01529 z" style="opacity: 0.836585; fill: rgb(199, 203, 196); fill-opacity: 1; fill-rule: evenodd; stroke: none;"/>
+    <text xml:space="preserve" style="font-size: 9.79077px; font-style: normal; font-weight: normal; fill: rgb(0, 0, 0); fill-opacity: 1; stroke: none; font-family: Bitstream Vera Sans;" x="6.25954" y="12.8569" id="text2898"><tspan sodipodi:role="line" id="tspan2900" x="6.25954" y="12.8569">A</tspan></text>
+    <text xml:space="preserve" style="font-size: 10.8777px; font-style: normal; font-weight: normal; fill: rgb(0, 0, 0); fill-opacity: 1; stroke: none; font-family: Bitstream Vera Sans;" x="18.9711" y="13.4037" id="text2902"><tspan sodipodi:role="line" id="tspan2904" x="18.9711" y="13.4037">B</tspan></text>
+    <text xml:space="preserve" style="font-size: 9.77429px; font-style: normal; font-weight: normal; fill: rgb(0, 0, 0); fill-opacity: 1; stroke: none; font-family: Bitstream Vera Sans;" x="5.53724" y="26.268" id="text2906"><tspan sodipodi:role="line" id="tspan2908" x="5.53724" y="26.268">C</tspan></text>
+    <text xml:space="preserve" style="font-size: 11.0026px; font-style: normal; font-weight: normal; fill: rgb(0, 0, 0); fill-opacity: 1; stroke: none; font-family: Bitstream Vera Sans;" x="18.1306" y="26.3245" id="text2910"><tspan sodipodi:role="line" id="tspan2912" x="18.1306" y="26.3245">D</tspan></text>
+  </g>
+</svg>
