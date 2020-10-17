@@ -2389,9 +2389,7 @@ static void toggle_plugin_enabled_cb(GtkWidget *widget,
     if (p->enabled)
     {
         /* Add plugin if it does not exist */
-        while ((pos =
-                    plugins.find(plugin,
-                        pos + plugin.length())) != std::string::npos)
+        while ((pos = plugins.find(plugin, pos)) != std::string::npos)
         {
             if (((pos == 0) || ((pos - 1 >= 0) && (plugins[pos - 1] == ' '))) &&
                 ((pos + plugin.length() == plugins.length()) ||
@@ -2401,6 +2399,8 @@ static void toggle_plugin_enabled_cb(GtkWidget *widget,
             {
                 return;
             }
+
+            pos += plugin.length();
         }
 
         plugins.append(" " + plugin);
@@ -2408,9 +2408,7 @@ static void toggle_plugin_enabled_cb(GtkWidget *widget,
     } else
     {
         /* Remove plugin from string */
-        while ((pos =
-                    plugins.find(plugin,
-                        pos + plugin.length())) != std::string::npos)
+        while ((pos = plugins.find(plugin, pos)) != std::string::npos)
         {
             if (((pos == 0) || ((pos - 1 >= 0) && (plugins[pos - 1] == ' '))) &&
                 ((pos + plugin.length() == plugins.length()) ||
@@ -2422,6 +2420,8 @@ static void toggle_plugin_enabled_cb(GtkWidget *widget,
                 state = 0;
                 break;
             }
+
+            pos += plugin.length();
         }
     }
 
