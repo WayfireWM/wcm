@@ -173,3 +173,5 @@ int parse_xml_files(WCM *wcm, wf::config::config_manager_t *config_manager);
 GtkWidget *create_main_layout(WCM *wcm);
 
 bool is_core_plugin(Plugin *plugin);
+
+std::string::size_type find_plugin(Plugin *p, std::string plugins);

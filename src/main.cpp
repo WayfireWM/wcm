@@ -174,32 +174,42 @@ static void activate(GtkApplication *app,
     }
 }
 
+std::string::size_type find_plugin(Plugin *p, std::string plugins)
+{
+    char c1 = 0, c2 = 0;
+    std::string::size_type pos = 0;
+
+    while (1)
+    {
+        pos = plugins.find(std::string(p->name), pos);
+
+        if (pos == std::string::npos)
+        {
+            break;
+        }
+
+        c1 = plugins[pos - 1];
+        c2 = plugins[pos + strlen(p->name)];
+
+        if (((c1 == ' ') || (c1 == 0)) && ((c2 == ' ') || (c2 == 0)))
+        {
+            return pos;
+        }
+
+        pos += strlen(p->name);
+    }
+
+    return std::string::npos;
+}
+
 static int plugin_enabled(Plugin *p, std::string plugins)
 {
-    char c1, c2;
-    std::string::size_type pos;
-
     if (is_core_plugin(p))
     {
         return 1;
     }
 
-    pos = plugins.find(std::string(p->name));
-
-    if (!pos)
-    {
-        return 1;
-    }
-
-    if (pos == std::string::npos)
-    {
-        return 0;
-    }
-
-    c1 = plugins[pos - 1];
-    c2 = plugins[pos + strlen(p->name)];
-
-    return (c1 == ' ' || c1 == 0) && (c2 == ' ' || c2 == 0);
+    return find_plugin(p, plugins);
 }
 
 static void init(WCM *wcm)
