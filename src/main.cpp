@@ -209,7 +209,7 @@ static int plugin_enabled(Plugin *p, std::string plugins)
         return 1;
     }
 
-    return find_plugin(p, plugins);
+    return find_plugin(p, plugins) == std::string::npos ? 0 : 1;
 }
 
 static void init(WCM *wcm)
