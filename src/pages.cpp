@@ -2376,46 +2376,67 @@ static void toggle_plugin_enabled_cb(GtkWidget *widget,
     std::shared_ptr<wf::config::section_t> section;
     std::shared_ptr<wf::config::option_base_t> option;
     std::string plugins;
-    size_t pos;
+    size_t pos = 0;
 
     section = wcm->wf_config_mgr.get_section("core");
     option  = section->get_option_or("plugins");
 
     p->enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
     plugins    = option->get_value_str();
+    std::string plugin = std::string(p->name);
+    int state = -1;
 
     if (p->enabled)
     {
         /* Add plugin if it does not exist */
-        pos = plugins.find(std::string(p->name));
-        if (pos == std::string::npos)
+        while ((pos =
+                    plugins.find(plugin,
+                        pos + plugin.length())) != std::string::npos)
         {
-            plugins.append(" " + std::string(p->name));
+            if (((pos == 0) || ((pos - 1 >= 0) && (plugins[pos - 1] == ' '))) &&
+                ((pos + plugin.length() == plugins.length()) ||
+                 ((pos + plugin.length() < plugins.length()) &&
+                  (plugins[pos +
+                           plugin.length()] == ' '))))
+            {
+                return;
+            }
         }
 
-        format_whitespace(plugins);
-        option->set_value_str(plugins);
-        save_config(wcm, p);
-        if (widget == p->t2)
-        {
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t1), true);
-        }
+        plugins.append(" " + plugin);
+        state = 1;
     } else
     {
         /* Remove plugin from string */
-        pos = plugins.find(std::string(p->name));
-        if (pos != std::string::npos)
+        while ((pos =
+                    plugins.find(plugin,
+                        pos + plugin.length())) != std::string::npos)
         {
-            plugins.erase(pos, std::string(p->name).length());
+            if (((pos == 0) || ((pos - 1 >= 0) && (plugins[pos - 1] == ' '))) &&
+                ((pos + plugin.length() == plugins.length()) ||
+                 ((pos + plugin.length() < plugins.length()) &&
+                  (plugins[pos +
+                           plugin.length()] == ' '))))
+            {
+                plugins.erase(pos, plugin.length());
+                state = 0;
+                break;
+            }
         }
+    }
 
-        format_whitespace(plugins);
-        option->set_value_str(plugins);
-        save_config(wcm, p);
-        if (widget == p->t2)
-        {
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t1), false);
-        }
+    if (state == -1)
+    {
+        fprintf(stderr, "Failed to toggle plugin %s\n", p->name);
+        return;
+    }
+
+    format_whitespace(plugins);
+    option->set_value_str(plugins);
+    save_config(wcm, p);
+    if (widget == p->t2)
+    {
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(p->t1), state);
     }
 }
 
