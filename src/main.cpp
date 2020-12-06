@@ -188,7 +188,7 @@ std::string::size_type find_plugin(Plugin *p, std::string plugins)
             break;
         }
 
-        c1 = plugins[pos - 1];
+        c1 = plugins[std::max(pos - 1, 0)];
         c2 = plugins[pos + strlen(p->name)];
 
         if (((c1 == ' ') || (c1 == 0)) && ((c2 == ' ') || (c2 == 0)))
