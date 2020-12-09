@@ -152,7 +152,6 @@ class WCM
 {
   public:
     GtkWidget *window;
-    GtkWidget *filter_entry;
     GtkWidget *main_layout;
     GtkWidget *plugin_layout;
     GtkWidget *left_panel_layout;
