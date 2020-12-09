@@ -1533,6 +1533,11 @@ static gboolean key_grab_button_cb(GtkWidget *widget,
 
     Option *o = (Option*)user_data;
 
+    if (o->confirm_window)
+    {
+        return false;
+    }
+
     if (!lock_input(o->plugin->wcm))
     {
         return false;
