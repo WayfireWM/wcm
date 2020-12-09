@@ -152,11 +152,12 @@ class WCM
 {
   public:
     GtkWidget *window;
+    GtkWidget *filter_entry;
     GtkWidget *main_layout;
     GtkWidget *plugin_layout;
     GtkWidget *left_panel_layout;
     GtkWidget *scrolled_plugin_layout;
-    std::vector<Plugin*> plugins;
+    std::vector<Plugin*> plugins, displayed_plugins;
     wf::config::config_manager_t wf_config_mgr;
     wf::config::config_manager_t wf_shell_config_mgr;
     const char *wf_config_file;
