@@ -156,7 +156,7 @@ static gboolean close_button_cb(GtkWidget *widget,
 }
 
 static gboolean back_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     WCM *wcm = (WCM*)user_data;
@@ -213,7 +213,7 @@ static bool not_in_list(std::vector<int> list, int item)
 static void add_option_widget(GtkWidget *widget, Option *o);
 
 static void add_command_item_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -348,7 +348,7 @@ static void add_command_item_button_cb(GtkWidget *widget,
 }
 
 static void remove_command_item_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -404,7 +404,7 @@ static void remove_command_item_button_cb(GtkWidget *widget,
 }
 
 static void add_autostart_item_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -482,7 +482,7 @@ static void add_autostart_item_button_cb(GtkWidget *widget,
 }
 
 static void run_autostart_item_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -524,7 +524,7 @@ static void run_autostart_item_button_cb(GtkWidget *widget,
 }
 
 static void remove_autostart_item_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -568,7 +568,7 @@ static void remove_autostart_item_button_cb(GtkWidget *widget,
 }
 
 static void reset_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -771,7 +771,7 @@ static gboolean int_combo_box_focus_out_cb(GtkWidget *widget,
 }
 
 static void spawn_color_chooser_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -1177,7 +1177,7 @@ static void write_binding_option(Option *o, std::string name)
 }
 
 static void binding_cancel_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -1196,7 +1196,7 @@ static void binding_cancel_cb(GtkWidget *widget,
 }
 
 static void binding_confirm_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -1250,7 +1250,11 @@ static void write_binding_option_check(Option *o, std::string name)
     gtk_widget_set_margin_end(layout, 10);
     g_signal_connect(button_cancel, "button-release-event",
         G_CALLBACK(binding_cancel_cb), o);
+    g_signal_connect(button_cancel, "key-press-event",
+        G_CALLBACK(binding_cancel_cb), o);
     g_signal_connect(button_ok, "button-release-event",
+        G_CALLBACK(binding_confirm_cb), o);
+    g_signal_connect(button_ok, "key-press-event",
         G_CALLBACK(binding_confirm_cb), o);
     gtk_box_pack_end(GTK_BOX(button_layout), button_ok, false, false, 0);
     gtk_box_pack_end(GTK_BOX(button_layout), button_cancel, false, false, 0);
@@ -1440,7 +1444,7 @@ static gboolean window_deleted_cb(GtkWidget *widget,
 }
 
 static void key_grab_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -1526,14 +1530,14 @@ static void write_option(GtkWidget *widget,
 }
 
 static void binding_edit_cancel_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     gtk_window_close(GTK_WINDOW(user_data));
 }
 
 static void binding_edit_confirm_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     write_option(widget, user_data);
@@ -1570,7 +1574,11 @@ static void write_option_check(GtkWidget *widget,
         gtk_widget_set_margin_end(layout, 10);
         g_signal_connect(button_cancel, "button-release-event",
             G_CALLBACK(binding_edit_cancel_cb), confirm_window);
+        g_signal_connect(button_cancel, "key-press-event",
+            G_CALLBACK(binding_edit_cancel_cb), confirm_window);
         g_signal_connect(button_ok, "button-release-event",
+            G_CALLBACK(binding_edit_confirm_cb), o);
+        g_signal_connect(button_ok, "key-press-event",
             G_CALLBACK(binding_edit_confirm_cb), o);
         gtk_box_pack_end(GTK_BOX(button_layout), button_ok, false, false, 0);
         gtk_box_pack_end(GTK_BOX(button_layout), button_cancel, false, false, 0);
@@ -1591,7 +1599,7 @@ static void write_option_check(GtkWidget *widget,
 }
 
 static void binding_ok_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     write_option_check(widget, user_data);
@@ -1604,7 +1612,7 @@ static void binding_entry_cb(GtkWidget *widget,
 }
 
 static void binding_edit_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -1634,7 +1642,11 @@ static void binding_edit_button_cb(GtkWidget *widget,
     gtk_entry_set_text(GTK_ENTRY(entry), option->get_value_str().c_str());
     g_signal_connect(button_cancel, "button-release-event",
         G_CALLBACK(binding_edit_cancel_cb), edit_window);
+    g_signal_connect(button_cancel, "key-press-event",
+        G_CALLBACK(binding_edit_cancel_cb), edit_window);
     g_signal_connect(button_ok, "button-release-event",
+        G_CALLBACK(binding_ok_cb), o);
+    g_signal_connect(button_ok, "key-press-event",
         G_CALLBACK(binding_ok_cb), o);
     g_signal_connect(entry, "activate",
         G_CALLBACK(binding_entry_cb), o);
@@ -1650,7 +1662,7 @@ static void binding_edit_button_cb(GtkWidget *widget,
 }
 
 static void directory_chooser_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -1684,7 +1696,7 @@ static void directory_chooser_button_cb(GtkWidget *widget,
 }
 
 static void file_chooser_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
     Option *o = (Option*)user_data;
@@ -1872,9 +1884,13 @@ static void setup_command_list(GtkWidget *widget, Option *o)
                 gtk_widget_set_tooltip_text(edit_button, "Edit binding");
                 g_signal_connect(edit_button, "button-release-event",
                     G_CALLBACK(binding_edit_button_cb), dyn_opt);
+                g_signal_connect(edit_button, "key-press-event",
+                    G_CALLBACK(binding_edit_button_cb), dyn_opt);
                 GtkWidget *key_grab_button = gtk_button_new_with_label(
                     opt_value.c_str());
                 g_signal_connect(key_grab_button, "button-release-event",
+                    G_CALLBACK(key_grab_button_cb), dyn_opt);
+                g_signal_connect(key_grab_button, "key-press-event",
                     G_CALLBACK(key_grab_button_cb), dyn_opt);
                 gtk_widget_set_margin_start(edit_button, 10);
                 gtk_widget_set_margin_end(edit_button, 10);
@@ -1904,6 +1920,8 @@ static void setup_command_list(GtkWidget *widget, Option *o)
                 gtk_widget_set_tooltip_text(remove_button, "Remove from list");
                 g_signal_connect(remove_button, "button-release-event",
                     G_CALLBACK(remove_command_item_button_cb), dyn_opt);
+                g_signal_connect(remove_button, "key-press-event",
+                    G_CALLBACK(remove_command_item_button_cb), dyn_opt);
                 list_remove_image = gtk_image_new_from_icon_name("list-remove",
                     GTK_ICON_SIZE_BUTTON);
                 gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
@@ -1916,6 +1934,8 @@ static void setup_command_list(GtkWidget *widget, Option *o)
                     gtk_widget_set_tooltip_text(file_choose_button,
                         "Choose Executable");
                     g_signal_connect(file_choose_button, "button-release-event",
+                        G_CALLBACK(file_chooser_button_cb), o);
+                    g_signal_connect(file_choose_button, "key-press-event",
                         G_CALLBACK(file_chooser_button_cb), o);
                     gtk_widget_set_margin_start(file_choose_button, 10);
                     gtk_box_pack_end(GTK_BOX(
@@ -1951,6 +1971,8 @@ static void setup_command_list(GtkWidget *widget, Option *o)
     gtk_widget_set_margin_end(add_button, 10);
     gtk_widget_set_tooltip_text(add_button, "Add new command");
     g_signal_connect(add_button, "button-release-event",
+        G_CALLBACK(add_command_item_button_cb), o);
+    g_signal_connect(add_button, "key-press-event",
         G_CALLBACK(add_command_item_button_cb), o);
     gtk_button_set_image(GTK_BUTTON(add_button), list_add_image);
     gtk_box_pack_end(GTK_BOX(add_button_layout), add_button, false, false, 0);
@@ -2024,6 +2046,8 @@ static void setup_autostart_list(GtkWidget *widget, Option *o)
         gtk_widget_set_tooltip_text(remove_button, "Remove from list");
         g_signal_connect(remove_button, "button-release-event",
             G_CALLBACK(remove_autostart_item_button_cb), dyn_opt);
+        g_signal_connect(remove_button, "key-press-event",
+            G_CALLBACK(remove_autostart_item_button_cb), dyn_opt);
         list_remove_image = gtk_image_new_from_icon_name("list-remove",
             GTK_ICON_SIZE_BUTTON);
         gtk_button_set_image(GTK_BUTTON(remove_button), list_remove_image);
@@ -2031,6 +2055,8 @@ static void setup_autostart_list(GtkWidget *widget, Option *o)
         gtk_widget_set_margin_start(run_button, 10);
         gtk_widget_set_tooltip_text(run_button, "Run command");
         g_signal_connect(run_button, "button-release-event",
+            G_CALLBACK(run_autostart_item_button_cb), dyn_opt);
+        g_signal_connect(run_button, "key-press-event",
             G_CALLBACK(run_autostart_item_button_cb), dyn_opt);
         run_image = gtk_image_new_from_icon_name("media-playback-start",
             GTK_ICON_SIZE_BUTTON);
@@ -2043,6 +2069,8 @@ static void setup_autostart_list(GtkWidget *widget, Option *o)
                 "application-x-executable", GTK_ICON_SIZE_BUTTON);
             gtk_widget_set_tooltip_text(file_choose_button, "Choose Executable");
             g_signal_connect(file_choose_button, "button-release-event",
+                G_CALLBACK(file_chooser_button_cb), o);
+            g_signal_connect(file_choose_button, "key-press-event",
                 G_CALLBACK(file_chooser_button_cb), o);
             gtk_widget_set_margin_start(file_choose_button, 10);
             gtk_box_pack_end(GTK_BOX(
@@ -2062,6 +2090,8 @@ static void setup_autostart_list(GtkWidget *widget, Option *o)
     gtk_widget_set_margin_end(add_button, 10);
     gtk_widget_set_tooltip_text(add_button, "Add new command");
     g_signal_connect(add_button, "button-release-event",
+        G_CALLBACK(add_autostart_item_button_cb), o);
+    g_signal_connect(add_button, "key-press-event",
         G_CALLBACK(add_autostart_item_button_cb), o);
     gtk_button_set_image(GTK_BUTTON(add_button), list_add_image);
     gtk_box_pack_end(GTK_BOX(add_button_layout), add_button, false, false, 0);
@@ -2106,6 +2136,8 @@ static void add_option_widget(GtkWidget *widget, Option *o)
         gtk_widget_set_margin_end(reset_button, 10);
         gtk_widget_set_tooltip_text(reset_button, "Reset to default");
         g_signal_connect(reset_button, "button-release-event",
+            G_CALLBACK(reset_button_cb), o);
+        g_signal_connect(reset_button, "key-press-event",
             G_CALLBACK(reset_button_cb), o);
         gtk_button_set_image(GTK_BUTTON(reset_button), reset_image);
         gtk_box_pack_start(GTK_BOX(option_layout), label, false, false, 0);
@@ -2239,9 +2271,13 @@ static void add_option_widget(GtkWidget *widget, Option *o)
         gtk_widget_set_tooltip_text(edit_button, "Edit binding");
         g_signal_connect(edit_button, "button-release-event",
             G_CALLBACK(binding_edit_button_cb), o);
+        g_signal_connect(edit_button, "key-press-event",
+            G_CALLBACK(binding_edit_button_cb), o);
         GtkWidget *key_grab_button = gtk_button_new_with_label(
             option->get_value_str().c_str());
         g_signal_connect(key_grab_button, "button-release-event",
+            G_CALLBACK(key_grab_button_cb), o);
+        g_signal_connect(key_grab_button, "key-press-event",
             G_CALLBACK(key_grab_button_cb), o);
         o->data_widget = key_grab_button;
         gtk_box_pack_end(GTK_BOX(option_layout), edit_button, false, false, 0);
@@ -2290,6 +2326,8 @@ static void add_option_widget(GtkWidget *widget, Option *o)
                 gtk_widget_set_tooltip_text(file_choose_button, "Choose File");
                 g_signal_connect(file_choose_button, "button-release-event",
                     G_CALLBACK(file_chooser_button_cb), o);
+                g_signal_connect(file_choose_button, "key-press-event",
+                    G_CALLBACK(file_chooser_button_cb), o);
                 gtk_widget_set_margin_start(file_choose_button, 10);
                 gtk_box_pack_end(GTK_BOX(
                     option_layout), file_choose_button, false, false, 0);
@@ -2303,6 +2341,8 @@ static void add_option_widget(GtkWidget *widget, Option *o)
                 gtk_widget_set_tooltip_text(directory_choose_button,
                     "Choose Directory");
                 g_signal_connect(directory_choose_button, "button-release-event",
+                    G_CALLBACK(directory_chooser_button_cb), o);
+                g_signal_connect(directory_choose_button, "key-press-event",
                     G_CALLBACK(directory_chooser_button_cb), o);
                 gtk_widget_set_margin_start(directory_choose_button, 10);
                 gtk_box_pack_end(GTK_BOX(
@@ -2343,6 +2383,8 @@ static void add_option_widget(GtkWidget *widget, Option *o)
         GtkWidget *color_button = gtk_color_button_new_with_rgba(&color);
         o->data_widget = color_button;
         g_signal_connect(color_button, "button-release-event",
+            G_CALLBACK(spawn_color_chooser_cb), o);
+        g_signal_connect(color_button, "key-press-event",
             G_CALLBACK(spawn_color_chooser_cb), o);
         gtk_box_pack_end(GTK_BOX(option_layout), color_button, false, false, 0);
         gtk_box_pack_start(GTK_BOX(widget), option_layout, false, true, 0);
@@ -2418,9 +2460,14 @@ static void toggle_plugin_enabled_cb(GtkWidget *widget,
 }
 
 static gboolean plugin_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer user_data)
 {
+    if ((event->type != GDK_BUTTON_RELEASE) && (event->type != GDK_KEY_PRESS))
+    {
+        return true;
+    }
+
     Plugin *p = (Plugin*)user_data;
     Option *g, *s, *o;
     WCM *wcm = p->wcm;
@@ -2472,6 +2519,8 @@ static gboolean plugin_button_cb(GtkWidget *widget,
     gtk_container_add(GTK_CONTAINER(back_button), back_layout);
     g_object_set(back_button, "margin", 10, NULL);
     g_signal_connect(back_button, "button-release-event",
+        G_CALLBACK(back_button_cb), wcm);
+    g_signal_connect(back_button, "key-press-event",
         G_CALLBACK(back_button_cb), wcm);
     GtkWidget *notebook = gtk_notebook_new();
     gtk_notebook_set_tab_pos(GTK_NOTEBOOK(notebook), GTK_POS_TOP);
@@ -2642,6 +2691,8 @@ static void add_plugin_to_category(Plugin *p, GtkWidget **category,
     g_object_set(plugin_layout, "margin", 5, NULL);
     gtk_grid_attach(GTK_GRID(*category), plugin_layout, p->x, p->y, 1, 1);
     g_signal_connect(plugin_button, "button-release-event",
+        G_CALLBACK(plugin_button_cb), p);
+    g_signal_connect(plugin_button, "key-press-event",
         G_CALLBACK(plugin_button_cb), p);
     g_signal_connect(plugin_button, "size-allocate",
         G_CALLBACK(button_size_allocate_cb), p->wcm);
