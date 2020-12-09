@@ -127,9 +127,7 @@ static void position_plugin_buttons(WCM *wcm)
     }
 }
 
-static gboolean close_button_cb(GtkWidget *widget,
-    GdkEvent *event,
-    gpointer user_data)
+static gboolean input_check(GtkWidget *widget, GdkEvent *event)
 {
     if (event->type == GDK_BUTTON_RELEASE)
     {
@@ -139,26 +137,44 @@ static gboolean close_button_cb(GtkWidget *widget,
         int w = gtk_widget_get_allocated_width(widget);
         int h = gtk_widget_get_allocated_height(widget);
 
-        if ((x > 0) && (y > 0) && (x < w) && (y < h))
+        if ((x < 0) || (y < 0) || (x > w) || (y > h))
         {
-            exit(0);
+            return false;
         }
     } else if (event->type == GDK_KEY_PRESS)
     {
-        GdkEventKey *ev = (GdkEventKey*)event;
-        if ((ev->keyval == GDK_KEY_Return) || (ev->keyval == GDK_KEY_KP_Enter))
+        GdkEventKey *key = (GdkEventKey*)event;
+        if ((key->keyval != GDK_KEY_Return) && (key->keyval != GDK_KEY_KP_Enter) &&
+            (key->keyval != GDK_KEY_space))
         {
-            exit(0);
+            return false;
         }
     }
 
-    return false;
+    return true;
+}
+
+static gboolean close_button_cb(GtkWidget *widget,
+    GdkEvent *event,
+    gpointer user_data)
+{
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
+    exit(0);
 }
 
 static gboolean back_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     WCM *wcm = (WCM*)user_data;
     GtkWidget *window = wcm->window;
     GtkWidget *main_layout   = wcm->main_layout;
@@ -212,10 +228,15 @@ static bool not_in_list(std::vector<int> list, int item)
 
 static void add_option_widget(GtkWidget *widget, Option *o);
 
-static void add_command_item_button_cb(GtkWidget *widget,
+static gboolean add_command_item_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
     WCM *wcm  = o->plugin->wcm;
     std::shared_ptr<wf::config::section_t> section;
@@ -234,7 +255,7 @@ static void add_command_item_button_cb(GtkWidget *widget,
     section = get_config_section(o->plugin);
     if (!section)
     {
-        return;
+        return false;
     }
 
     for (auto c : section->get_registered_options())
@@ -309,7 +330,7 @@ static void add_command_item_button_cb(GtkWidget *widget,
     section = get_config_section(o->plugin);
     if (!section)
     {
-        return;
+        return false;
     }
 
     i = 0;
@@ -345,12 +366,19 @@ static void add_command_item_button_cb(GtkWidget *widget,
     gtk_widget_set_size_request(top_spacer, 1, 5);
     gtk_box_pack_start(GTK_BOX(o->widget), top_spacer, false, false, 0);
     add_option_widget(o->widget, o);
+
+    return true;
 }
 
-static void remove_command_item_button_cb(GtkWidget *widget,
+static gboolean remove_command_item_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
     WCM *wcm  = o->plugin->wcm;
     std::shared_ptr<wf::config::section_t> section;
@@ -361,7 +389,7 @@ static void remove_command_item_button_cb(GtkWidget *widget,
     section = get_config_section(o->plugin);
     if (!section)
     {
-        return;
+        return false;
     }
 
     for (size_t i = 0; i < o->parent->options.size(); i++)
@@ -401,12 +429,19 @@ static void remove_command_item_button_cb(GtkWidget *widget,
     gtk_widget_set_size_request(top_spacer, 1, 5);
     gtk_box_pack_start(GTK_BOX(o->widget), top_spacer, false, false, 0);
     add_option_widget(o->widget, o->parent);
+
+    return true;
 }
 
-static void add_autostart_item_button_cb(GtkWidget *widget,
+static gboolean add_autostart_item_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
     WCM *wcm  = o->plugin->wcm;
     std::shared_ptr<wf::config::section_t> section;
@@ -422,7 +457,7 @@ static void add_autostart_item_button_cb(GtkWidget *widget,
     section = get_config_section(o->plugin);
     if (!section)
     {
-        return;
+        return false;
     }
 
     for (auto c : section->get_registered_options())
@@ -479,12 +514,19 @@ static void add_autostart_item_button_cb(GtkWidget *widget,
     gtk_widget_set_size_request(top_spacer, 1, 5);
     gtk_box_pack_start(GTK_BOX(o->widget), top_spacer, false, false, 0);
     add_option_widget(o->widget, o);
+
+    return true;
 }
 
-static void run_autostart_item_button_cb(GtkWidget *widget,
+static gboolean run_autostart_item_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
     char *command;
     std::shared_ptr<wf::config::section_t> section;
@@ -493,7 +535,7 @@ static void run_autostart_item_button_cb(GtkWidget *widget,
     section = get_config_section(o->plugin);
     if (!section)
     {
-        return;
+        return false;
     }
 
     option  = section->get_option_or(o->name);
@@ -521,12 +563,19 @@ static void run_autostart_item_button_cb(GtkWidget *widget,
     }
 
     free(command);
+
+    return true;
 }
 
-static void remove_autostart_item_button_cb(GtkWidget *widget,
+static gboolean remove_autostart_item_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
     WCM *wcm  = o->plugin->wcm;
     std::shared_ptr<wf::config::section_t> section;
@@ -537,7 +586,7 @@ static void remove_autostart_item_button_cb(GtkWidget *widget,
     section = get_config_section(o->plugin);
     if (!section)
     {
-        return;
+        return false;
     }
 
     for (size_t i = 0; i < o->parent->options.size(); i++)
@@ -565,12 +614,19 @@ static void remove_autostart_item_button_cb(GtkWidget *widget,
     gtk_widget_set_size_request(top_spacer, 1, 5);
     gtk_box_pack_start(GTK_BOX(o->widget), top_spacer, false, false, 0);
     add_option_widget(o->widget, o->parent);
+
+    return true;
 }
 
-static void reset_button_cb(GtkWidget *widget,
+static gboolean reset_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
     WCM *wcm  = o->plugin->wcm;
     std::shared_ptr<wf::config::section_t> section;
@@ -592,7 +648,7 @@ static void reset_button_cb(GtkWidget *widget,
         section = get_config_section(o->plugin);
         if (!section)
         {
-            return;
+            return false;
         }
 
         option = section->get_option_or(o->name);
@@ -606,7 +662,7 @@ static void reset_button_cb(GtkWidget *widget,
         section = get_config_section(o->plugin);
         if (!section)
         {
-            return;
+            return false;
         }
 
         option = section->get_option_or(o->name);
@@ -620,7 +676,7 @@ static void reset_button_cb(GtkWidget *widget,
         section = get_config_section(o->plugin);
         if (!section)
         {
-            return;
+            return false;
         }
 
         option = section->get_option_or(o->name);
@@ -635,7 +691,7 @@ static void reset_button_cb(GtkWidget *widget,
         section = get_config_section(o->plugin);
         if (!section)
         {
-            return;
+            return false;
         }
 
         option = section->get_option_or(o->name);
@@ -666,7 +722,7 @@ static void reset_button_cb(GtkWidget *widget,
         section = get_config_section(o->plugin);
         if (!section)
         {
-            return;
+            return false;
         }
 
         option = section->get_option_or(o->name);
@@ -686,7 +742,7 @@ static void reset_button_cb(GtkWidget *widget,
         section = get_config_section(o->plugin);
         if (!section)
         {
-            return;
+            return false;
         }
 
         option = section->get_option_or(o->name);
@@ -697,6 +753,8 @@ static void reset_button_cb(GtkWidget *widget,
       default:
         break;
     }
+
+    return true;
 }
 
 static void set_string_combo_box_option_cb(GtkWidget *widget,
@@ -770,10 +828,15 @@ static gboolean int_combo_box_focus_out_cb(GtkWidget *widget,
     return GDK_EVENT_PROPAGATE;
 }
 
-static void spawn_color_chooser_cb(GtkWidget *widget,
+static gboolean spawn_color_chooser_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
     WCM *wcm  = o->plugin->wcm;
     std::shared_ptr<wf::config::section_t> section;
@@ -794,7 +857,7 @@ static void spawn_color_chooser_cb(GtkWidget *widget,
         section = get_config_section(o->plugin);
         if (!section)
         {
-            return;
+            return false;
         }
 
         option = section->get_option_or(o->name);
@@ -807,6 +870,8 @@ static void spawn_color_chooser_cb(GtkWidget *widget,
     }
 
     gtk_widget_destroy(chooser);
+
+    return true;
 }
 
 static void set_double_spin_button_option_cb(GtkWidget *widget,
@@ -1176,10 +1241,15 @@ static void write_binding_option(Option *o, std::string name)
         option->get_value_str().c_str());
 }
 
-static void binding_cancel_cb(GtkWidget *widget,
+static gboolean binding_cancel_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
 
     if (o->confirm_window)
@@ -1193,12 +1263,19 @@ static void binding_cancel_cb(GtkWidget *widget,
         free(o->binding);
         o->binding = NULL;
     }
+
+    return true;
 }
 
-static void binding_confirm_cb(GtkWidget *widget,
+static gboolean binding_confirm_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
 
     write_binding_option(o, o->binding);
@@ -1214,6 +1291,8 @@ static void binding_confirm_cb(GtkWidget *widget,
         free(o->binding);
         o->binding = NULL;
     }
+
+    return true;
 }
 
 static void write_binding_option_check(Option *o, std::string name)
@@ -1443,15 +1522,20 @@ static gboolean window_deleted_cb(GtkWidget *widget,
     return false;
 }
 
-static void key_grab_button_cb(GtkWidget *widget,
+static gboolean key_grab_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
 
     if (!lock_input(o->plugin->wcm))
     {
-        return;
+        return false;
     }
 
     o->mod_mask = (mod_type)0;
@@ -1475,6 +1559,8 @@ static void key_grab_button_cb(GtkWidget *widget,
     gtk_window_fullscreen(GTK_WINDOW(grab_binding_window));
 
     gtk_widget_show_all(grab_binding_window);
+
+    return true;
 }
 
 static void write_option(GtkWidget *widget,
@@ -1529,18 +1615,32 @@ static void write_option(GtkWidget *widget,
     gtk_window_close(GTK_WINDOW(o->aux_window));
 }
 
-static void binding_edit_cancel_cb(GtkWidget *widget,
+static gboolean binding_edit_cancel_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     gtk_window_close(GTK_WINDOW(user_data));
+
+    return true;
 }
 
-static void binding_edit_confirm_cb(GtkWidget *widget,
+static gboolean binding_edit_confirm_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     write_option(widget, user_data);
+
+    return true;
 }
 
 static void write_option_check(GtkWidget *widget,
@@ -1598,11 +1698,18 @@ static void write_option_check(GtkWidget *widget,
     write_option(widget, user_data);
 }
 
-static void binding_ok_cb(GtkWidget *widget,
+static gboolean binding_ok_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     write_option_check(widget, user_data);
+
+    return true;
 }
 
 static void binding_entry_cb(GtkWidget *widget,
@@ -1611,10 +1718,15 @@ static void binding_entry_cb(GtkWidget *widget,
     write_option_check(widget, user_data);
 }
 
-static void binding_edit_button_cb(GtkWidget *widget,
+static gboolean binding_edit_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
     std::shared_ptr<wf::config::section_t> section;
     std::shared_ptr<wf::config::option_base_t> option;
@@ -1622,7 +1734,7 @@ static void binding_edit_button_cb(GtkWidget *widget,
     section = get_config_section(o->plugin);
     if (!section)
     {
-        return;
+        return false;
     }
 
     option = section->get_option_or(o->name);
@@ -1659,12 +1771,19 @@ static void binding_edit_button_cb(GtkWidget *widget,
     o->aux_window   = edit_window;
 
     gtk_widget_show_all(edit_window);
+
+    return true;
 }
 
-static void directory_chooser_button_cb(GtkWidget *widget,
+static gboolean directory_chooser_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
     GtkWidget *window = o->plugin->wcm->window;
 
@@ -1693,12 +1812,19 @@ static void directory_chooser_button_cb(GtkWidget *widget,
     }
 
     gtk_widget_destroy(dialog);
+
+    return true;
 }
 
-static void file_chooser_button_cb(GtkWidget *widget,
+static gboolean file_chooser_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
+    if (!input_check(widget, event))
+    {
+        return false;
+    }
+
     Option *o = (Option*)user_data;
     GtkWidget *window = o->plugin->wcm->window;
 
@@ -1727,6 +1853,8 @@ static void file_chooser_button_cb(GtkWidget *widget,
     }
 
     gtk_widget_destroy(dialog);
+
+    return true;
 }
 
 static void setup_command_list(GtkWidget *widget, Option *o)
@@ -2463,9 +2591,9 @@ static gboolean plugin_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
-    if ((event->type != GDK_BUTTON_RELEASE) && (event->type != GDK_KEY_PRESS))
+    if (!input_check(widget, event))
     {
-        return true;
+        return false;
     }
 
     Plugin *p = (Plugin*)user_data;
