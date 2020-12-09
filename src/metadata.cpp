@@ -453,5 +453,7 @@ int parse_xml_files(WCM *wcm, wf::config::config_manager_t *config_manager)
         }
     }
 
+    wcm->displayed_plugins = wcm->plugins;
+
     return 0;
 }
