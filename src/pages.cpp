@@ -94,14 +94,11 @@ static void get_button_position(Plugin *p, int *x, int *y)
 
 static void position_plugin_buttons(WCM *wcm)
 {
-    int i;
-    Plugin *p;
     int x[NUM_CATEGORIES] = {};
     int y[NUM_CATEGORIES] = {};
 
-    for (i = 0; i < int(wcm->plugins.size()); i++)
+    for (auto& p : wcm->displayed_plugins)
     {
-        p = wcm->plugins[i];
         if (std::string(p->category) == "General")
         {
             get_button_position(p, &x[0], &y[0]);
@@ -130,28 +127,29 @@ static void position_plugin_buttons(WCM *wcm)
     }
 }
 
-static gboolean close_button_button_cb(GtkWidget *widget,
-    GdkEventButton *event,
+static gboolean close_button_cb(GtkWidget *widget,
+    GdkEvent *event,
     gpointer user_data)
 {
-    int x = event->x;
-    int y = event->y;
-    int w = gtk_widget_get_allocated_width(widget);
-    int h = gtk_widget_get_allocated_height(widget);
-
-    if ((x > 0) && (y > 0) && (x < w) && (y < h))
+    if (event->type == GDK_BUTTON_RELEASE)
     {
-        exit(0);
-    }
+        GdkEventButton *ev = (GdkEventButton*)event;
+        int x = ev->x;
+        int y = ev->y;
+        int w = gtk_widget_get_allocated_width(widget);
+        int h = gtk_widget_get_allocated_height(widget);
 
-    return true;
-}
-
-bool close_button_key_cb(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
-{
-    if ((event->keyval == GDK_KEY_Return) || (event->keyval == GDK_KEY_KP_Enter))
+        if ((x > 0) && (y > 0) && (x < w) && (y < h))
+        {
+            exit(0);
+        }
+    } else if (event->type == GDK_KEY_PRESS)
     {
-        exit(0);
+        GdkEventKey *ev = (GdkEventKey*)event;
+        if ((ev->keyval == GDK_KEY_Return) || (ev->keyval == GDK_KEY_KP_Enter))
+        {
+            exit(0);
+        }
     }
 
     return false;
@@ -1048,9 +1046,24 @@ static gboolean binding_entry_focus_out_cb(GtkWidget *widget,
     return GDK_EVENT_PROPAGATE;
 }
 
-static GtkWidget *create_plugins_layout(WCM *wcm);
+static GtkWidget *create_plugins_layout(WCM *wcm, std::vector<Plugin*> plugins);
 
 #define padding 75
+
+static gboolean configure_plugin_buttons(int width, gpointer user_data)
+{
+    WCM *wcm = (WCM*)user_data;
+
+    num_button_columns = width / (button_width + padding);
+    position_plugin_buttons(wcm);
+    gtk_widget_destroy(gtk_bin_get_child(GTK_BIN(wcm->scrolled_plugin_layout)));
+    gtk_container_add(GTK_CONTAINER(
+        wcm->scrolled_plugin_layout),
+        create_plugins_layout(wcm, wcm->displayed_plugins));
+    gtk_widget_show_all(wcm->window);
+
+    return false;
+}
 
 static gboolean main_panel_configure_cb(GtkWidget *widget,
     GdkEvent *event,
@@ -1059,18 +1072,12 @@ static gboolean main_panel_configure_cb(GtkWidget *widget,
     WCM *wcm  = (WCM*)user_data;
     int width = event->configure.width - gtk_widget_get_allocated_width(
         wcm->left_panel_layout);
-
-    if ((width / (button_width + padding)) != num_button_columns)
+    if ((width / (button_width + padding)) == num_button_columns)
     {
-        num_button_columns = width / (button_width + padding);
-        position_plugin_buttons(wcm);
-        gtk_widget_destroy(gtk_bin_get_child(GTK_BIN(wcm->scrolled_plugin_layout)));
-        gtk_container_add(GTK_CONTAINER(
-            wcm->scrolled_plugin_layout), create_plugins_layout(wcm));
-        gtk_widget_show_all(wcm->window);
+        return false;
     }
 
-    return false;
+    return configure_plugin_buttons(width, wcm);
 }
 
 static void button_size_allocate_cb(GtkWidget *widget, GtkAllocation *allocation,
@@ -2640,9 +2647,8 @@ static void add_plugin_to_category(Plugin *p, GtkWidget **category,
         G_CALLBACK(button_size_allocate_cb), p->wcm);
 }
 
-static GtkWidget *create_plugins_layout(WCM *wcm)
+static GtkWidget *create_plugins_layout(WCM *wcm, std::vector<Plugin*> plugins)
 {
-    Plugin *p;
     int i;
 
     GtkWidget *plugin_buttons_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -2651,9 +2657,8 @@ static GtkWidget *create_plugins_layout(WCM *wcm)
     GtkWidget *categories[NUM_CATEGORIES] = {};
     GtkWidget *layout[NUM_CATEGORIES]     = {};
 
-    for (i = 0; i < int(wcm->plugins.size()); i++)
+    for (auto& p : plugins)
     {
-        p = wcm->plugins[i];
         if (std::string(p->category) == "General")
         {
             add_plugin_to_category(p, &categories[0], &layout[0], &size_group);
@@ -2717,6 +2722,32 @@ static GtkWidget *create_plugins_layout(WCM *wcm)
     return plugin_buttons_layout;
 }
 
+bool filter_entry_cb(GtkEditable *editable,
+    gpointer user_data)
+{
+    WCM *wcm = (WCM*)user_data;
+    wcm->displayed_plugins.clear();
+    const gchar *text = gtk_entry_get_text(GTK_ENTRY(editable));
+    if (!strlen(text))
+    {
+        wcm->displayed_plugins = wcm->plugins;
+    } else
+    {
+        for (auto& p : wcm->plugins)
+        {
+            if (std::string(p->name).find(std::string(text)) != std::string::npos)
+            {
+                wcm->displayed_plugins.push_back(p);
+            }
+        }
+    }
+
+    configure_plugin_buttons(gtk_widget_get_allocated_width(wcm->
+        scrolled_plugin_layout), wcm);
+
+    return false;
+}
+
 GtkWidget *create_main_layout(WCM *wcm)
 {
     GtkWidget *window = wcm->window;
@@ -2727,6 +2758,21 @@ GtkWidget *create_main_layout(WCM *wcm)
 
     gtk_style_context_add_class(gtk_widget_get_style_context(
         scrolled_window), GTK_STYLE_CLASS_VIEW);
+
+    GtkWidget *filter_label = gtk_label_new(NULL);
+    g_object_set(filter_label, "margin", 10, NULL);
+    gtk_label_set_markup(GTK_LABEL(filter_label),
+        ("<span size=\"12000\"><b>" + std::string("Filter") +
+            "</b></span>").c_str());
+    gtk_box_pack_start(GTK_BOX(left_panel_layout), filter_label, false, false, 0);
+
+    GtkWidget *entry = gtk_entry_new();
+    g_object_set(entry, "margin", 10, NULL);
+    gtk_entry_set_icon_from_icon_name(GTK_ENTRY(
+        entry), GTK_ENTRY_ICON_SECONDARY, "system-search");
+    g_signal_connect(entry, "changed",
+        G_CALLBACK(filter_entry_cb), wcm);
+    gtk_box_pack_start(GTK_BOX(left_panel_layout), entry, false, false, 0);
 
     GtkWidget *close_button = gtk_button_new();
     GtkWidget *close_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2741,12 +2787,13 @@ GtkWidget *create_main_layout(WCM *wcm)
     gtk_container_add(GTK_CONTAINER(close_button), close_layout);
     g_object_set(close_button, "margin", 10, NULL);
     g_signal_connect(close_button, "button-release-event",
-        G_CALLBACK(close_button_button_cb), NULL);
+        G_CALLBACK(close_button_cb), NULL);
     g_signal_connect(close_button, "key-press-event",
-        G_CALLBACK(close_button_key_cb), NULL);
+        G_CALLBACK(close_button_cb), NULL);
     gtk_box_pack_end(GTK_BOX(left_panel_layout), close_button, false, false, 0);
     gtk_box_pack_start(GTK_BOX(main_layout), left_panel_layout, false, true, 0);
-    gtk_container_add(GTK_CONTAINER(scrolled_window), create_plugins_layout(wcm));
+    gtk_container_add(GTK_CONTAINER(scrolled_window),
+        create_plugins_layout(wcm, wcm->plugins));
     gtk_box_pack_end(GTK_BOX(main_layout), scrolled_window, true, true, 0);
     gtk_container_add(GTK_CONTAINER(window), main_layout);
 
