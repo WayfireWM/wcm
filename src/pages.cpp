@@ -2929,6 +2929,18 @@ static size_t find_string(const char *s1, const char *s2)
     return find_string(std::string(s1), std::string(s2));
 }
 
+bool entry_key_cb(GtkWidget *widget,
+    GdkEventKey *event,
+    gpointer user_data)
+{
+    if (event->keyval == GDK_KEY_Escape)
+    {
+        gtk_entry_set_text(GTK_ENTRY(widget), "");
+    }
+
+    return false;
+}
+
 bool filter_entry_cb(GtkEditable *editable,
     gpointer user_data)
 {
@@ -2981,6 +2993,8 @@ GtkWidget *create_main_layout(WCM *wcm)
         entry), GTK_ENTRY_ICON_SECONDARY, "system-search");
     g_signal_connect(entry, "changed",
         G_CALLBACK(filter_entry_cb), wcm);
+    g_signal_connect(entry, "key-press-event",
+        G_CALLBACK(entry_key_cb), wcm);
     gtk_box_pack_start(GTK_BOX(left_panel_layout), entry, false, false, 0);
 
     GtkWidget *close_button = gtk_button_new();
