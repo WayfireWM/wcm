@@ -2969,9 +2969,23 @@ bool filter_entry_cb(GtkEditable *editable,
     return false;
 }
 
+bool window_key_cb(GtkWidget *widget,
+    GdkEventKey *event,
+    gpointer user_data)
+{
+    if ((event->state & GDK_CONTROL_MASK) && (event->keyval == GDK_KEY_q))
+    {
+        exit(0);
+    }
+
+    return false;
+}
+
 GtkWidget *create_main_layout(WCM *wcm)
 {
     GtkWidget *window = wcm->window;
+    g_signal_connect(window, "key-press-event",
+        G_CALLBACK(window_key_cb), nullptr);
 
     GtkWidget *main_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *left_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -2994,7 +3008,7 @@ GtkWidget *create_main_layout(WCM *wcm)
     g_signal_connect(entry, "changed",
         G_CALLBACK(filter_entry_cb), wcm);
     g_signal_connect(entry, "key-press-event",
-        G_CALLBACK(entry_key_cb), wcm);
+        G_CALLBACK(entry_key_cb), nullptr);
     gtk_box_pack_start(GTK_BOX(left_panel_layout), entry, false, false, 0);
 
     GtkWidget *close_button = gtk_button_new();
