@@ -1897,6 +1897,7 @@ static void setup_command_list(GtkWidget *widget, Option *o)
     }
 
     o->options.clear();
+    o->widget = widget;
     for (size_t i = 0; i < command_names.size(); i++)
     {
         auto command = exec_prefix + command_names[i];
@@ -2000,7 +2001,7 @@ static void setup_command_list(GtkWidget *widget, Option *o)
                 continue;
             }
 
-            o->widget = dyn_opt->widget = widget;
+            dyn_opt->widget = widget;
             dyn_opt->parent = o;
             dyn_opt->default_value.s = strdup(label_text.c_str());
             dyn_opt->plugin = o->plugin;
@@ -2142,6 +2143,7 @@ static void setup_autostart_list(GtkWidget *widget, Option *o)
     }
 
     o->options.clear();
+    o->widget = widget;
     for (size_t i = 0; i < autostart_names.size(); i++)
     {
         auto e = autostart_names[i];
@@ -2162,7 +2164,7 @@ static void setup_autostart_list(GtkWidget *widget, Option *o)
             continue;
         }
 
-        o->widget = dyn_opt->widget = widget;
+        dyn_opt->widget = widget;
         dyn_opt->parent = o;
         dyn_opt->default_value.s = strdup(executable.c_str());
         dyn_opt->plugin = o->plugin;
