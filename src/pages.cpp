@@ -2906,6 +2906,29 @@ static GtkWidget *create_plugins_layout(WCM *wcm, std::vector<Plugin*> plugins)
     return plugin_buttons_layout;
 }
 
+static size_t find_string(std::string s1, std::string s2)
+{
+    if (s1.empty() || s2.empty())
+    {
+        return std::string::npos;
+    }
+
+    std::transform(s1.begin(), s1.end(), s1.begin(), ::tolower);
+    std::transform(s2.begin(), s2.end(), s2.begin(), ::tolower);
+
+    return s1.find(s2);
+}
+
+static size_t find_string(const char *s1, const char *s2)
+{
+    if (!s1 || !s2)
+    {
+        return std::string::npos;
+    }
+
+    return find_string(std::string(s1), std::string(s2));
+}
+
 bool filter_entry_cb(GtkEditable *editable,
     gpointer user_data)
 {
@@ -2919,7 +2942,9 @@ bool filter_entry_cb(GtkEditable *editable,
     {
         for (auto& p : wcm->plugins)
         {
-            if (std::string(p->name).find(std::string(text)) != std::string::npos)
+            if ((find_string(p->name, text) != std::string::npos) ||
+                (find_string(p->disp_name, text) != std::string::npos) ||
+                (find_string(p->tooltip, text) != std::string::npos))
             {
                 wcm->displayed_plugins.push_back(p);
             }
