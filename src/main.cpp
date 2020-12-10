@@ -156,7 +156,7 @@ static void activate(GtkApplication *app,
     GdkPixbuf *icon;
 
     window = gtk_application_window_new(app);
-    icon   = gdk_pixbuf_new_from_file(ICONDIR "/wcm.png", NULL);
+    icon   = gdk_pixbuf_new_from_file(ICONDIR "/wcm.png", nullptr);
     gtk_widget_set_size_request(window, 750, 500);
     gtk_window_set_default_size(GTK_WINDOW(window), 1000, 580);
     gtk_window_set_icon(GTK_WINDOW(window), icon);
