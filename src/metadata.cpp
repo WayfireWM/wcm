@@ -246,8 +246,8 @@ static Option *create_option(xmlNode *cur_node, Plugin *p)
             }
 
             xmlNode *n;
-            LabeledInt *li    = NULL;
-            LabeledString *ls = NULL;
+            LabeledInt *li    = nullptr;
+            LabeledString *ls = nullptr;
             for (n = node->children; n; n = n->next)
             {
                 if (n->type == XML_ELEMENT_NODE)
@@ -309,7 +309,7 @@ static void get_plugin_data(Plugin *p, Option *opt, Option *main_group, xmlDoc *
     xmlNode *a_node)
 {
     Option *o = opt;
-    xmlNode *cur_node = NULL;
+    xmlNode *cur_node = nullptr;
     xmlChar *prop;
     bool children_handled = false;
 
@@ -420,7 +420,7 @@ int parse_xml_files(WCM *wcm, wf::config::config_manager_t *config_manager)
     for (auto& s : config_manager->get_all_sections())
     {
         xmlNode *root_element = wf::config::xml::get_section_xml_node(s);
-        xmlDoc *doc = NULL;
+        xmlDoc *doc = nullptr;
 
         if (!root_element)
         {
@@ -438,7 +438,7 @@ int parse_xml_files(WCM *wcm, wf::config::config_manager_t *config_manager)
             Plugin *p = new Plugin();
             p->category = strdup("Uncategorized");
             p->wcm = wcm;
-            get_plugin_data(p, NULL, NULL, doc, root_element);
+            get_plugin_data(p, nullptr, nullptr, doc, root_element);
             wcm->plugins.push_back(p);
             if (std::string((char*)root_element->name) == "wayfire")
             {

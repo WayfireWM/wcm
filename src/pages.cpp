@@ -78,7 +78,7 @@ static std::shared_ptr<wf::config::section_t> get_config_section(Plugin *p)
 #endif
     }
 
-    return NULL;
+    return nullptr;
 }
 
 static void get_button_position(Plugin *p, int *x, int *y)
@@ -263,7 +263,7 @@ static gboolean add_command_item_button_cb(GtkWidget *widget,
         if (begins_with(c->get_name(), exec_prefix))
         {
             auto name = c->get_name().substr(exec_prefix.length());
-            auto slot = strtol(name.c_str(), NULL, 0);
+            auto slot = strtol(name.c_str(), nullptr, 0);
             if (!all_chars_are(name, '0') && !slot)
             {
                 alpha_names.push_back(c->get_name());
@@ -355,7 +355,7 @@ static gboolean add_command_item_button_cb(GtkWidget *widget,
     reload_config(wcm);
 
     children = gtk_container_get_children(GTK_CONTAINER(o->widget));
-    for (iter = children; iter != NULL; iter = g_list_next(iter))
+    for (iter = children; iter != nullptr; iter = g_list_next(iter))
     {
         gtk_widget_destroy(GTK_WIDGET(iter->data));
     }
@@ -418,7 +418,7 @@ static gboolean remove_command_item_button_cb(GtkWidget *widget,
     reload_config(wcm);
 
     children = gtk_container_get_children(GTK_CONTAINER(o->widget));
-    for (iter = children; iter != NULL; iter = g_list_next(iter))
+    for (iter = children; iter != nullptr; iter = g_list_next(iter))
     {
         gtk_widget_destroy(GTK_WIDGET(iter->data));
     }
@@ -465,7 +465,7 @@ static gboolean add_autostart_item_button_cb(GtkWidget *widget,
         if (begins_with(c->get_name(), prefix))
         {
             auto name = c->get_name().substr(prefix.length());
-            auto slot = strtol(name.c_str(), NULL, 0);
+            auto slot = strtol(name.c_str(), nullptr, 0);
             if (!all_chars_are(name, '0') && !slot)
             {
                 names.push_back(c->get_name());
@@ -503,7 +503,7 @@ static gboolean add_autostart_item_button_cb(GtkWidget *widget,
     wf::config::save_configuration_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
 
     children = gtk_container_get_children(GTK_CONTAINER(o->widget));
-    for (iter = children; iter != NULL; iter = g_list_next(iter))
+    for (iter = children; iter != nullptr; iter = g_list_next(iter))
     {
         gtk_widget_destroy(GTK_WIDGET(iter->data));
     }
@@ -551,7 +551,7 @@ static gboolean run_autostart_item_button_cb(GtkWidget *widget,
             dup2(dev_null, 1);
             dup2(dev_null, 2);
 
-            _exit(execl("/bin/sh", "/bin/bash", "-c", command, NULL));
+            _exit(execl("/bin/sh", "/bin/bash", "-c", command, nullptr));
         } else
         {
             _exit(0);
@@ -603,7 +603,7 @@ static gboolean remove_autostart_item_button_cb(GtkWidget *widget,
     reload_config(wcm);
 
     children = gtk_container_get_children(GTK_CONTAINER(o->widget));
-    for (iter = children; iter != NULL; iter = g_list_next(iter))
+    for (iter = children; iter != nullptr; iter = g_list_next(iter))
     {
         gtk_widget_destroy(GTK_WIDGET(iter->data));
     }
@@ -764,7 +764,7 @@ static void set_string_combo_box_option_cb(GtkWidget *widget,
     WCM *wcm  = o->plugin->wcm;
     std::shared_ptr<wf::config::section_t> section;
     std::shared_ptr<wf::config::option_base_t> option;
-    LabeledString *ls = NULL;
+    LabeledString *ls = nullptr;
     int i;
 
     section = get_config_section(o->plugin);
@@ -1255,13 +1255,13 @@ static gboolean binding_cancel_cb(GtkWidget *widget,
     if (o->confirm_window)
     {
         gtk_window_close(GTK_WINDOW(o->confirm_window));
-        o->confirm_window = NULL;
+        o->confirm_window = nullptr;
     }
 
     if (o->binding)
     {
         free(o->binding);
-        o->binding = NULL;
+        o->binding = nullptr;
     }
 
     return true;
@@ -1283,13 +1283,13 @@ static gboolean binding_confirm_cb(GtkWidget *widget,
     if (o->confirm_window)
     {
         gtk_window_close(GTK_WINDOW(o->confirm_window));
-        o->confirm_window = NULL;
+        o->confirm_window = nullptr;
     }
 
     if (o->binding)
     {
         free(o->binding);
-        o->binding = NULL;
+        o->binding = nullptr;
     }
 
     return true;
@@ -1306,7 +1306,7 @@ static void write_binding_option_check(Option *o, std::string name)
 
     if (o->mod_mask)
     {
-        o->confirm_window = NULL;
+        o->confirm_window = nullptr;
         write_binding_option(o, name);
 
         return;
@@ -1376,7 +1376,7 @@ static void unlock_input(WCM *wcm)
 
     zwlr_input_inhibitor_v1_destroy(wcm->screen_lock);
     wl_display_flush(gdk_wayland_display_get_wl_display(gdk_display_get_default()));
-    wcm->screen_lock = NULL;
+    wcm->screen_lock = nullptr;
 }
 
 static void grab_binding_button_cb(GtkWidget *widget,
@@ -1614,7 +1614,7 @@ static void write_option(GtkWidget *widget,
     if (o->confirm_window)
     {
         gtk_window_close(GTK_WINDOW(o->confirm_window));
-        o->confirm_window = NULL;
+        o->confirm_window = nullptr;
     }
 
     gtk_window_close(GTK_WINDOW(o->aux_window));
@@ -1699,7 +1699,7 @@ static void write_option_check(GtkWidget *widget,
     }
 
     free(text);
-    o->confirm_window = NULL;
+    o->confirm_window = nullptr;
     write_option(widget, user_data);
 }
 
@@ -1803,7 +1803,7 @@ static gboolean directory_chooser_button_cb(GtkWidget *widget,
         GTK_RESPONSE_CANCEL,
         "_Open",
         GTK_RESPONSE_ACCEPT,
-        NULL);
+        nullptr);
 
     res = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -1844,7 +1844,7 @@ static gboolean file_chooser_button_cb(GtkWidget *widget,
         GTK_RESPONSE_CANCEL,
         "_Open",
         GTK_RESPONSE_ACCEPT,
-        NULL);
+        nullptr);
 
     res = gtk_dialog_run(GTK_DIALOG(dialog));
 
@@ -1929,7 +1929,7 @@ static void setup_command_list(GtkWidget *widget, Option *o)
             always = always_opt->get_value_str();
         }
 
-        GtkWidget *frame    = gtk_frame_new(NULL);
+        GtkWidget *frame    = gtk_frame_new(nullptr);
         GtkWidget *expander =
             gtk_expander_new((std::string("Command ") + command_names[i] + ": " +
                 executable).c_str());
@@ -1964,7 +1964,7 @@ static void setup_command_list(GtkWidget *widget, Option *o)
         {
             Option *dyn_opt = new Option();
             dyn_opt->command = true;
-            dyn_opt->binding = NULL;
+            dyn_opt->binding = nullptr;
             option_layout    = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
             std::string label_text, opt_value, binding_name;
             if (j == 0)
@@ -2615,18 +2615,18 @@ static gboolean plugin_button_cb(GtkWidget *widget,
     GtkWidget *plugin_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *left_panel_layout     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *plugin_buttons_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    GtkWidget *label = gtk_label_new(NULL);
+    GtkWidget *label = gtk_label_new(nullptr);
     gtk_label_set_markup(GTK_LABEL(label),
         ("<span size=\"12000\"><b>" + std::string(p->disp_name) +
             "</b></span>").c_str());
     gtk_widget_set_tooltip_text(label, p->tooltip);
-    g_object_set(label, "margin", 50, NULL);
+    g_object_set(label, "margin", 50, nullptr);
     gtk_label_set_line_wrap(GTK_LABEL(label), true);
     gtk_label_set_max_width_chars(GTK_LABEL(label), 15);
     GtkWidget *enable_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     if (!is_core_plugin(p) && (p->type == PLUGIN_TYPE_WAYFIRE))
     {
-        enable_label = gtk_label_new(NULL);
+        enable_label = gtk_label_new(nullptr);
         gtk_label_set_markup(GTK_LABEL(
             enable_label), "<span size=\"10000\"><b>Use This Plugin</b></span>");
         enabled_cb = gtk_check_button_new();
@@ -2650,7 +2650,7 @@ static gboolean plugin_button_cb(GtkWidget *widget,
     gtk_box_pack_start(GTK_BOX(back_layout), back_image, true, false, 0);
     gtk_box_pack_end(GTK_BOX(back_layout), back_label, true, false, 0);
     gtk_container_add(GTK_CONTAINER(back_button), back_layout);
-    g_object_set(back_button, "margin", 10, NULL);
+    g_object_set(back_button, "margin", 10, nullptr);
     g_signal_connect(back_button, "button-release-event",
         G_CALLBACK(back_button_cb), wcm);
     g_signal_connect(back_button, "key-press-event",
@@ -2682,7 +2682,7 @@ static gboolean plugin_button_cb(GtkWidget *widget,
 
             if ((o->type == OPTION_TYPE_SUBGROUP) && int(o->options.size()))
             {
-                GtkWidget *frame    = gtk_frame_new(NULL);
+                GtkWidget *frame    = gtk_frame_new(nullptr);
                 GtkWidget *expander = gtk_expander_new(o->name);
                 GtkWidget *expander_layout =
                     gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
@@ -2706,7 +2706,7 @@ static gboolean plugin_button_cb(GtkWidget *widget,
             }
         }
 
-        scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+        scrolled_window = gtk_scrolled_window_new(nullptr, nullptr);
         gtk_widget_set_vexpand(scrolled_window, true);
         gtk_container_add(GTK_CONTAINER(scrolled_window), options_layout);
         gtk_notebook_append_page(GTK_NOTEBOOK(
@@ -2774,11 +2774,11 @@ static void add_plugin_to_category(Plugin *p, GtkWidget **category,
         GtkWidget *icon =
             gtk_image_new_from_icon_name(get_icon_name_from_category(std::string(p->
                 category)), GTK_ICON_SIZE_DND);
-        GtkWidget *label = gtk_label_new(NULL);
+        GtkWidget *label = gtk_label_new(nullptr);
         gtk_label_set_markup(GTK_LABEL(label),
             ("<span size=\"14000\" color=\"#AAA\"><b>" + std::string(p->category) +
                 "</b></span>").c_str());
-        g_object_set(icon, "margin", 10, NULL);
+        g_object_set(icon, "margin", 10, nullptr);
         gtk_box_pack_start(GTK_BOX(header_layout), icon, false, false, 0);
         gtk_box_pack_start(GTK_BOX(header_layout), label, false, false, 0);
         gtk_container_add(GTK_CONTAINER(*layout), header_layout);
@@ -2791,7 +2791,7 @@ static void add_plugin_to_category(Plugin *p, GtkWidget **category,
     if (!is_core_plugin(p) && (p->type == PLUGIN_TYPE_WAYFIRE))
     {
         check_button = gtk_check_button_new();
-        g_object_set(check_button, "margin", 5, NULL);
+        g_object_set(check_button, "margin", 5, nullptr);
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
             check_button), p->enabled ? true : false);
         g_signal_connect(check_button, "toggled",
@@ -2821,7 +2821,7 @@ static void add_plugin_to_category(Plugin *p, GtkWidget **category,
 
     gtk_size_group_add_widget(*size_group, plugin_button);
     gtk_box_pack_start(GTK_BOX(plugin_layout), plugin_button, false, false, 0);
-    g_object_set(plugin_layout, "margin", 5, NULL);
+    g_object_set(plugin_layout, "margin", 5, nullptr);
     gtk_grid_attach(GTK_GRID(*category), plugin_layout, p->x, p->y, 1, 1);
     g_signal_connect(plugin_button, "button-release-event",
         G_CALLBACK(plugin_button_cb), p);
@@ -2892,7 +2892,7 @@ static GtkWidget *create_plugins_layout(WCM *wcm, std::vector<Plugin*> plugins)
         if (add_separator)
         {
             GtkWidget *separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-            g_object_set(separator, "margin", 25, NULL);
+            g_object_set(separator, "margin", 25, nullptr);
             gtk_container_add(GTK_CONTAINER(plugin_buttons_layout), separator);
         }
     }
@@ -2963,20 +2963,20 @@ GtkWidget *create_main_layout(WCM *wcm)
 
     GtkWidget *main_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *left_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    GtkWidget *scrolled_window   = gtk_scrolled_window_new(NULL, NULL);
+    GtkWidget *scrolled_window   = gtk_scrolled_window_new(nullptr, nullptr);
 
     gtk_style_context_add_class(gtk_widget_get_style_context(
         scrolled_window), GTK_STYLE_CLASS_VIEW);
 
-    GtkWidget *filter_label = gtk_label_new(NULL);
-    g_object_set(filter_label, "margin", 10, NULL);
+    GtkWidget *filter_label = gtk_label_new(nullptr);
+    g_object_set(filter_label, "margin", 10, nullptr);
     gtk_label_set_markup(GTK_LABEL(filter_label),
         ("<span size=\"12000\"><b>" + std::string("Filter") +
             "</b></span>").c_str());
     gtk_box_pack_start(GTK_BOX(left_panel_layout), filter_label, false, false, 0);
 
     GtkWidget *entry = gtk_entry_new();
-    g_object_set(entry, "margin", 10, NULL);
+    g_object_set(entry, "margin", 10, nullptr);
     gtk_entry_set_icon_from_icon_name(GTK_ENTRY(
         entry), GTK_ENTRY_ICON_SECONDARY, "system-search");
     g_signal_connect(entry, "changed",
@@ -2994,11 +2994,11 @@ GtkWidget *create_main_layout(WCM *wcm)
     gtk_box_pack_start(GTK_BOX(close_layout), close_image, true, false, 0);
     gtk_box_pack_end(GTK_BOX(close_layout), close_label, true, false, 0);
     gtk_container_add(GTK_CONTAINER(close_button), close_layout);
-    g_object_set(close_button, "margin", 10, NULL);
+    g_object_set(close_button, "margin", 10, nullptr);
     g_signal_connect(close_button, "button-release-event",
-        G_CALLBACK(close_button_cb), NULL);
+        G_CALLBACK(close_button_cb), nullptr);
     g_signal_connect(close_button, "key-press-event",
-        G_CALLBACK(close_button_cb), NULL);
+        G_CALLBACK(close_button_cb), nullptr);
     gtk_box_pack_end(GTK_BOX(left_panel_layout), close_button, false, false, 0);
     gtk_box_pack_start(GTK_BOX(main_layout), left_panel_layout, false, true, 0);
     gtk_container_add(GTK_CONTAINER(scrolled_window),
