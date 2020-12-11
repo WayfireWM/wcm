@@ -2608,7 +2608,7 @@ static gboolean plugin_button_cb(GtkWidget *widget,
     WCM *wcm = p->wcm;
     GtkWidget *window = wcm->window;
     GtkWidget *main_layout = wcm->main_layout;
-    GtkWidget *enable_label, *enabled_cb;
+    GtkWidget *enable_label, *enabled_cb, *description;
     int i, j, k;
 
     g_object_ref(main_layout);
@@ -2625,6 +2625,20 @@ static gboolean plugin_button_cb(GtkWidget *widget,
     g_object_set(label, "margin", 50, nullptr);
     gtk_label_set_line_wrap(GTK_LABEL(label), true);
     gtk_label_set_max_width_chars(GTK_LABEL(label), 15);
+    if (p->tooltip)
+    {
+        g_object_set(label, "margin-bottom", 25, nullptr);
+        description = gtk_label_new(nullptr);
+        gtk_label_set_markup(GTK_LABEL(description),
+            ("<span size=\"10000\"><b>" + std::string(p->tooltip) +
+                "</b></span>").c_str());
+        gtk_widget_set_tooltip_text(description, p->tooltip);
+        g_object_set(description, "margin", 50, nullptr);
+        g_object_set(description, "margin-top", 0, nullptr);
+        gtk_label_set_line_wrap(GTK_LABEL(description), true);
+        gtk_label_set_max_width_chars(GTK_LABEL(description), 20);
+    }
+
     GtkWidget *enable_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     if (!is_core_plugin(p) && (p->type == PLUGIN_TYPE_WAYFIRE))
     {
@@ -2717,6 +2731,11 @@ static gboolean plugin_button_cb(GtkWidget *widget,
 
     gtk_box_pack_start(GTK_BOX(plugin_buttons_layout), notebook, false, true, 10);
     gtk_box_pack_start(GTK_BOX(left_panel_layout), label, false, false, 0);
+    if (p->tooltip)
+    {
+        gtk_box_pack_start(GTK_BOX(left_panel_layout), description, false, false, 0);
+    }
+
     if (!is_core_plugin(p) && (p->type == PLUGIN_TYPE_WAYFIRE))
     {
         gtk_box_pack_start(GTK_BOX(enable_layout), enabled_cb, false, false, 0);
