@@ -152,6 +152,14 @@ static void activate(GtkApplication *app,
     gpointer user_data)
 {
     WCM *wcm = (WCM*)user_data;
+
+    gtk_window_present(GTK_WINDOW(wcm->window));
+}
+
+static void startup(GtkApplication *app,
+    gpointer user_data)
+{
+    WCM *wcm = (WCM*)user_data;
     GtkWidget *window;
     GdkPixbuf *icon;
 
@@ -258,6 +266,7 @@ int main(int argc, char **argv)
 
     app = gtk_application_new("org.gtk.wayfire-config-manager",
         G_APPLICATION_FLAGS_NONE);
+    g_signal_connect(app, "startup", G_CALLBACK(startup), wcm);
     g_signal_connect(app, "activate", G_CALLBACK(activate), wcm);
     status = g_application_run(G_APPLICATION(app), argc, argv);
     g_object_unref(app);
