@@ -305,13 +305,15 @@ static Option *create_option(xmlNode *cur_node, Plugin *p)
     return o;
 }
 
-static void get_plugin_data(Plugin *p, Option *opt, Option *main_group, xmlDoc *doc,
+static Plugin *get_plugin_data(Plugin *plugin, Option *opt, Option *main_group,
+    xmlDoc *doc,
     xmlNode *a_node)
 {
     Option *o = opt;
     xmlNode *cur_node = nullptr;
     xmlChar *prop;
     bool children_handled = false;
+    Plugin *p = plugin;
 
     for (cur_node = a_node; cur_node; cur_node = cur_node->next)
     {
@@ -320,8 +322,15 @@ static void get_plugin_data(Plugin *p, Option *opt, Option *main_group, xmlDoc *
             continue;
         }
 
+        if (std::string((char*)cur_node->name) == "object")
+        {
+            return nullptr;
+        }
+
         if (std::string((char*)cur_node->name) == "plugin")
         {
+            p = new Plugin();
+            p->category = strdup("Uncategorized");
             prop = xmlGetProp(cur_node, (xmlChar*)"name");
             if (prop)
             {
@@ -410,9 +419,11 @@ static void get_plugin_data(Plugin *p, Option *opt, Option *main_group, xmlDoc *
 
         if (!children_handled)
         {
-            get_plugin_data(p, o, main_group, doc, cur_node->children);
+            p = get_plugin_data(p, o, main_group, doc, cur_node->children);
         }
     }
+
+    return p;
 }
 
 int parse_xml_files(WCM *wcm, wf::config::config_manager_t *config_manager)
@@ -435,11 +446,17 @@ int parse_xml_files(WCM *wcm, wf::config::config_manager_t *config_manager)
         {
             printf("Loading %s plugin: %s\n", root_element->name,
                 s->get_name().c_str());
-            Plugin *p = new Plugin();
-            p->category = strdup("Uncategorized");
-            p->wcm = wcm;
-            get_plugin_data(p, nullptr, nullptr, doc, root_element);
-            wcm->plugins.push_back(p);
+            Plugin *p =
+                get_plugin_data(nullptr, nullptr, nullptr, doc, root_element);
+            if (p)
+            {
+                p->wcm = wcm;
+                wcm->plugins.push_back(p);
+            } else
+            {
+                continue;
+            }
+
             if (std::string((char*)root_element->name) == "wayfire")
             {
                 p->type = PLUGIN_TYPE_WAYFIRE;
