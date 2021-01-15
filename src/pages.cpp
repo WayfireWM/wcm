@@ -30,24 +30,144 @@
 #include <libevdev/libevdev.h>
 #include <wayfire/config/types.hpp>
 #include "wcm.hpp"
+#include <wayfire/config/compound-option.hpp>
+#include <wayfire/config/xml.hpp>
 
 static int num_button_columns;
 static int button_width;
 
 #define NUM_CATEGORIES 8
 
+static bool begins_with(std::string word, std::string prefix)
+{
+    if (word.length() < prefix.length())
+    {
+        return false;
+    }
+
+    return word.substr(0, prefix.length()) == prefix;
+}
+
+
+/**
+ * Adapted from wf-config internal source code.
+ *
+ * Go through all options in the section, try to match them against the prefix
+ * of the compound option, thus build a new value and set it.
+ */
+void update_compound_from_section(wf::config::compound_option_t *compound,
+    const std::shared_ptr<wf::config::section_t>& section)
+{
+    auto options = section->get_registered_options();
+    std::vector<std::vector<std::string>> new_value;
+
+    struct tuple_in_construction_t
+    {
+        // How many of the tuple elements were initialized
+        size_t initialized = 0;
+        std::vector<std::string> values;
+    };
+
+    std::map<std::string, std::vector<std::string>> new_values;
+    const auto& entries = compound->get_entries();
+
+    for (size_t n = 0; n < entries.size(); n++)
+    {
+        const auto& prefix = entries[n]->get_prefix();
+        for (auto& opt : options)
+        {
+            if (wf::config::xml::get_option_xml_node(opt))
+            {
+                continue;
+            }
+
+            if (begins_with(opt->get_name(), prefix))
+            {
+                // We have found a match.
+                // Find the suffix we should store values in.
+                std::string suffix = opt->get_name().substr(prefix.size());
+                if (!new_values.count(suffix) && (n > 0))
+                {
+                    // Skip entries which did not have their first value set,
+                    // because these will not be fully constructed in the end.
+                    continue;
+                }
+
+                auto& tuple = new_values[suffix];
+
+                // Parse the value from the option, with the n-th type.
+                if (!entries[n]->is_parsable(opt->get_value_str()))
+                {
+                    continue;
+                }
+
+                if (n == 0)
+                {
+                    // Push the suffix first
+                    tuple.push_back(suffix);
+                }
+
+                // Update the Nth entry in the tuple (+1 because the first entry
+                // is the amount of initialized entries).
+                tuple.push_back(opt->get_value_str());
+            }
+        }
+    }
+
+    wf::config::compound_option_t::stored_type_t value;
+    for (auto& e : new_values)
+    {
+        // Ignore entires which do not have all entries set
+        if (e.second.size() != entries.size() + 1)
+        {
+            continue;
+        }
+
+        value.push_back(std::move(e.second));
+    }
+
+    compound->set_value_untyped(value);
+}
+
+/**
+ * Save the given configuration to the given file.
+ *
+ * Update the values of the compound options while doing this, as if
+ * they were set from the config file. This is necessary because wf-config will only
+ * save values in the compound list itself, not the options which represent the entries
+ * in the list.
+ */
+static void save_to_file(wf::config::config_manager_t& mgr,
+    const std::string& file)
+{
+
+    for (auto& section : mgr.get_all_sections())
+    {
+        for (auto& opt : section->get_registered_options())
+        {
+            auto as_compound =
+                dynamic_cast<wf::config::compound_option_t*>(opt.get());
+            if (as_compound)
+            {
+                update_compound_from_section(as_compound, section);
+            }
+        }
+    }
+
+    wf::config::save_configuration_to_file(mgr, file);
+}
+
 static bool save_config(WCM *wcm, Plugin *p)
 {
     if (p->type == PLUGIN_TYPE_WAYFIRE)
     {
-        wf::config::save_configuration_to_file(wcm->wf_config_mgr,
-            wcm->wf_config_file);
+        save_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
 
         return true;
     } else if (p->type == PLUGIN_TYPE_WF_SHELL)
     {
 #if HAVE_WFSHELL
-        wf::config::save_configuration_to_file(wcm->wf_shell_config_mgr,
+        save_to_file(wcm->wf_shell_config_mgr,
             wcm->wf_shell_config_file);
 
         return true;
@@ -190,16 +310,6 @@ static gboolean back_button_cb(GtkWidget *widget,
     return true;
 }
 
-static bool begins_with(std::string word, std::string prefix)
-{
-    if (word.length() < prefix.length())
-    {
-        return false;
-    }
-
-    return word.substr(0, prefix.length()) == prefix;
-}
-
 static bool all_chars_are(std::string str, char c)
 {
     for (size_t i = 0; i < str.size(); i++)
@@ -325,7 +435,7 @@ static gboolean add_command_item_button_cb(GtkWidget *widget,
         section->unregister_option(option);
     }
 
-    wf::config::save_configuration_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
+    save_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
     reload_config(wcm);
     section = get_config_section(o->plugin);
     if (!section)
@@ -351,7 +461,7 @@ static gboolean add_command_item_button_cb(GtkWidget *widget,
         i++;
     }
 
-    wf::config::save_configuration_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
+    save_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
     reload_config(wcm);
 
     children = gtk_container_get_children(GTK_CONTAINER(o->widget));
@@ -414,7 +524,7 @@ static gboolean remove_command_item_button_cb(GtkWidget *widget,
         }
     }
 
-    wf::config::save_configuration_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
+    save_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
     reload_config(wcm);
 
     children = gtk_container_get_children(GTK_CONTAINER(o->widget));
@@ -500,7 +610,7 @@ static gboolean add_autostart_item_button_cb(GtkWidget *widget,
     option->set_value_str("<command>");
     section->register_new_option(option);
 
-    wf::config::save_configuration_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
+    save_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
 
     children = gtk_container_get_children(GTK_CONTAINER(o->widget));
     for (iter = children; iter != nullptr; iter = g_list_next(iter))
@@ -599,7 +709,7 @@ static gboolean remove_autostart_item_button_cb(GtkWidget *widget,
         }
     }
 
-    wf::config::save_configuration_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
+    save_to_file(wcm->wf_config_mgr, wcm->wf_config_file);
     reload_config(wcm);
 
     children = gtk_container_get_children(GTK_CONTAINER(o->widget));
@@ -1993,13 +2103,7 @@ static void setup_command_list(GtkWidget *widget, Option *o)
                 opt_value     = executable;
             }
 
-            if (std::string(o->default_value.s) == "string")
-            {
-                dyn_opt->type = OPTION_TYPE_STRING;
-            } else
-            {
-                continue;
-            }
+            dyn_opt->type = OPTION_TYPE_STRING;
 
             dyn_opt->widget = widget;
             dyn_opt->parent = o;
@@ -2280,7 +2384,7 @@ static void add_option_widget(GtkWidget *widget, Option *o)
         break;
 
       case OPTION_TYPE_DYNAMIC_LIST:
-        if (std::string(o->name) == "command")
+        if (std::string(o->name) == "bindings")
         {
             setup_command_list(widget, o);
         } else if (std::string(o->name) == "autostart")
