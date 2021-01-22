@@ -83,7 +83,7 @@ static Option *create_option(xmlNode *cur_node, Plugin *p)
         {
             o->type = OPTION_TYPE_KEY;
             o->default_value.s = strdup("");
-        } else if (std::string((char*)prop) == "dynamic_list")
+        } else if (std::string((char*)prop) == "dynamic-list")
         {
             o->type = OPTION_TYPE_DYNAMIC_LIST;
         } else
