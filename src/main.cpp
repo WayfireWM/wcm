@@ -199,7 +199,7 @@ std::string::size_type find_plugin(Plugin *p, std::string plugins)
         c1 = plugins[std::max((int)pos - 1, 0)];
         c2 = plugins[pos + strlen(p->name)];
 
-        if (((c1 == ' ') || (c1 == 0)) && ((c2 == ' ') || (c2 == 0)))
+        if (((c1 == ' ') || (c1 == 0) || (pos == 0)) && ((c2 == ' ') || (c2 == 0)))
         {
             return pos;
         }
