@@ -33,6 +33,8 @@
 #include <wayfire/config/compound-option.hpp>
 #include <wayfire/config/xml.hpp>
 
+#define OUTPUT_CONFIG_PROGRAM "wdisplays"
+
 static int num_button_columns;
 static int button_width;
 
@@ -47,7 +49,6 @@ static bool begins_with(std::string word, std::string prefix)
 
     return word.substr(0, prefix.length()) == prefix;
 }
-
 
 /**
  * Adapted from wf-config internal source code.
@@ -134,13 +135,13 @@ void update_compound_from_section(wf::config::compound_option_t *compound,
  *
  * Update the values of the compound options while doing this, as if
  * they were set from the config file. This is necessary because wf-config will only
- * save values in the compound list itself, not the options which represent the entries
+ * save values in the compound list itself, not the options which represent the
+ * entries
  * in the list.
  */
 static void save_to_file(wf::config::config_manager_t& mgr,
     const std::string& file)
 {
-
     for (auto& section : mgr.get_all_sections())
     {
         for (auto& opt : section->get_registered_options())
@@ -270,6 +271,15 @@ static gboolean input_check(GtkWidget *widget, GdkEvent *event)
             return false;
         }
     }
+
+    return true;
+}
+
+static gboolean output_config_button_cb(GtkWidget *widget,
+    GdkEvent *event,
+    gpointer user_data)
+{
+    g_spawn_command_line_async(OUTPUT_CONFIG_PROGRAM, NULL);
 
     return true;
 }
@@ -638,7 +648,7 @@ static gboolean run_autostart_item_button_cb(GtkWidget *widget,
     }
 
     Option *o = (Option*)user_data;
-    char *command;
+
     std::shared_ptr<wf::config::section_t> section;
     std::shared_ptr<wf::config::option_base_t> option;
 
@@ -648,31 +658,9 @@ static gboolean run_autostart_item_button_cb(GtkWidget *widget,
         return false;
     }
 
-    option  = section->get_option_or(o->name);
-    command = strdup(option->get_value_str().c_str());
+    option = section->get_option_or(o->name);
 
-    pid_t pid = fork();
-
-    if (!pid)
-    {
-        if (!fork())
-        {
-            int dev_null = open("/dev/null", O_WRONLY);
-            dup2(dev_null, 1);
-            dup2(dev_null, 2);
-
-            _exit(execl("/bin/sh", "/bin/bash", "-c", command, nullptr));
-        } else
-        {
-            _exit(0);
-        }
-    } else
-    {
-        int status;
-        waitpid(pid, &status, 0);
-    }
-
-    free(command);
+    g_spawn_command_line_async(option->get_value_str().c_str(), NULL);
 
     return true;
 }
@@ -3142,10 +3130,10 @@ GtkWidget *create_main_layout(WCM *wcm)
         GTK_ICON_SIZE_BUTTON);
     GtkWidget *close_label = gtk_label_new("Close");
     gtk_widget_set_size_request(close_layout, 70, -1);
-    gtk_widget_set_margin_start(close_layout, 70);
-    gtk_widget_set_margin_end(close_layout, 70);
+    gtk_widget_set_margin_start(close_layout, 110);
+    gtk_widget_set_margin_end(close_layout, 110);
     gtk_box_pack_start(GTK_BOX(close_layout), close_image, true, false, 0);
-    gtk_box_pack_end(GTK_BOX(close_layout), close_label, true, false, 0);
+    gtk_box_pack_start(GTK_BOX(close_layout), close_label, true, false, 0);
     gtk_container_add(GTK_CONTAINER(close_button), close_layout);
     g_object_set(close_button, "margin", 10, nullptr);
     g_signal_connect(close_button, "button-release-event",
@@ -3153,6 +3141,31 @@ GtkWidget *create_main_layout(WCM *wcm)
     g_signal_connect(close_button, "key-press-event",
         G_CALLBACK(close_button_cb), nullptr);
     gtk_box_pack_end(GTK_BOX(left_panel_layout), close_button, false, false, 0);
+
+    if (!system("which " OUTPUT_CONFIG_PROGRAM " > /dev/null 2>&1"))
+    {
+        GtkWidget *output_config_button = gtk_button_new();
+        GtkWidget *output_config_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        GtkWidget *output_config_image  = gtk_image_new_from_icon_name("computer",
+            GTK_ICON_SIZE_BUTTON);
+        GtkWidget *output_config_label = gtk_label_new("Configure Outputs");
+        gtk_widget_set_size_request(output_config_layout, 70, -1);
+        gtk_widget_set_margin_start(output_config_layout, 70);
+        gtk_widget_set_margin_end(output_config_layout, 70);
+        gtk_box_pack_start(GTK_BOX(
+            output_config_layout), output_config_image, true, false, 0);
+        gtk_box_pack_end(GTK_BOX(
+            output_config_layout), output_config_label, true, false, 0);
+        gtk_container_add(GTK_CONTAINER(output_config_button), output_config_layout);
+        g_object_set(output_config_button, "margin", 10, nullptr);
+        g_signal_connect(output_config_button, "button-release-event",
+            G_CALLBACK(output_config_button_cb), nullptr);
+        g_signal_connect(output_config_button, "key-press-event",
+            G_CALLBACK(output_config_button_cb), nullptr);
+        gtk_box_pack_end(GTK_BOX(
+            left_panel_layout), output_config_button, false, false, 0);
+    }
+
     gtk_box_pack_start(GTK_BOX(main_layout), left_panel_layout, false, true, 0);
     gtk_container_add(GTK_CONTAINER(scrolled_window),
         create_plugins_layout(wcm, wcm->plugins));

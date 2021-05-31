@@ -1,0 +1,3 @@
+[submodule "subprojects/wdisplays"]
+	path = subprojects/wdisplays
+	url = https://github.com/luispabon/wdisplays
