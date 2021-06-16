@@ -3130,8 +3130,8 @@ GtkWidget *create_main_layout(WCM *wcm)
         GTK_ICON_SIZE_BUTTON);
     GtkWidget *close_label = gtk_label_new("Close");
     gtk_widget_set_size_request(close_layout, 70, -1);
-    gtk_widget_set_margin_start(close_layout, 110);
-    gtk_widget_set_margin_end(close_layout, 110);
+    gtk_widget_set_margin_start(close_layout, 70);
+    gtk_widget_set_margin_end(close_layout, 70);
     gtk_box_pack_start(GTK_BOX(close_layout), close_image, true, false, 0);
     gtk_box_pack_start(GTK_BOX(close_layout), close_label, true, false, 0);
     gtk_container_add(GTK_CONTAINER(close_button), close_layout);
@@ -3150,8 +3150,8 @@ GtkWidget *create_main_layout(WCM *wcm)
             GTK_ICON_SIZE_BUTTON);
         GtkWidget *output_config_label = gtk_label_new("Configure Outputs");
         gtk_widget_set_size_request(output_config_layout, 70, -1);
-        gtk_widget_set_margin_start(output_config_layout, 70);
-        gtk_widget_set_margin_end(output_config_layout, 70);
+        gtk_widget_set_margin_start(output_config_layout, 30);
+        gtk_widget_set_margin_end(output_config_layout, 30);
         gtk_box_pack_start(GTK_BOX(
             output_config_layout), output_config_image, true, false, 0);
         gtk_box_pack_end(GTK_BOX(
