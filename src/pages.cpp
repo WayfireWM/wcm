@@ -2220,11 +2220,10 @@ static void setup_autostart_list(GtkWidget *widget, Option *o)
         return;
     }
 
-    std::vector<std::string> autostart_names;
-    for (auto e : section->get_registered_options())
-    {
-        autostart_names.push_back(e->get_name());
-    }
+    auto option = std::dynamic_pointer_cast<wf::config::compound_option_t>(
+        section->get_option("autostart"));
+    // Parse autostart list as a list of string values
+    auto autostart_names = option->get_value<std::string>();
 
     for (size_t i = 0; i < o->options.size(); i++)
     {
@@ -2236,18 +2235,11 @@ static void setup_autostart_list(GtkWidget *widget, Option *o)
 
     o->options.clear();
     o->widget = widget;
-    for (size_t i = 0; i < autostart_names.size(); i++)
+    for (const auto& [opt_name, executable] : autostart_names)
     {
-        auto e = autostart_names[i];
-        if (e == "autostart_wf_shell")
-        {
-            continue;
-        }
-
-        auto executable = section->get_option_or(e)->get_value_str();
         Option *dyn_opt = new Option();
         option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        dyn_opt->name = strdup(e.c_str());
+        dyn_opt->name = strdup(opt_name.c_str());
         if (std::string(o->default_value.s) == "string")
         {
             dyn_opt->type = OPTION_TYPE_STRING;
