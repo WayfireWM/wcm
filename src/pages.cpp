@@ -279,9 +279,12 @@ static gboolean output_config_button_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
 {
-    g_spawn_command_line_async(OUTPUT_CONFIG_PROGRAM, NULL);
+    if (input_check(widget, event))
+    {
+        g_spawn_command_line_async(OUTPUT_CONFIG_PROGRAM, NULL);
+    }
 
-    return true;
+    return false;
 }
 
 static gboolean close_button_cb(GtkWidget *widget,
