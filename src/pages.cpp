@@ -832,12 +832,16 @@ static gboolean reset_button_cb(GtkWidget *widget,
         break;
 
       case OPTION_TYPE_COLOR:
+    {
         GdkRGBA color;
-        if (sscanf(o->default_value.s, "%lf %lf %lf %lf", &color.red, &color.green,
-            &color.blue, &color.alpha) != 4)
-        {
-            break;
-        }
+
+        auto color_opt =
+            wf::option_type::from_string<wf::color_t>(o->default_value.s);
+
+        color.red   = color_opt->r;
+        color.green = color_opt->g;
+        color.blue  = color_opt->b;
+        color.alpha = color_opt->a;
 
         gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(o->data_widget), &color);
         section = get_config_section(o->plugin);
@@ -850,6 +854,7 @@ static gboolean reset_button_cb(GtkWidget *widget,
         option->set_value_str(o->default_value.s);
         save_config(wcm, o->plugin);
         break;
+    }
 
       default:
         break;
