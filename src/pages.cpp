@@ -2749,7 +2749,7 @@ static gboolean plugin_button_cb(GtkWidget *widget,
 
     GtkWidget *back_button = gtk_button_new();
     GtkWidget *back_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    GtkWidget *back_image  = gtk_image_new_from_icon_name("back",
+    GtkWidget *back_image  = gtk_image_new_from_icon_name("go-previous",
         GTK_ICON_SIZE_BUTTON);
     GtkWidget *back_label = gtk_label_new("Back");
     gtk_widget_set_size_request(back_layout, 70, -1);
