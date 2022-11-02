@@ -40,14 +40,9 @@ static int button_width;
 
 #define NUM_CATEGORIES 8
 
-static bool begins_with(std::string word, std::string prefix)
+static bool begins_with(const std::string& word, const std::string& prefix)
 {
-    if (word.length() < prefix.length())
-    {
-        return false;
-    }
-
-    return word.substr(0, prefix.length()) == prefix;
+    return  word.length() >= prefix.length() && word.substr(0, prefix.length()) == prefix;
 }
 
 /**
@@ -322,29 +317,19 @@ static gboolean back_button_cb(GtkWidget *widget,
     return true;
 }
 
-static bool all_chars_are(std::string str, char c)
+static bool all_chars_are(const std::string& str, char c)
 {
-    for (size_t i = 0; i < str.size(); i++)
-    {
-        if (str[i] != c)
-        {
+    for (const auto &el: str)
+        if (el != c)
             return false;
-        }
-    }
-
     return true;
 }
 
-static bool not_in_list(std::vector<int> list, int item)
+static bool not_in_list(const std::vector<int>& list, int item)
 {
-    for (size_t i = 0; i < list.size(); i++)
-    {
-        if (list[i] == item)
-        {
+    for (const auto& el : list)
+        if (el == item)
             return false;
-        }
-    }
-
     return true;
 }
 
@@ -418,12 +403,12 @@ static gboolean add_command_item_button_cb(GtkWidget *widget,
         }
     }
 
-    auto name = std::string("command_") + std::to_string(count);
+    auto name = "command_" + std::to_string(count);
     command_names.push_back(name);
-    command_values.push_back(std::string("<command>"));
-    name = std::string("binding_") + std::to_string(count);
+    command_values.push_back("<command>");
+    name = "binding_" + std::to_string(count);
     alpha_names.push_back(name);
-    alpha_values.push_back(std::string("<binding>"));
+    alpha_values.push_back("<binding>");
     reorder_list.push_back(count);
     auto sorted_list = reorder_list;
     std::sort(sorted_list.begin(), sorted_list.end());
@@ -521,16 +506,13 @@ static gboolean remove_command_item_button_cb(GtkWidget *widget,
         {
             option = section->get_option_or(std::string(opt->name));
             section->unregister_option(option);
-            auto binding = std::string("binding_") + std::string(opt->name).substr(std::string(
-                "command_").length());
+            auto binding = "binding_" + std::string(opt->name).substr(sizeof("command_"));
             option = section->get_option_or(binding);
             section->unregister_option(option);
-            auto repeatable_binding = std::string("repeatable_binding_") +
-                std::string(opt->name).substr(std::string("command_").length());
+            auto repeatable_binding = "repeatable_binding_" + std::string(opt->name).substr(sizeof("command_"));
             option = section->get_option_or(repeatable_binding);
             section->unregister_option(option);
-            auto always_binding = std::string("always_binding_") + std::string(
-                opt->name).substr(std::string("command_").length());
+            auto always_binding = "always_binding_" + std::string(opt->name).substr(sizeof("command_"));
             option = section->get_option_or(always_binding);
             section->unregister_option(option);
         }
@@ -570,7 +552,7 @@ static gboolean add_autostart_item_button_cb(GtkWidget *widget,
     std::shared_ptr<wf::config::option_base_t> option;
     GtkWidget *top_spacer;
     GList *children, *iter;
-    auto prefix = std::string("a");
+    std::string prefix = "a";
     std::vector<int> slot_list;
     std::vector<std::string> names;
     std::vector<std::string> values;
@@ -617,7 +599,7 @@ static gboolean add_autostart_item_button_cb(GtkWidget *widget,
         }
     }
 
-    auto name = std::string("a") + std::to_string(i);
+    auto name = "a" + std::to_string(i);
     option = std::make_shared<wf::config::option_t<std::string>>(name, "");
     option->set_value_str("<command>");
     section->register_new_option(option);
@@ -966,10 +948,7 @@ static gboolean spawn_color_chooser_cb(GtkWidget *widget,
         }
 
         option = section->get_option_or(o->name);
-        c.r    = color.red;
-        c.g    = color.green;
-        c.b    = color.blue;
-        c.a    = color.alpha;
+        c = {color.red, color.green, color.blue, color.alpha};
         option->set_value_str(wf::option_type::to_string<wf::color_t>(c));
         save_config(wcm, o->plugin);
     }
@@ -1094,7 +1073,7 @@ static gboolean entry_focus_out_cb(GtkWidget *widget,
     return GDK_EVENT_PROPAGATE;
 }
 
-static std::string get_command_from_index(std::string command,
+static std::string get_command_from_index(const std::string& command,
     std::shared_ptr<wf::config::section_t> section,
     int index)
 {
@@ -1216,7 +1195,7 @@ static gboolean binding_entry_focus_out_cb(GtkWidget *widget,
     return GDK_EVENT_PROPAGATE;
 }
 
-static GtkWidget *create_plugins_layout(WCM *wcm, std::vector<Plugin*> plugins);
+static GtkWidget *create_plugins_layout(WCM *wcm, const std::vector<Plugin*>& plugins);
 
 #define padding 75
 
@@ -1400,10 +1379,8 @@ static gboolean binding_confirm_cb(GtkWidget *widget,
     return true;
 }
 
-static void write_binding_option_check(Option *o, std::string name)
+static void write_binding_option_check(Option *o, const std::string& name)
 {
-    char buf[256];
-
     if (!o->plugin->wcm->screen_lock)
     {
         return;
@@ -1424,10 +1401,9 @@ static void write_binding_option_check(Option *o, std::string name)
     GtkWidget *button_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *button_cancel = gtk_button_new_with_label("Cancel");
     GtkWidget *button_ok     = gtk_button_new_with_label("Ok");
-    sprintf(buf,
-        "Attempting to bind \"%s\" without modifier.\nYou will be unable to use this key/button for anything else!\nAre you sure?",
-        name.c_str());
-    GtkWidget *label = gtk_label_new(buf);
+    const auto warning_text =
+        "Attempting to bind \"" + name + "\" without modifier.\nYou will be unable to use this key/button for anything else!\nAre you sure?";
+    GtkWidget *label = gtk_label_new(warning_text.c_str());
     gtk_widget_set_margin_top(layout, 10);
     gtk_widget_set_margin_bottom(layout, 10);
     gtk_widget_set_margin_start(layout, 10);
@@ -2848,7 +2824,7 @@ static gboolean plugin_button_cb(GtkWidget *widget,
     return true;
 }
 
-static const char *get_icon_name_from_category(std::string category)
+static const char *get_icon_name_from_category(const std::string& category)
 {
     if (category == "General")
     {
@@ -2945,7 +2921,7 @@ static void add_plugin_to_category(Plugin *p, GtkWidget **category,
         G_CALLBACK(button_size_allocate_cb), p->wcm);
 }
 
-static GtkWidget *create_plugins_layout(WCM *wcm, std::vector<Plugin*> plugins)
+static GtkWidget *create_plugins_layout(WCM *wcm, const std::vector<Plugin*>& plugins)
 {
     int i;
 

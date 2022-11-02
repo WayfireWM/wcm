@@ -175,4 +175,4 @@ GtkWidget *create_main_layout(WCM *wcm);
 
 bool is_core_plugin(Plugin *plugin);
 
-std::string::size_type find_plugin(Plugin *p, std::string plugins);
+std::string::size_type find_plugin(Plugin *p, const std::string& plugins);

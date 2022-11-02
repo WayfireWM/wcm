@@ -182,7 +182,7 @@ static void startup(GtkApplication *app,
     }
 }
 
-std::string::size_type find_plugin(Plugin *p, std::string plugins)
+std::string::size_type find_plugin(Plugin *p, const std::string& plugins)
 {
     char c1 = 0, c2 = 0;
     std::string::size_type pos = 0;
@@ -210,7 +210,7 @@ std::string::size_type find_plugin(Plugin *p, std::string plugins)
     return std::string::npos;
 }
 
-static int plugin_enabled(Plugin *p, std::string plugins)
+static int plugin_enabled(Plugin *p, const std::string& plugins)
 {
     if (is_core_plugin(p))
     {
@@ -264,8 +264,7 @@ int main(int argc, char **argv)
 
     init(wcm);
 
-    app = gtk_application_new("org.gtk.wayfire-config-manager",
-        G_APPLICATION_FLAGS_NONE);
+    app = gtk_application_new("org.gtk.wayfire-config-manager", G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "startup", G_CALLBACK(startup), wcm);
     g_signal_connect(app, "activate", G_CALLBACK(activate), wcm);
     status = g_application_run(G_APPLICATION(app), argc, argv);
