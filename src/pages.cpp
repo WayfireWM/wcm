@@ -1248,7 +1248,8 @@ static void button_size_allocate_cb(GtkWidget *widget, GtkAllocation *allocation
 
 #undef padding
 
-static void write_binding_option(Option *o, std::string name)
+template <bool adding_mode>
+static void write_binding_option(Option *o, const std::string& name)
 {
     WCM *wcm = o->plugin->wcm;
     std::shared_ptr<wf::config::section_t> section;
@@ -1312,11 +1313,11 @@ static void write_binding_option(Option *o, std::string name)
     if (!option)
     {
         option = std::make_shared<wf::config::option_t<std::string>>(o->name, "");
-        option->set_value_str(text);
+        option->set_value_str((adding_mode ? option->get_value_str() + " | " : "") + text);
         section->register_new_option(option);
     } else
     {
-        option->set_value_str(text);
+        option->set_value_str((adding_mode ? option->get_value_str() + " | " : "") + text);
     }
 
     save_config(wcm, o->plugin);
@@ -1351,6 +1352,7 @@ static gboolean binding_cancel_cb(GtkWidget *widget,
     return true;
 }
 
+template <bool adding_mode>
 static gboolean binding_confirm_cb(GtkWidget *widget,
     GdkEvent *event,
     gpointer user_data)
@@ -1362,7 +1364,7 @@ static gboolean binding_confirm_cb(GtkWidget *widget,
 
     Option *o = (Option*)user_data;
 
-    write_binding_option(o, o->binding);
+    write_binding_option<adding_mode>(o, o->binding);
 
     if (o->confirm_window)
     {
@@ -1379,6 +1381,7 @@ static gboolean binding_confirm_cb(GtkWidget *widget,
     return true;
 }
 
+template <bool adding_mode>
 static void write_binding_option_check(Option *o, const std::string& name)
 {
     if (!o->plugin->wcm->screen_lock)
@@ -1389,7 +1392,7 @@ static void write_binding_option_check(Option *o, const std::string& name)
     if (o->mod_mask)
     {
         o->confirm_window = nullptr;
-        write_binding_option(o, name);
+        write_binding_option<adding_mode>(o, name);
 
         return;
     }
@@ -1402,7 +1405,9 @@ static void write_binding_option_check(Option *o, const std::string& name)
     GtkWidget *button_cancel = gtk_button_new_with_label("Cancel");
     GtkWidget *button_ok     = gtk_button_new_with_label("Ok");
     const auto warning_text =
-        "Attempting to bind \"" + name + "\" without modifier.\nYou will be unable to use this key/button for anything else!\nAre you sure?";
+        "Attempting to bind \"" + name + "\" without modifier.\n"
+        "You will be unable to use this key/button for anything else!\n"
+        "Are you sure?";
     GtkWidget *label = gtk_label_new(warning_text.c_str());
     gtk_widget_set_margin_top(layout, 10);
     gtk_widget_set_margin_bottom(layout, 10);
@@ -1413,9 +1418,9 @@ static void write_binding_option_check(Option *o, const std::string& name)
     g_signal_connect(button_cancel, "key-press-event",
         G_CALLBACK(binding_cancel_cb), o);
     g_signal_connect(button_ok, "button-release-event",
-        G_CALLBACK(binding_confirm_cb), o);
+        G_CALLBACK(binding_confirm_cb<adding_mode>), o);
     g_signal_connect(button_ok, "key-press-event",
-        G_CALLBACK(binding_confirm_cb), o);
+        G_CALLBACK(binding_confirm_cb<adding_mode>), o);
     gtk_box_pack_end(GTK_BOX(button_layout), button_ok, false, false, 0);
     gtk_box_pack_end(GTK_BOX(button_layout), button_cancel, false, false, 0);
     gtk_box_pack_start(GTK_BOX(layout), label, false, false, 0);
@@ -1460,6 +1465,7 @@ static void unlock_input(WCM *wcm)
     wcm->screen_lock = nullptr;
 }
 
+template <bool adding_mode>
 static void grab_binding_button_cb(GtkWidget *widget,
     GdkEventButton *event,
     gpointer user_data)
@@ -1474,23 +1480,23 @@ static void grab_binding_button_cb(GtkWidget *widget,
     switch (event->button)
     {
       case 1:
-        write_binding_option_check(o, "BTN_LEFT");
+        write_binding_option_check<adding_mode>(o, "BTN_LEFT");
         break;
 
       case 2:
-        write_binding_option_check(o, "BTN_MIDDLE");
+        write_binding_option_check<adding_mode>(o, "BTN_MIDDLE");
         break;
 
       case 3:
-        write_binding_option_check(o, "BTN_RIGHT");
+        write_binding_option_check<adding_mode>(o, "BTN_RIGHT");
         break;
 
       case 4:
-        write_binding_option_check(o, "BTN_SIDE");
+        write_binding_option_check<adding_mode>(o, "BTN_SIDE");
         break;
 
       case 5:
-        write_binding_option_check(o, "BTN_EXTRA");
+        write_binding_option_check<adding_mode>(o, "BTN_EXTRA");
         break;
 
       default:
@@ -1503,6 +1509,7 @@ static void grab_binding_button_cb(GtkWidget *widget,
 
 #define HW_OFFSET 8
 
+template <bool adding_mode>
 bool grab_binding_key_cb(GtkWidget *widget,
     GdkEventKey *event,
     gpointer user_data)
@@ -1530,7 +1537,7 @@ bool grab_binding_key_cb(GtkWidget *widget,
             o->mod_mask = (mod_type)(o->mod_mask | MOD_TYPE_SUPER);
         } else
         {
-            write_binding_option_check(o,
+            write_binding_option_check<adding_mode>(o,
                 libevdev_event_code_get_name(EV_KEY,
                     event->hardware_keycode - HW_OFFSET));
             gtk_window_close(GTK_WINDOW(widget));
@@ -1612,6 +1619,11 @@ static gboolean key_grab_button_cb(GtkWidget *widget,
         return false;
     }
 
+    bool adding_binding_mode = false;
+    if (event->type == GDK_BUTTON_RELEASE &&
+            (((GdkEventButton*)event)->state & GDK_CONTROL_MASK))
+        adding_binding_mode = true;
+
     Option *o = (Option*)user_data;
 
     if (o->confirm_window)
@@ -1627,12 +1639,23 @@ static gboolean key_grab_button_cb(GtkWidget *widget,
     o->mod_mask = (mod_type)0;
     GtkWidget *grab_binding_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(grab_binding_window), "Waiting for Binding");
-    g_signal_connect(grab_binding_window, "button-press-event",
-        G_CALLBACK(grab_binding_button_cb), o);
-    g_signal_connect(grab_binding_window, "key-press-event",
-        G_CALLBACK(grab_binding_key_cb), o);
-    g_signal_connect(grab_binding_window, "key-release-event",
-        G_CALLBACK(grab_binding_key_cb), o);
+    if (adding_binding_mode)
+    {
+        g_signal_connect(grab_binding_window, "button-press-event",
+            G_CALLBACK(grab_binding_button_cb<true>), o);
+        g_signal_connect(grab_binding_window, "key-press-event",
+            G_CALLBACK(grab_binding_key_cb<true>), o);
+        g_signal_connect(grab_binding_window, "key-release-event",
+            G_CALLBACK(grab_binding_key_cb<true>), o);
+    } else
+    {
+        g_signal_connect(grab_binding_window, "button-press-event",
+            G_CALLBACK(grab_binding_button_cb<false>), o);
+        g_signal_connect(grab_binding_window, "key-press-event",
+            G_CALLBACK(grab_binding_key_cb<false>), o);
+        g_signal_connect(grab_binding_window, "key-release-event",
+            G_CALLBACK(grab_binding_key_cb<false>), o);
+    }
     g_signal_connect(grab_binding_window, "delete-event",
         G_CALLBACK(window_deleted_cb), o);
 
@@ -2477,6 +2500,7 @@ static void add_option_widget(GtkWidget *widget, Option *o)
             G_CALLBACK(binding_edit_button_cb), o);
         GtkWidget *key_grab_button = gtk_button_new_with_label(
             option->get_value_str().c_str());
+        gtk_widget_set_tooltip_text(key_grab_button, "Click with the Ctrl key pressed to add a new extra binding instead of overriding the current one.");
         g_signal_connect(key_grab_button, "button-release-event",
             G_CALLBACK(key_grab_button_cb), o);
         g_signal_connect(key_grab_button, "key-press-event",
@@ -2598,7 +2622,7 @@ static void add_option_widget(GtkWidget *widget, Option *o)
     }
 }
 
-static void format_whitespace(std::string & str)
+static void format_whitespace(std::string& str)
 {
     size_t pos;
     int i;
