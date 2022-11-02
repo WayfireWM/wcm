@@ -152,6 +152,7 @@ class WCM
 {
   public:
     GtkWidget *window;
+    GtkWidget *main_stack; /* for animated transition */
     GtkWidget *main_layout;
     GtkWidget *plugin_layout;
     GtkWidget *left_panel_layout;

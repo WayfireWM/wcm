@@ -312,12 +312,11 @@ static gboolean back_button_cb(GtkWidget *widget,
     GtkWidget *window = wcm->window;
     GtkWidget *main_layout   = wcm->main_layout;
     GtkWidget *plugin_layout = wcm->plugin_layout;
+    GtkWidget *main_stack = wcm->main_stack;
 
-    gtk_widget_destroy(plugin_layout);
-
-    gtk_container_add(GTK_CONTAINER(window), main_layout);
+    gtk_stack_set_visible_child_name(GTK_STACK(main_stack), "main_page");
+    gtk_container_remove(GTK_CONTAINER(main_stack), plugin_layout);
     g_object_unref(main_layout);
-
     gtk_widget_show_all(window);
 
     return true;
@@ -2700,11 +2699,11 @@ static gboolean plugin_button_cb(GtkWidget *widget,
     WCM *wcm = p->wcm;
     GtkWidget *window = wcm->window;
     GtkWidget *main_layout = wcm->main_layout;
+    GtkWidget *main_stack = wcm->main_stack;
     GtkWidget *enable_label, *enabled_cb, *description;
     int i, j, k;
 
     g_object_ref(main_layout);
-    gtk_container_remove(GTK_CONTAINER(window), main_layout);
 
     GtkWidget *plugin_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *left_panel_layout     = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -2838,7 +2837,9 @@ static gboolean plugin_button_cb(GtkWidget *widget,
     gtk_box_pack_end(GTK_BOX(left_panel_layout), back_button, false, false, 0);
     gtk_box_pack_start(GTK_BOX(plugin_layout), left_panel_layout, false, true, 0);
     gtk_box_pack_end(GTK_BOX(plugin_layout), plugin_buttons_layout, true, true, 0);
-    gtk_container_add(GTK_CONTAINER(window), plugin_layout);
+    gtk_stack_add_named(GTK_STACK(main_stack), plugin_layout, "plugin_page");
+    gtk_widget_show_all(main_stack);
+    gtk_stack_set_visible_child(GTK_STACK(main_stack), plugin_layout);
 
     wcm->plugin_layout = plugin_layout;
 
@@ -3100,6 +3101,7 @@ GtkWidget *create_main_layout(WCM *wcm)
     g_signal_connect(window, "key-press-event",
         G_CALLBACK(window_key_cb), nullptr);
 
+    GtkWidget *main_stack = gtk_stack_new();
     GtkWidget *main_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *left_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *scrolled_window   = gtk_scrolled_window_new(nullptr, nullptr);
@@ -3141,6 +3143,7 @@ GtkWidget *create_main_layout(WCM *wcm)
     g_signal_connect(close_button, "key-press-event",
         G_CALLBACK(close_button_cb), nullptr);
     gtk_box_pack_end(GTK_BOX(left_panel_layout), close_button, false, false, 0);
+    gtk_stack_set_transition_type(GTK_STACK(main_stack), GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
 
     if (!system("which " OUTPUT_CONFIG_PROGRAM " > /dev/null 2>&1"))
     {
@@ -3170,10 +3173,12 @@ GtkWidget *create_main_layout(WCM *wcm)
     gtk_container_add(GTK_CONTAINER(scrolled_window),
         create_plugins_layout(wcm, wcm->plugins));
     gtk_box_pack_end(GTK_BOX(main_layout), scrolled_window, true, true, 0);
-    gtk_container_add(GTK_CONTAINER(window), main_layout);
+    gtk_stack_add_named(GTK_STACK(main_stack), main_layout, "main_page");
+    gtk_container_add(GTK_CONTAINER(window), main_stack);
 
     wcm->left_panel_layout = left_panel_layout;
     wcm->scrolled_plugin_layout = scrolled_window;
+    wcm->main_stack = main_stack;
 
     return main_layout;
 }
