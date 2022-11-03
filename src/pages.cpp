@@ -1993,9 +1993,8 @@ static void setup_command_list(GtkWidget *widget, Option *o)
         }
     }
 
-    for (size_t i = 0; i < o->options.size(); i++)
+    for (auto *opt : o->options)
     {
-        Option *opt = o->options[i];
         free(opt->name);
         free(opt->default_value.s);
         delete opt;
@@ -2003,12 +2002,12 @@ static void setup_command_list(GtkWidget *widget, Option *o)
 
     o->options.clear();
     o->widget = widget;
-    for (size_t i = 0; i < command_names.size(); i++)
+    for (const auto &command_name : command_names)
     {
-        auto command = exec_prefix + command_names[i];
-        auto regular_binding_name = "binding_" + command_names[i];
-        auto repeat_binding_name  = "repeatable_binding_" + command_names[i];
-        auto always_binding_name  = "always_binding_" + command_names[i];
+        auto command = exec_prefix + command_name;
+        auto regular_binding_name = "binding_" + command_name;
+        auto repeat_binding_name  = "repeatable_binding_" + command_name;
+        auto always_binding_name  = "always_binding_" + command_name;
 
         std::string executable, regular, repeatable, always;
         auto executable_opt = section->get_option_or(command);
@@ -2037,8 +2036,9 @@ static void setup_command_list(GtkWidget *widget, Option *o)
 
         GtkWidget *frame    = gtk_frame_new(nullptr);
         GtkWidget *expander =
-            gtk_expander_new((std::string("Command ") + command_names[i] + ": " +
+            gtk_expander_new((std::string("Command ") + command_name + ": " +
                 executable).c_str());
+        gtk_label_set_ellipsize(GTK_LABEL(gtk_expander_get_label_widget(GTK_EXPANDER(expander))), PANGO_ELLIPSIZE_END);
         GtkWidget *expander_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
         GtkWidget *options_layout  = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2185,6 +2185,8 @@ static void setup_command_list(GtkWidget *widget, Option *o)
         }
 
         gtk_box_set_spacing(GTK_BOX(options_layout), 10);
+        gtk_widget_set_margin_top(options_layout, 5);
+        gtk_widget_set_margin_bottom(options_layout, 5);
         gtk_container_add(GTK_CONTAINER(expander), options_layout);
         gtk_container_add(GTK_CONTAINER(frame), expander);
         gtk_container_add(GTK_CONTAINER(expander_layout), frame);
@@ -2210,6 +2212,8 @@ static void setup_command_list(GtkWidget *widget, Option *o)
     gtk_button_set_image(GTK_BUTTON(add_button), list_add_image);
     gtk_box_pack_end(GTK_BOX(add_button_layout), add_button, false, false, 0);
     gtk_box_pack_end(GTK_BOX(widget), add_button_layout, false, true, 0);
+    gtk_widget_set_margin_start(widget, 5);
+    gtk_widget_set_margin_end(widget, 5);
     gtk_widget_show_all(widget);
 }
 
