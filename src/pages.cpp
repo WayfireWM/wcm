@@ -2038,7 +2038,9 @@ static void setup_command_list(GtkWidget *widget, Option *o)
         GtkWidget *expander =
             gtk_expander_new((std::string("Command ") + command_name + ": " +
                 executable).c_str());
-        gtk_label_set_ellipsize(GTK_LABEL(gtk_expander_get_label_widget(GTK_EXPANDER(expander))), PANGO_ELLIPSIZE_END);
+        auto *expander_label = gtk_expander_get_label_widget(GTK_EXPANDER(expander));
+        gtk_label_set_ellipsize(GTK_LABEL(expander_label), PANGO_ELLIPSIZE_END);
+        gtk_widget_set_tooltip_text(expander_label, executable.c_str());
         GtkWidget *expander_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
         GtkWidget *options_layout  = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         option_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2189,6 +2191,8 @@ static void setup_command_list(GtkWidget *widget, Option *o)
         gtk_widget_set_margin_bottom(options_layout, 5);
         gtk_container_add(GTK_CONTAINER(expander), options_layout);
         gtk_container_add(GTK_CONTAINER(frame), expander);
+        gtk_widget_set_margin_start(expander_layout, 10);
+        gtk_widget_set_margin_end(expander_layout, 10);
         gtk_container_add(GTK_CONTAINER(expander_layout), frame);
         if ((executable == std::string("<command>")) ||
             (regular == std::string("<binding>")))
@@ -2212,8 +2216,6 @@ static void setup_command_list(GtkWidget *widget, Option *o)
     gtk_button_set_image(GTK_BUTTON(add_button), list_add_image);
     gtk_box_pack_end(GTK_BOX(add_button_layout), add_button, false, false, 0);
     gtk_box_pack_end(GTK_BOX(widget), add_button_layout, false, true, 0);
-    gtk_widget_set_margin_start(widget, 5);
-    gtk_widget_set_margin_end(widget, 5);
     gtk_widget_show_all(widget);
 }
 
@@ -2326,6 +2328,7 @@ static void setup_autostart_list(GtkWidget *widget, Option *o)
     gtk_button_set_image(GTK_BUTTON(add_button), list_add_image);
     gtk_box_pack_end(GTK_BOX(add_button_layout), add_button, false, false, 0);
     gtk_box_pack_end(GTK_BOX(widget), add_button_layout, false, true, 0);
+    gtk_widget_set_margin_start(widget, 10);
     gtk_widget_show_all(widget);
 }
 
