@@ -312,7 +312,7 @@ static gboolean back_button_cb(GtkWidget *widget,
     GtkWidget *window = wcm->window;
     GtkWidget *main_layout   = wcm->main_layout;
     GtkWidget *plugin_layout = wcm->plugin_layout;
-    GtkWidget *main_stack = wcm->main_stack;
+    GtkWidget *main_stack    = wcm->main_stack;
 
     gtk_stack_set_visible_child_name(GTK_STACK(main_stack), "main_page");
     gtk_container_remove(GTK_CONTAINER(main_stack), plugin_layout);
@@ -735,30 +735,38 @@ static gboolean reset_button_cb(GtkWidget *widget,
     switch (o->type)
     {
       case OPTION_TYPE_INT:
+    {
+        section = get_config_section(o->plugin);
+        if (!section)
+        {
+            return false;
+        }
+
+        option = section->get_option_or(o->name);
+        option->reset_to_default();
+        save_config(wcm, o->plugin);
+
+        auto opt = wf::option_type::from_string<int>(option->get_value_str());
+        if (!opt)
+        {
+            return false;
+        }
+
         if (o->int_labels.size())
         {
             gtk_combo_box_set_active(GTK_COMBO_BOX(
-                o->data_widget), o->default_value.i);
+                o->data_widget), opt.value());
         } else
         {
             gtk_spin_button_set_value(GTK_SPIN_BUTTON(
-                o->data_widget), o->default_value.i);
+                o->data_widget), opt.value());
         }
 
-        section = get_config_section(o->plugin);
-        if (!section)
-        {
-            return false;
-        }
-
-        option = section->get_option_or(o->name);
-        option->set_value_str(wf::option_type::to_string<int>(o->default_value.i));
-        save_config(wcm, o->plugin);
         break;
+    }
 
       case OPTION_TYPE_BOOL:
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
-            o->data_widget), o->default_value.i);
+    {
         section = get_config_section(o->plugin);
         if (!section)
         {
@@ -766,13 +774,22 @@ static gboolean reset_button_cb(GtkWidget *widget,
         }
 
         option = section->get_option_or(o->name);
-        option->set_value_str(wf::option_type::to_string<int>(o->default_value.i));
+        option->reset_to_default();
         save_config(wcm, o->plugin);
+
+        auto opt = wf::option_type::from_string<bool>(option->get_value_str());
+        if (!opt)
+        {
+            return false;
+        }
+
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+            o->data_widget), opt.value());
         break;
+    }
 
       case OPTION_TYPE_DOUBLE:
-        gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget),
-            o->default_value.d);
+    {
         section = get_config_section(o->plugin);
         if (!section)
         {
@@ -780,14 +797,24 @@ static gboolean reset_button_cb(GtkWidget *widget,
         }
 
         option = section->get_option_or(o->name);
-        option->set_value_str(wf::option_type::to_string<double>(o->default_value.d));
+        option->reset_to_default();
         save_config(wcm, o->plugin);
+
+        auto opt = wf::option_type::from_string<double>(option->get_value_str());
+        if (!opt)
+        {
+            return false;
+        }
+
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(o->data_widget),
+            opt.value());
         break;
+    }
 
       case OPTION_TYPE_ACTIVATOR:
       case OPTION_TYPE_BUTTON:
       case OPTION_TYPE_KEY:
-        gtk_button_set_label(GTK_BUTTON(o->data_widget), o->default_value.s);
+    {
         section = get_config_section(o->plugin);
         if (!section)
         {
@@ -795,12 +822,40 @@ static gboolean reset_button_cb(GtkWidget *widget,
         }
 
         option = section->get_option_or(o->name);
-        option->set_value_str(o->default_value.s);
+        option->reset_to_default();
         save_config(wcm, o->plugin);
+
+        auto opt =
+            wf::option_type::from_string<std::string>(option->get_value_str());
+        if (!opt)
+        {
+            return false;
+        }
+
+        gtk_button_set_label(GTK_BUTTON(o->data_widget), opt.value().c_str());
         break;
+    }
 
       case OPTION_TYPE_GESTURE:
       case OPTION_TYPE_STRING:
+    {
+        section = get_config_section(o->plugin);
+        if (!section)
+        {
+            return false;
+        }
+
+        option = section->get_option_or(o->name);
+        option->reset_to_default();
+        save_config(wcm, o->plugin);
+
+        auto opt =
+            wf::option_type::from_string<std::string>(option->get_value_str());
+        if (!opt)
+        {
+            return false;
+        }
+
         if (o->str_labels.size())
         {
             LabeledString *ls;
@@ -808,7 +863,7 @@ static gboolean reset_button_cb(GtkWidget *widget,
             for (i = 0; i < int(o->str_labels.size()); i++)
             {
                 ls = o->str_labels[i];
-                if (std::string(ls->value) == o->default_value.s)
+                if (std::string(ls->value) == opt.value())
                 {
                     gtk_combo_box_set_active(GTK_COMBO_BOX(o->data_widget), ls->id);
                     break;
@@ -816,33 +871,14 @@ static gboolean reset_button_cb(GtkWidget *widget,
             }
         } else
         {
-            gtk_entry_set_text(GTK_ENTRY(o->data_widget), o->default_value.s);
+            gtk_entry_set_text(GTK_ENTRY(o->data_widget), opt.value().c_str());
         }
 
-        section = get_config_section(o->plugin);
-        if (!section)
-        {
-            return false;
-        }
-
-        option = section->get_option_or(o->name);
-        option->set_value_str(o->default_value.s);
-        save_config(wcm, o->plugin);
         break;
+    }
 
       case OPTION_TYPE_COLOR:
     {
-        GdkRGBA color;
-
-        auto color_opt =
-            wf::option_type::from_string<wf::color_t>(o->default_value.s);
-
-        color.red   = color_opt->r;
-        color.green = color_opt->g;
-        color.blue  = color_opt->b;
-        color.alpha = color_opt->a;
-
-        gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(o->data_widget), &color);
         section = get_config_section(o->plugin);
         if (!section)
         {
@@ -850,8 +886,24 @@ static gboolean reset_button_cb(GtkWidget *widget,
         }
 
         option = section->get_option_or(o->name);
-        option->set_value_str(o->default_value.s);
+        option->reset_to_default();
         save_config(wcm, o->plugin);
+
+        auto opt =
+            wf::option_type::from_string<wf::color_t>(option->get_value_str());
+        if (!opt)
+        {
+            return false;
+        }
+
+        GdkRGBA color;
+
+        color.red   = opt->r;
+        color.green = opt->g;
+        color.blue  = opt->b;
+        color.alpha = opt->a;
+
+        gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(o->data_widget), &color);
         break;
     }
 
@@ -3101,7 +3153,7 @@ GtkWidget *create_main_layout(WCM *wcm)
     g_signal_connect(window, "key-press-event",
         G_CALLBACK(window_key_cb), nullptr);
 
-    GtkWidget *main_stack = gtk_stack_new();
+    GtkWidget *main_stack  = gtk_stack_new();
     GtkWidget *main_layout = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *left_panel_layout = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *scrolled_window   = gtk_scrolled_window_new(nullptr, nullptr);
@@ -3143,7 +3195,8 @@ GtkWidget *create_main_layout(WCM *wcm)
     g_signal_connect(close_button, "key-press-event",
         G_CALLBACK(close_button_cb), nullptr);
     gtk_box_pack_end(GTK_BOX(left_panel_layout), close_button, false, false, 0);
-    gtk_stack_set_transition_type(GTK_STACK(main_stack), GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
+    gtk_stack_set_transition_type(GTK_STACK(
+        main_stack), GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
 
     if (!system("which " OUTPUT_CONFIG_PROGRAM " > /dev/null 2>&1"))
     {
