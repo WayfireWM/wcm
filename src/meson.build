@@ -1,10 +1,10 @@
 xml = dependency('libxml-2.0', required : true)
-gtk = dependency('gtk+-3.0', required : true)
+gtkmm = dependency('gtkmm-3.0', required : true)
 wf_config = dependency('wf-config', version: '>=0.6.0', required : true)
 
-dep_list = [xml, gtk, wf_config, wf_protos, evdev]
+dep_list = [xml, gtkmm, wf_config, wf_protos, evdev]
 
-sources = files('main.cpp', 'metadata.cpp', 'pages.cpp')
+sources = files('main.cpp', 'metadata.cpp', 'wcm.cpp', 'utils.cpp')
 
 executable(meson.project_name(), sources,
                      install : true,
