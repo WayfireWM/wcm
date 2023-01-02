@@ -167,7 +167,18 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
 
         case OPTION_TYPE_COLOR:
         {
-            auto color_button = std::make_unique<Gtk::ColorButton>(Gdk::RGBA(wf_option->get_value_str()));
+            auto value_optional = wf::option_type::from_string<wf::color_t>(wf_option->get_value_str());
+            if (!value_optional)
+                return;
+            wf::color_t value = value_optional.value();
+
+            Gdk::RGBA rgba;
+            rgba.set_red(value.r);
+            rgba.set_green(value.g);
+            rgba.set_blue(value.b);
+            rgba.set_alpha(value.a);
+            auto color_button = std::make_unique<Gtk::ColorButton>(rgba);
+            color_button->set_title(option->disp_name);
             color_button->signal_color_set().connect([=] { /* TODO */ });
             pack_end(std::move(color_button));
         }
