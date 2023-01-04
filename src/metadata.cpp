@@ -140,46 +140,46 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
 
             switch (this->type)
             {
-            case OPTION_TYPE_INT:
-                this->default_value = atoi((char *)node->children->content);
-                break;
-
-            case OPTION_TYPE_BOOL:
-                if (std::string((char *)node->children->content) == "true")
-                {
-                    this->default_value = 1;
-                }
-                else if (std::string((char *)node->children->content) == "false")
-                {
-                    this->default_value = 0;
-                }
-                else
-                {
+                case OPTION_TYPE_INT:
                     this->default_value = atoi((char *)node->children->content);
-                }
+                    break;
 
-                if (std::get<int>(this->default_value) < 0 && std::get<int>(this->default_value) > 1)
-                {
-                    printf("WARN: [%s] unknown bool option default\n", plugin->name.c_str());
-                }
+                case OPTION_TYPE_BOOL:
+                    if (std::string((char *)node->children->content) == "true")
+                    {
+                        this->default_value = 1;
+                    }
+                    else if (std::string((char *)node->children->content) == "false")
+                    {
+                        this->default_value = 0;
+                    }
+                    else
+                    {
+                        this->default_value = atoi((char *)node->children->content);
+                    }
 
-                break;
+                    if (std::get<int>(this->default_value) < 0 && std::get<int>(this->default_value) > 1)
+                    {
+                        printf("WARN: [%s] unknown bool option default\n", plugin->name.c_str());
+                    }
 
-            case OPTION_TYPE_ACTIVATOR:
-            case OPTION_TYPE_GESTURE:
-            case OPTION_TYPE_STRING:
-            case OPTION_TYPE_BUTTON:
-            case OPTION_TYPE_COLOR:
-            case OPTION_TYPE_KEY:
-                this->default_value = (char *)node->children->content;
-                break;
+                    break;
 
-            case OPTION_TYPE_DOUBLE:
-                this->default_value = atof((char *)node->children->content);
-                break;
+                case OPTION_TYPE_ACTIVATOR:
+                case OPTION_TYPE_GESTURE:
+                case OPTION_TYPE_STRING:
+                case OPTION_TYPE_BUTTON:
+                case OPTION_TYPE_COLOR:
+                case OPTION_TYPE_KEY:
+                    this->default_value = (char *)node->children->content;
+                    break;
 
-            default:
-                break;
+                case OPTION_TYPE_DOUBLE:
+                    this->default_value = atof((char *)node->children->content);
+                    break;
+
+                default:
+                    break;
             }
         }
         else if ((node_name == "type") && (this->type == OPTION_TYPE_DYNAMIC_LIST))
@@ -259,8 +259,8 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
             }
 
             xmlNode *n;
-            LabeledInt *li = nullptr;
-            LabeledString *ls = nullptr;
+            std::unique_ptr<LabeledInt> li = nullptr;
+            std::unique_ptr<LabeledString> ls = nullptr;
             for (n = node->children; n; n = n->next)
             {
                 if (n->type == XML_ELEMENT_NODE)
@@ -271,8 +271,7 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
                         int is_name = (std::string((char *)n->name) == "_name");
                         if (!li && (is_value || is_name))
                         {
-                            li = new LabeledInt();
-                            this->int_labels.push_back(li);
+                            li = std::make_unique<LabeledInt>();
                         }
 
                         if (is_value)
@@ -291,8 +290,7 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
                         int is_name = (std::string((char *)n->name) == "_name");
                         if (!ls && (is_value || is_name))
                         {
-                            ls = new LabeledString();
-                            this->str_labels.push_back(ls);
+                            ls = std::make_unique<LabeledString>();
                         }
 
                         if (is_value)
@@ -311,14 +309,16 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
                     }
                 }
             }
+            if (li)
+                int_labels[li->name] = li->value;
+            if (ls)
+                str_labels[ls->name] = ls->value;
         }
     }
 }
 
-Option::Option(option_type group_type, Plugin *plugin)
+Option::Option(option_type group_type, Plugin *plugin) : plugin(plugin), type(group_type)
 {
-    this->type = group_type;
-    this->plugin = plugin;
 }
 
 Plugin *Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *plugin)
@@ -326,7 +326,7 @@ Plugin *Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *p
     xmlChar *prop;
     bool children_handled = false;
 
-    for (;cur_node; cur_node = cur_node->next)
+    for (; cur_node; cur_node = cur_node->next)
     {
         if (cur_node->type != XML_ELEMENT_NODE)
         {
@@ -435,4 +435,3 @@ Plugin *Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *p
 
     return plugin;
 }
-

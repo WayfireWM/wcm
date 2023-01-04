@@ -6,6 +6,7 @@
 #include <variant>
 #include <wayfire/config/xml.hpp>
 
+#include "wcm.hpp"
 #include "utils.hpp"
 
 enum plugin_type
@@ -73,9 +74,21 @@ class Plugin;
 
 class Option
 {
+    using wf_section = std::shared_ptr<wf::config::section_t>;
+
+    template <class value_type>
+    void set_value(wf_section section, const value_type &value);
+
+    template <class... ArgTypes>
+    void set_value(wf_section section, ArgTypes... args)
+    {
+        throw std::logic_error("Unimplemented");
+    }
+
     public:
     Option(xmlNode *cur_node, Plugin *plugin);
     Option(option_type group_type, Plugin *plugin);
+    Option() = default;
 
     Plugin *plugin;
     std::string name;
@@ -91,8 +104,11 @@ class Option
     bool hidden = false;
 
     std::vector<Option *> options;
-    std::vector<LabeledInt *> int_labels;
-    std::vector<LabeledString *> str_labels;
+    std::map<std::string, int> int_labels;
+    std::map<std::string, std::string> str_labels;
+
+    template <class... ArgTypes>
+    void set_save(const ArgTypes &...args);
 };
 
 class WCM;

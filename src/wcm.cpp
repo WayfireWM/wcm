@@ -24,12 +24,40 @@ OptionGroupWidget::OptionGroupWidget(Option *group)
         {
             option_widgets.push_back(std::make_unique<OptionSubgroupWidget>(option));
         }
+        else if (option->type == OPTION_TYPE_DYNAMIC_LIST)
+        {
+            option_widgets.push_back(std::make_unique<OptionDynamicListWidget>(option));
+        }
         else
         {
             option_widgets.push_back(std::make_unique<OptionWidget>(option));
         }
         options_layout.pack_start(*option_widgets.back(), false, false);
     }
+}
+
+std::ostream &operator<<(std::ostream &out, const wf::color_t &color)
+{
+    return out << "rgba(" << color.r << ", " << color.g << ", " << color.b << ", " << color.a << ")";
+}
+
+template <class value_type>
+void Option::set_value(wf_section section, const value_type &value)
+{
+    std::cout << name << " = " << value << ": ";
+    section->get_option_or(name)->set_value_str(wf::option_type::to_string<value_type>(value));
+}
+
+template <class... ArgTypes>
+void Option::set_save(const ArgTypes &...args)
+{
+    auto section = WCM::get_instance()->get_config_section(plugin);
+    if (!section)
+        return;
+
+    std::cout << __PRETTY_FUNCTION__ << ": \n  ";
+    set_value(section, args...);
+    WCM::get_instance()->save_config(plugin);
 }
 
 OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10)
@@ -61,18 +89,21 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             {
                 auto spin_button = std::make_unique<Gtk::SpinButton>(
                     Gtk::Adjustment::create(value, option->data.min, option->data.max, 1));
-                spin_button->signal_changed().connect([=] {});
+                spin_button->signal_value_changed().connect(
+                    [=, widget = spin_button.get()] { option->set_save(widget->get_value_as_int()); });
                 pack_end(std::move(spin_button));
             }
             else
             {
                 auto combo_box = std::make_unique<Gtk::ComboBoxText>();
-                for (auto *li : option->int_labels)
+                for (const auto &[name, _] : option->int_labels)
                 {
-                    combo_box->append(li->name);
+                    combo_box->append(name);
                 }
                 combo_box->set_active(value);
-                combo_box->signal_changed().connect([=] { /* TODO */ });
+                combo_box->signal_changed().connect([=, widget = combo_box.get()] {
+                    option->set_save(option->int_labels.at(widget->get_active_text()));
+                });
                 pack_end(std::move(combo_box), true, true);
             }
         }
@@ -87,7 +118,8 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
 
             auto check_button = std::make_unique<Gtk::CheckButton>();
             check_button->set_active(value);
-            check_button->signal_toggled().connect([=] {});
+            check_button->signal_toggled().connect(
+                [=, widget = check_button.get()] { option->set_save(widget->get_active()); });
             pack_end(std::move(check_button));
         }
         break;
@@ -99,11 +131,11 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
                 return;
             double value = value_optional.value();
 
-            auto combo_box = std::make_unique<Gtk::SpinButton>(
+            auto spin_box = std::make_unique<Gtk::SpinButton>(
                 Gtk::Adjustment::create(value, option->data.min, option->data.max, option->data.precision),
                 option->data.precision, 3);
-            combo_box->signal_changed().connect([=] {});
-            pack_end(std::move(combo_box));
+            spin_box->signal_changed().connect([=, widget = spin_box.get()] { option->set_save(widget->get_value()); });
+            pack_end(std::move(spin_box));
         }
         break;
 
@@ -129,7 +161,8 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             {
                 auto entry = std::make_unique<Gtk::Entry>();
                 entry->set_text(wf_option->get_value_str());
-                entry->signal_changed().connect([=] { /* TODO */ });
+                entry->signal_changed().connect(
+                    [=, widget = entry.get()] { option->set_save<std::string>(widget->get_text()); });
 
                 if (option->data.hints & HINT_DIRECTORY)
                 {
@@ -153,13 +186,15 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             else
             {
                 auto combo_box = std::make_unique<Gtk::ComboBoxText>();
-                for (auto *ls : option->str_labels)
+                for (const auto &[name, str_value] : option->str_labels)
                 {
-                    combo_box->append(ls->name);
-                    if (ls->value == wf_option->get_default_value_str())
-                        combo_box->set_active_text(ls->name);
+                    combo_box->append(name);
+                    if (str_value == wf_option->get_default_value_str())
+                        combo_box->set_active_text(name);
                 }
-                combo_box->signal_changed().connect([=] { /* TODO */ });
+                combo_box->signal_changed().connect([=, widget = combo_box.get()] {
+                    option->set_save(option->str_labels.at(widget->get_active_text()));
+                });
                 pack_end(std::move(combo_box), true, true);
             }
         }
@@ -179,17 +214,111 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             rgba.set_alpha(value.a);
             auto color_button = std::make_unique<Gtk::ColorButton>(rgba);
             color_button->set_title(option->disp_name);
-            color_button->signal_color_set().connect([=] { /* TODO */ });
+            color_button->signal_color_set().connect([=, widget = color_button.get()] {
+                auto rgba = widget->get_rgba();
+                wf::color_t color = {rgba.get_red(), rgba.get_green(), rgba.get_blue(), rgba.get_alpha()};
+                option->set_save(color);
+            });
             pack_end(std::move(color_button));
         }
         break;
 
         default:
-        {
-            std::cerr << "Unimplemented :(\n";
-        }
-        break;
+            break;
     }
+}
+
+OptionDynamicListWidget::AutostartWidget::AutostartWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10)
+{
+    command_entry.set_text(std::get<std::string>(option->default_value));
+    command_entry.signal_changed().connect([=] { option->set_save<std::string>(command_entry.get_text()); });
+    choose_button.set_image_from_icon_name("application-x-executable");
+    choose_button.signal_clicked().connect([=] { /* TODO */ });
+    run_button.set_image_from_icon_name("media-playback-start");
+    run_button.signal_clicked().connect([=] { Glib::spawn_command_line_async(command_entry.get_text()); });
+    remove_button.set_image_from_icon_name("list-remove");
+    remove_button.signal_clicked().connect([=] { /* TODO */ });
+    pack_start(command_entry, true, true);
+    pack_start(choose_button, false, false);
+    pack_start(run_button, false, false);
+    pack_start(remove_button, false, false);
+}
+
+OptionDynamicListWidget::CommandWidget::CommandWidget()
+{
+    add(expander);
+    expander.set_label(/* TODO */ "");
+    expander.add(vbox);
+
+    type_label.set_size_request(200);
+    type_box.pack_start(type_label, false, false);
+    type_combo_box.signal_changed().connect([=] { /* TODO */ });
+    type_box.pack_start(type_combo_box, true, true);
+    vbox.pack_start(type_box, false, false);
+
+    binding_label.set_size_request(200);
+    binding_box.pack_start(binding_label);
+    binding_button.signal_clicked().connect([=] { /* TODO */ });
+    binding_box.pack_start(binding_button, true, true);
+    binding_edit_button.set_image_from_icon_name("gtk-edit");
+    binding_edit_button.signal_clicked().connect([=] { /*  TODO */ });
+    binding_box.pack_start(binding_edit_button, false, false);
+    vbox.pack_start(binding_box, false, false);
+
+    command_label.set_size_request(200);
+    command_box.pack_start(command_label, false, false);
+    command_entry.signal_changed().connect([=] { /* TODO */ });
+    command_box.pack_start(command_entry, true, true);
+    remove_button.set_image_from_icon_name("list-remove");
+    command_box.pack_start(remove_button, false, false);
+    vbox.pack_start(command_box);
+}
+
+OptionDynamicListWidget::OptionDynamicListWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10)
+{
+    std::cout << option->name << std::endl;
+
+    if (option->name == "bindings")
+    {
+    }
+    else if (option->name == "autostart")
+    {
+        std::shared_ptr<wf::config::section_t> section = WCM::get_instance()->get_config_section(option->plugin);
+        if (!section)
+            return;
+
+        auto wf_option = std::dynamic_pointer_cast<wf::config::compound_option_t>(section->get_option("autostart"));
+        auto autostart_names = wf_option->get_value<std::string>();
+        option->options.clear();
+
+        for (const auto &[opt_name, executable] : autostart_names)
+        {
+            if (std::get<std::string>(option->default_value) != "string")
+                continue;
+
+            Option *dyn_opt = new Option();
+            dyn_opt->name = opt_name;
+            dyn_opt->type = OPTION_TYPE_STRING;
+            dyn_opt->parent = option;
+            dyn_opt->plugin = option->plugin;
+            dyn_opt->default_value = executable;
+            option->options.push_back(dyn_opt);
+
+            auto widget = std::make_unique<AutostartWidget>(dyn_opt);
+            pack_start(*widget);
+            widgets.push_back(std::move(widget));
+        }
+    }
+    else
+    {
+        return;
+    }
+
+    add_button.set_image_from_icon_name("list-add");
+    add_button.signal_clicked().connect([=] { /* TODO */ });
+
+    add_box.pack_end(add_button, false, false);
+    pack_end(add_box, true, false);
 }
 
 OptionSubgroupWidget::OptionSubgroupWidget(Option *subgroup)
@@ -573,7 +702,7 @@ void WCM::load_config_files()
     else
     {
         wordexp(WAYFIRE_CONFIG_FILE, &exp, 0);
-        wf_config_file = strdup(exp.we_wordv[0]);
+        wf_config_file = exp.we_wordv[0];
         wordfree(&exp);
     }
 
@@ -600,7 +729,7 @@ void WCM::load_config_files()
     else
     {
         wordexp(WF_SHELL_CONFIG_FILE, &exp, 0);
-        wf_shell_config_file = strdup(exp.we_wordv[0]);
+        wf_shell_config_file = exp.we_wordv[0];
         wordfree(&exp);
     }
 
@@ -609,6 +738,29 @@ void WCM::load_config_files()
     wf_shell_config_mgr = wf::config::build_configuration(
         wf_shell_xmldirs, WFSHELL_SYSCONFDIR "/wayfire/wf-shell-defaults.ini", wf_shell_config_file);
 #endif
+}
+
+void WCM::save_to_file(wf::config::config_manager_t &mgr, const std::string &file)
+{
+    // TODO
+    std::cout << "Saving to file " << file << std::endl;
+
+    // wf::config::save_configuration_to_file(mgr, file);
+}
+
+bool WCM::save_config(Plugin *plugin)
+{
+    if (plugin->type == PLUGIN_TYPE_WAYFIRE)
+    {
+        save_to_file(wf_config_mgr, wf_config_file);
+        return true;
+    }
+    if (plugin->type == PLUGIN_TYPE_WF_SHELL)
+    {
+        save_to_file(wf_shell_config_mgr, wf_shell_config_file);
+        return true;
+    }
+    return false;
 }
 
 std::shared_ptr<wf::config::section_t> WCM::get_config_section(Plugin *plugin)

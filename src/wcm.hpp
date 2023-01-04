@@ -81,13 +81,55 @@ class OptionWidget : public Gtk::Box
     std::vector<std::unique_ptr<Gtk::Widget>> widgets;
     Gtk::Button reset_button;
 
-    public:
-    OptionWidget(Option *option);
     inline void pack_end(std::unique_ptr<Gtk::Widget> &&widget, bool expand = false, bool fill = false)
     {
         Gtk::Box::pack_end(*widget, expand, fill);
         widgets.push_back(std::move(widget));
     }
+
+    public:
+    OptionWidget(Option *option);
+};
+
+class OptionDynamicListWidget : public Gtk::Box
+{
+    struct AutostartWidget : public Gtk::Box
+    {
+        Gtk::Entry command_entry;
+        Gtk::Button choose_button;
+        Gtk::Button run_button;
+        Gtk::Button remove_button;
+
+        AutostartWidget(Option *option);
+    };
+
+    struct CommandWidget : public Gtk::Frame
+    {
+        Gtk::Expander expander;
+        Gtk::Box vbox = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
+        Gtk::Box type_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
+        Gtk::Box binding_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
+        Gtk::Box command_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
+
+        Gtk::Label type_label = Gtk::Label("Type");
+        Gtk::Label binding_label = Gtk::Label("Binding");
+        Gtk::Label command_label = Gtk::Label("Command");
+
+        Gtk::ComboBoxText type_combo_box;
+        Gtk::Button binding_button;
+        Gtk::Button binding_edit_button;
+        Gtk::Entry command_entry;
+        Gtk::Button remove_button;
+
+        CommandWidget();
+    };
+
+    std::vector<std::unique_ptr<Gtk::Widget>> widgets;
+    Gtk::Box add_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL);
+    Gtk::Button add_button;
+
+    public:
+    OptionDynamicListWidget(Option *option);
 };
 
 class OptionSubgroupWidget : public Gtk::Frame
@@ -123,6 +165,15 @@ class WCM
     void parse_config(wf::config::config_manager_t &config_manager);
     bool init_input_inhibitor();
     void create_main_layout();
+    void save_to_file(wf::config::config_manager_t &mgr, const std::string &file);
+
+    // these objects can be used when widgets are destroyed and emit `signal_changed` causing saving config
+    // so these objects should be destroyed after widgets
+    wf::config::config_manager_t wf_config_mgr;
+    wf::config::config_manager_t wf_shell_config_mgr;
+    std::string wf_config_file;
+    std::string wf_shell_config_file;
+    std::vector<Plugin *> plugins;
 
     Plugin *current_plugin = nullptr;
 
@@ -149,11 +200,6 @@ class WCM
     Gtk::Label plugin_enabled_label = Gtk::Label("Use This Plugin");
     PrettyButton back_button = PrettyButton("Back", "go-previous");
 
-    std::vector<Plugin *> plugins;
-    wf::config::config_manager_t wf_config_mgr;
-    wf::config::config_manager_t wf_shell_config_mgr;
-    const char *wf_config_file;
-    const char *wf_shell_config_file;
     cairo_surface_t *grab_window_surface;
     zwlr_input_inhibitor_v1 *screen_lock;
     zwlr_input_inhibit_manager_v1 *inhibitor_manager;
@@ -182,6 +228,7 @@ class WCM
         parse_config(wf_shell_config_mgr);
     }
 #endif
+    bool save_config(Plugin *plugin);
     inline void set_inhibitor_manager(zwlr_input_inhibit_manager_v1 *value)
     {
         inhibitor_manager = value;
