@@ -167,20 +167,29 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
                 entry->signal_changed().connect(
                     [=, widget = entry.get()] { option->set_save<std::string>(widget->get_text()); });
 
+                auto run_dialog = [=, widget = entry.get()](const Glib::ustring &label, Gtk::FileChooserAction action) {
+                    auto dialog = Gtk::FileChooserDialog(label, action);
+                    dialog.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+                    dialog.add_button("Open", Gtk::RESPONSE_ACCEPT);
+                    if (dialog.run() == Gtk::RESPONSE_ACCEPT)
+                        widget->set_text(dialog.get_filename());
+                };
                 if (option->data.hints & HINT_DIRECTORY)
                 {
                     auto dir_choose_button = std::make_unique<Gtk::Button>();
                     dir_choose_button->set_image_from_icon_name("folder-open");
-                    dir_choose_button->set_image_from_icon_name("Choose Directory");
-                    dir_choose_button->signal_clicked().connect([=] { /* TODO */ });
+                    dir_choose_button->set_tooltip_text("Choose Directory");
+                    dir_choose_button->signal_clicked().connect(
+                        [=] { run_dialog("Select Folder", Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER); });
                     pack_end(std::move(dir_choose_button));
                 }
                 if (option->data.hints & HINT_FILE)
                 {
                     auto file_choose_button = std::make_unique<Gtk::Button>();
                     file_choose_button->set_image_from_icon_name("text-x-generic");
-                    file_choose_button->set_image_from_icon_name("Choose File");
-                    file_choose_button->signal_clicked().connect([=] { /* TODO */ });
+                    file_choose_button->set_tooltip_text("Choose File");
+                    file_choose_button->signal_clicked().connect(
+                        [=] { run_dialog("Select File", Gtk::FILE_CHOOSER_ACTION_OPEN); });
                     pack_end(std::move(file_choose_button));
                 }
 
@@ -231,7 +240,7 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
     }
 }
 
-OptionDynamicListWidget::AutostartWidget::AutostartWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10)
+AutostartDynamicList::AutostartWidget::AutostartWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10)
 {
     command_entry.set_text(std::get<std::string>(option->default_value));
     command_entry.signal_changed().connect([=] { option->set_save<std::string>(command_entry.get_text()); });
@@ -247,9 +256,8 @@ OptionDynamicListWidget::AutostartWidget::AutostartWidget(Option *option) : Gtk:
     pack_start(remove_button, false, false);
 }
 
-OptionDynamicListWidget::CommandWidget::CommandWidget(const std::string &cmd_name, Option *option, wf_section section)
+BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, Option *option, wf_section section)
 {
-
     const auto command = "command_" + cmd_name;
     const auto regular_binding_name = "binding_" + cmd_name;
     const auto repeat_binding_name = "repeatable_binding_" + cmd_name;
@@ -307,61 +315,56 @@ OptionDynamicListWidget::CommandWidget::CommandWidget(const std::string &cmd_nam
     vbox.pack_start(command_box);
 }
 
-OptionDynamicListWidget::OptionDynamicListWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10)
+DynamicListBase::DynamicListBase() : Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10)
+{
+    add_button.set_image_from_icon_name("list-add");
+    add_box.pack_end(add_button, false, false);
+    pack_end(add_box, false, false);
+}
+
+AutostartDynamicList::AutostartDynamicList(Option *option)
 {
     std::shared_ptr<wf::config::section_t> section = WCM::get_instance()->get_config_section(option->plugin);
     if (!section)
         return;
 
-    if (option->name == "bindings")
+    auto wf_option = std::dynamic_pointer_cast<wf::config::compound_option_t>(section->get_option("autostart"));
+    auto autostart_names = wf_option->get_value<std::string>();
+    option->options.clear();
+
+    for (const auto &[opt_name, executable] : autostart_names)
     {
-        std::vector<std::string> command_names;
-        static const std::string exec_prefix = "command_";
-        for (const auto &command : section->get_registered_options())
-            if (begins_with(command->get_name(), exec_prefix))
-                command_names.push_back(command->get_name().substr(exec_prefix.length()));
-        option->options.clear();
-        for (const auto &cmd_name : command_names)
-        {
-            auto widget = std::make_unique<CommandWidget>(cmd_name, option, section);
-            pack_start(*widget);
-            widgets.push_back(std::move(widget));
-        }
+        if (std::get<std::string>(option->default_value) != "string")
+            continue;
+
+        Option *dyn_opt = new Option();
+        dyn_opt->name = opt_name;
+        dyn_opt->type = OPTION_TYPE_STRING;
+        dyn_opt->parent = option;
+        dyn_opt->plugin = option->plugin;
+        dyn_opt->default_value = executable;
+        option->options.push_back(dyn_opt);
+
+        pack_widget(std::make_unique<AutostartWidget>(dyn_opt));
     }
-    else if (option->name == "autostart")
-    {
-        auto wf_option = std::dynamic_pointer_cast<wf::config::compound_option_t>(section->get_option("autostart"));
-        auto autostart_names = wf_option->get_value<std::string>();
-        option->options.clear();
+}
 
-        for (const auto &[opt_name, executable] : autostart_names)
-        {
-            if (std::get<std::string>(option->default_value) != "string")
-                continue;
-
-            Option *dyn_opt = new Option();
-            dyn_opt->name = opt_name;
-            dyn_opt->type = OPTION_TYPE_STRING;
-            dyn_opt->parent = option;
-            dyn_opt->plugin = option->plugin;
-            dyn_opt->default_value = executable;
-            option->options.push_back(dyn_opt);
-
-            auto widget = std::make_unique<AutostartWidget>(dyn_opt);
-            pack_start(*widget, false, false);
-            widgets.push_back(std::move(widget));
-        }
-    }
-    else
-    {
+BindingsDynamicList::BindingsDynamicList(Option *option)
+{
+    std::shared_ptr<wf::config::section_t> section = WCM::get_instance()->get_config_section(option->plugin);
+    if (!section)
         return;
+
+    std::vector<std::string> command_names;
+    static const std::string exec_prefix = "command_";
+    for (const auto &command : section->get_registered_options())
+        if (begins_with(command->get_name(), exec_prefix))
+            command_names.push_back(command->get_name().substr(exec_prefix.length()));
+    option->options.clear();
+    for (const auto &cmd_name : command_names)
+    {
+        pack_widget(std::make_unique<BindingWidget>(cmd_name, option, section));
     }
-
-    add_button.set_image_from_icon_name("list-add");
-    add_button.signal_clicked().connect([=] { /* TODO */ });
-
-    add_box.pack_end(add_button, false, false);
-    pack_end(add_box, false, false);
 }
 
 OptionSubgroupWidget::OptionSubgroupWidget(Option *subgroup)
@@ -396,9 +399,13 @@ OptionGroupWidget::OptionGroupWidget(Option *group)
         }
         else if (option->type == OPTION_TYPE_DYNAMIC_LIST)
         {
-            if (!OptionDynamicListWidget::IMPLEMENTED.count(option->name))
+            if (option->name == "autostart")
+                option_widgets.push_back(std::make_unique<AutostartDynamicList>(option));
+            else if (option->name == "bindings")
+                option_widgets.push_back(std::make_unique<BindingsDynamicList>(option));
+            // TODO other dynamic lists
+            else
                 continue;
-            option_widgets.push_back(std::make_unique<OptionDynamicListWidget>(option));
             fill_expand = true;
         }
         else

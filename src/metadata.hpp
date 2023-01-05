@@ -125,7 +125,7 @@ class Plugin
     std::vector<Option *> option_groups;
 
     // widget of the plugin which is shown on the main page
-    Gtk::Box widget = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL);
+    Gtk::Box widget = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5);
     Gtk::CheckButton enabled_check;
     Gtk::Button button;
     Gtk::Box button_layout = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5);

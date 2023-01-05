@@ -112,7 +112,23 @@ class OptionWidget : public Gtk::Box
     OptionWidget(Option *option);
 };
 
-class OptionDynamicListWidget : public Gtk::Box
+class DynamicListBase : public Gtk::Box
+{
+    protected:
+    Gtk::Box add_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL);
+    Gtk::Button add_button;
+
+    std::vector<std::unique_ptr<Gtk::Widget>> widgets;
+    inline void pack_widget(std::unique_ptr<Gtk::Widget> &&widget)
+    {
+        pack_start(*widget, false, false);
+        widgets.push_back(std::move(widget));
+    }
+
+    DynamicListBase();
+};
+
+class AutostartDynamicList : public DynamicListBase
 {
     struct AutostartWidget : public Gtk::Box
     {
@@ -124,9 +140,15 @@ class OptionDynamicListWidget : public Gtk::Box
         AutostartWidget(Option *option);
     };
 
-    struct CommandWidget : public Gtk::Frame
+    public:
+    AutostartDynamicList(Option *option);
+};
+
+class BindingsDynamicList : public DynamicListBase
+{
+    struct BindingWidget : public Gtk::Frame
     {
-        Gtk::Expander expander = Gtk::Expander("");
+        Gtk::Expander expander = Gtk::Expander("Command:");
         Gtk::Box vbox = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
         Gtk::Box type_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
         Gtk::Box binding_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
@@ -141,17 +163,11 @@ class OptionDynamicListWidget : public Gtk::Box
         Gtk::Entry command_entry;
         Gtk::Button remove_button;
 
-        CommandWidget(const std::string &cmd_name, Option *option, wf_section section);
+        BindingWidget(const std::string &cmd_name, Option *option, wf_section section);
     };
 
-    std::vector<std::unique_ptr<Gtk::Widget>> widgets;
-    Gtk::Box add_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL);
-    Gtk::Button add_button;
-
     public:
-    inline static const std::set<std::string> IMPLEMENTED = {"autostart", "bindings"};
-
-    OptionDynamicListWidget(Option *option);
+    BindingsDynamicList(Option *option);
 };
 
 class OptionSubgroupWidget : public Gtk::Frame
