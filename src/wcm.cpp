@@ -8,6 +8,20 @@
 
 #define OUTPUT_CONFIG_PROGRAM "wdisplays"
 
+bool KeyEntry::check_and_confirm(const std::string &key_str)
+{
+    if (key_str.find_first_not_of(' ') != std::string::npos && key_str.find('<') &&
+        (key_str.find("BTN") || key_str.find("KEY")))
+    {
+        auto dialog = Gtk::MessageDialog(
+            "Attempting to bind <b>" + key_str +
+                "</b> without modifier. You will be unable to use this key/button for anything else! Are you sure?",
+            true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+        return dialog.run() == Gtk::RESPONSE_YES;
+    }
+    return true;
+}
+
 KeyEntry::KeyEntry(Option *option)
 {
     auto section = WCM::get_instance()->get_config_section(option->plugin);
@@ -16,13 +30,6 @@ KeyEntry::KeyEntry(Option *option)
     add(grab_layout);
     add(edit_layout);
     set_transition_type(Gtk::STACK_TRANSITION_TYPE_CROSSFADE);
-    changed.connect([=] { option->set_save<std::string>(get_value()); });
-
-    auto edit_confirm = [=] {
-        grab_button.set_label(entry.get_text());
-        changed.emit();
-        set_visible_child(grab_layout);
-    };
 
     grab_button.set_label(wf_option->get_value_str());
     grab_button.signal_clicked().connect([=] { /* TODO */ });
@@ -38,7 +45,15 @@ KeyEntry::KeyEntry(Option *option)
     edit_layout.pack_start(entry, true, true);
     ok_button.set_image_from_icon_name("gtk-ok");
     ok_button.set_tooltip_text("Save binding");
-    ok_button.signal_clicked().connect(edit_confirm);
+    ok_button.signal_clicked().connect([=] {
+        const std::string value = entry.get_text();
+        if (check_and_confirm(value))
+        {
+            grab_button.set_label(value);
+            option->set_save<std::string>(value);
+            set_visible_child(grab_layout);
+        }
+    });
     cancel_button.set_image_from_icon_name("gtk-cancel");
     cancel_button.set_tooltip_text("Cancel");
     cancel_button.signal_clicked().connect([=] { set_visible_child(grab_layout); });

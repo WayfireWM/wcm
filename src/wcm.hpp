@@ -86,14 +86,11 @@ class KeyEntry : public Gtk::Stack
     Gtk::Button ok_button;
     Gtk::Button cancel_button;
 
-    sigc::signal<void> changed;
+    bool check_and_confirm(const std::string& key_str);
+    std::string grab_key();
 
     public:
     KeyEntry(Option *option);
-    inline Glib::ustring get_value() const
-    {
-        return grab_button.get_label();
-    };
 };
 
 class OptionWidget : public Gtk::Box
