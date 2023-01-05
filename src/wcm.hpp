@@ -75,6 +75,27 @@ class MainPage : public Gtk::ScrolledWindow
         {"Utility", "applications-other"},         {"Other", "applications-other"}};
 };
 
+class KeyEntry : public Gtk::Stack
+{
+    Gtk::Box grab_layout = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
+    Gtk::Button grab_button;
+    Gtk::Button edit_button;
+
+    Gtk::Box edit_layout = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
+    Gtk::Entry entry;
+    Gtk::Button ok_button;
+    Gtk::Button cancel_button;
+
+    sigc::signal<void> changed;
+
+    public:
+    KeyEntry(Option *option);
+    inline Glib::ustring get_value() const
+    {
+        return grab_button.get_label();
+    };
+};
+
 class OptionWidget : public Gtk::Box
 {
     Gtk::Label name_label;
@@ -105,7 +126,7 @@ class OptionDynamicListWidget : public Gtk::Box
 
     struct CommandWidget : public Gtk::Frame
     {
-        Gtk::Expander expander;
+        Gtk::Expander expander = Gtk::Expander("");
         Gtk::Box vbox = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
         Gtk::Box type_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
         Gtk::Box binding_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
@@ -116,12 +137,11 @@ class OptionDynamicListWidget : public Gtk::Box
         Gtk::Label command_label = Gtk::Label("Command");
 
         Gtk::ComboBoxText type_combo_box;
-        Gtk::Button binding_button;
-        Gtk::Button binding_edit_button;
+        std::unique_ptr<KeyEntry> key_entry;
         Gtk::Entry command_entry;
         Gtk::Button remove_button;
 
-        CommandWidget();
+        CommandWidget(const std::string &cmd_name, Option *option, wf_section section);
     };
 
     std::vector<std::unique_ptr<Gtk::Widget>> widgets;
@@ -129,6 +149,8 @@ class OptionDynamicListWidget : public Gtk::Box
     Gtk::Button add_button;
 
     public:
+    inline static const std::set<std::string> IMPLEMENTED = {"autostart", "bindings"};
+
     OptionDynamicListWidget(Option *option);
 };
 

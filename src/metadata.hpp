@@ -6,8 +6,8 @@
 #include <variant>
 #include <wayfire/config/xml.hpp>
 
-#include "wcm.hpp"
 #include "utils.hpp"
+#include "wcm.hpp"
 
 enum plugin_type
 {
@@ -74,8 +74,6 @@ class Plugin;
 
 class Option
 {
-    using wf_section = std::shared_ptr<wf::config::section_t>;
-
     template <class value_type>
     void set_value(wf_section section, const value_type &value);
 
@@ -89,6 +87,8 @@ class Option
     Option(xmlNode *cur_node, Plugin *plugin);
     Option(option_type group_type, Plugin *plugin);
     Option() = default;
+
+    Option *create_command_option(const std::string &name, option_type type);
 
     Plugin *plugin;
     std::string name;

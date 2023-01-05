@@ -3,11 +3,16 @@
 
 #include <gtkmm.h>
 #include <string>
+#include <wayfire/config/section.hpp>
+
+using wf_section = std::shared_ptr<wf::config::section_t>;
 
 /*!
  * Simple fuzzy-search. Finds `pattern` in `text`. Always returns `true` when `pattern` is empty.
  */
 bool find_string(std::string text, std::string pattern);
+
+bool begins_with(const std::string &str, const std::string &prefix);
 
 /*!
  * Button with text and icon.

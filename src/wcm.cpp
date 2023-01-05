@@ -8,32 +8,42 @@
 
 #define OUTPUT_CONFIG_PROGRAM "wdisplays"
 
-OptionGroupWidget::OptionGroupWidget(Option *group)
+KeyEntry::KeyEntry(Option *option)
 {
-    add(options_layout);
-    set_vexpand();
+    auto section = WCM::get_instance()->get_config_section(option->plugin);
+    auto wf_option = section->get_option(option->name);
 
-    for (Option *option : group->options)
-    {
-        if (option->hidden)
-        {
-            continue;
-        }
+    add(grab_layout);
+    add(edit_layout);
+    set_transition_type(Gtk::STACK_TRANSITION_TYPE_CROSSFADE);
+    changed.connect([=] { option->set_save<std::string>(get_value()); });
 
-        if (option->type == OPTION_TYPE_SUBGROUP && !option->options.empty())
-        {
-            option_widgets.push_back(std::make_unique<OptionSubgroupWidget>(option));
-        }
-        else if (option->type == OPTION_TYPE_DYNAMIC_LIST)
-        {
-            option_widgets.push_back(std::make_unique<OptionDynamicListWidget>(option));
-        }
-        else
-        {
-            option_widgets.push_back(std::make_unique<OptionWidget>(option));
-        }
-        options_layout.pack_start(*option_widgets.back(), false, false);
-    }
+    auto edit_confirm = [=] {
+        grab_button.set_label(entry.get_text());
+        changed.emit();
+        set_visible_child(grab_layout);
+    };
+
+    grab_button.set_label(wf_option->get_value_str());
+    grab_button.signal_clicked().connect([=] { /* TODO */ });
+    edit_button.set_image_from_icon_name("gtk-edit");
+    edit_button.set_tooltip_text("Edit binding");
+    edit_button.signal_clicked().connect([=] {
+        entry.set_text(grab_button.get_label());
+        set_visible_child(edit_layout);
+    });
+    grab_layout.pack_start(grab_button, true, true);
+    grab_layout.pack_start(edit_button, false, false);
+
+    edit_layout.pack_start(entry, true, true);
+    ok_button.set_image_from_icon_name("gtk-ok");
+    ok_button.set_tooltip_text("Save binding");
+    ok_button.signal_clicked().connect(edit_confirm);
+    cancel_button.set_image_from_icon_name("gtk-cancel");
+    cancel_button.set_tooltip_text("Cancel");
+    cancel_button.signal_clicked().connect([=] { set_visible_child(grab_layout); });
+    edit_layout.pack_start(cancel_button, false, false);
+    edit_layout.pack_start(ok_button, false, false);
 }
 
 std::ostream &operator<<(std::ostream &out, const wf::color_t &color)
@@ -73,8 +83,8 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
     pack_start(name_label, false, false);
     Gtk::Box::pack_end(reset_button, false, false);
 
-    std::shared_ptr<wf::config::section_t> section = WCM::get_instance()->get_config_section(option->plugin);
-    std::shared_ptr<wf::config::option_base_t> wf_option = section->get_option(option->name);
+    auto section = WCM::get_instance()->get_config_section(option->plugin);
+    auto wf_option = section->get_option(option->name);
 
     switch (option->type)
     {
@@ -143,14 +153,7 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
         case OPTION_TYPE_BUTTON:
         case OPTION_TYPE_KEY:
         {
-            auto key_grab_button = std::make_unique<Gtk::Button>();
-            auto edit_button = std::make_unique<Gtk::Button>();
-            edit_button->set_image_from_icon_name("gtk-edit", Gtk::ICON_SIZE_BUTTON);
-            edit_button->set_tooltip_text("Edit binding");
-            edit_button->signal_clicked().connect([=] {});
-            key_grab_button->set_label(section->get_option(option->name)->get_value_str());
-            pack_end(std::move(edit_button));
-            pack_end(std::move(key_grab_button), true, true);
+            pack_end(std::make_unique<KeyEntry>(option), true, true);
         }
         break;
 
@@ -244,30 +247,60 @@ OptionDynamicListWidget::AutostartWidget::AutostartWidget(Option *option) : Gtk:
     pack_start(remove_button, false, false);
 }
 
-OptionDynamicListWidget::CommandWidget::CommandWidget()
+OptionDynamicListWidget::CommandWidget::CommandWidget(const std::string &cmd_name, Option *option, wf_section section)
 {
+
+    const auto command = "command_" + cmd_name;
+    const auto regular_binding_name = "binding_" + cmd_name;
+    const auto repeat_binding_name = "repeatable_binding_" + cmd_name;
+    const auto always_binding_name = "always_binding_" + cmd_name;
+
+    auto executable_opt = section->get_option_or(command);
+    auto regular_opt = section->get_option_or(regular_binding_name);
+    auto repeatable_opt = section->get_option_or(repeat_binding_name);
+    auto always_opt = section->get_option_or(always_binding_name);
+    auto [wf_opt, opt_name] = always_opt       ? std::tie(always_opt, always_binding_name)
+                              : repeatable_opt ? std::tie(repeatable_opt, repeat_binding_name)
+                                               : std::tie(regular_opt, regular_binding_name);
+
     add(expander);
-    expander.set_label(/* TODO */ "");
     expander.add(vbox);
+    vbox.property_margin().set_value(5);
+
+    Option *key_option = option->create_command_option(opt_name, OPTION_TYPE_ACTIVATOR);
+    key_entry = std::make_unique<KeyEntry>(key_option);
+
+    Option *command_option = option->create_command_option(command, OPTION_TYPE_STRING);
 
     type_label.set_size_request(200);
+    type_label.set_alignment(Gtk::ALIGN_START);
     type_box.pack_start(type_label, false, false);
+    type_combo_box.append("Regular");
+    type_combo_box.append("Repeat");
+    type_combo_box.append("Always");
+    type_combo_box.set_active(always_opt ? 2 : repeatable_opt ? 1 : 0);
     type_combo_box.signal_changed().connect([=] { /* TODO */ });
     type_box.pack_start(type_combo_box, true, true);
     vbox.pack_start(type_box, false, false);
 
     binding_label.set_size_request(200);
-    binding_box.pack_start(binding_label);
-    binding_button.signal_clicked().connect([=] { /* TODO */ });
-    binding_box.pack_start(binding_button, true, true);
-    binding_edit_button.set_image_from_icon_name("gtk-edit");
-    binding_edit_button.signal_clicked().connect([=] { /*  TODO */ });
-    binding_box.pack_start(binding_edit_button, false, false);
+    binding_label.set_alignment(Gtk::ALIGN_START);
+    binding_box.pack_start(binding_label, false, false);
+    binding_box.pack_start(*key_entry, true, true);
     vbox.pack_start(binding_box, false, false);
 
     command_label.set_size_request(200);
+    command_label.set_alignment(Gtk::ALIGN_START);
     command_box.pack_start(command_label, false, false);
-    command_entry.signal_changed().connect([=] { /* TODO */ });
+    command_entry.signal_changed().connect([=] {
+        expander.set_label("Command " + cmd_name + ": " + command_entry.get_text());
+        auto *label = (Gtk::Label *)expander.get_label_widget();
+        label->set_ellipsize(Pango::ELLIPSIZE_END);
+        label->set_tooltip_text(command_entry.get_text());
+    });
+    if (executable_opt)
+        command_entry.set_text(executable_opt->get_value_str());
+    command_entry.signal_changed().connect([=] { command_option->set_save<std::string>(command_entry.get_text()); });
     command_box.pack_start(command_entry, true, true);
     remove_button.set_image_from_icon_name("list-remove");
     command_box.pack_start(remove_button, false, false);
@@ -276,17 +309,27 @@ OptionDynamicListWidget::CommandWidget::CommandWidget()
 
 OptionDynamicListWidget::OptionDynamicListWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10)
 {
-    std::cout << option->name << std::endl;
+    std::shared_ptr<wf::config::section_t> section = WCM::get_instance()->get_config_section(option->plugin);
+    if (!section)
+        return;
 
     if (option->name == "bindings")
     {
+        std::vector<std::string> command_names;
+        static const std::string exec_prefix = "command_";
+        for (const auto &command : section->get_registered_options())
+            if (begins_with(command->get_name(), exec_prefix))
+                command_names.push_back(command->get_name().substr(exec_prefix.length()));
+        option->options.clear();
+        for (const auto &cmd_name : command_names)
+        {
+            auto widget = std::make_unique<CommandWidget>(cmd_name, option, section);
+            pack_start(*widget);
+            widgets.push_back(std::move(widget));
+        }
     }
     else if (option->name == "autostart")
     {
-        std::shared_ptr<wf::config::section_t> section = WCM::get_instance()->get_config_section(option->plugin);
-        if (!section)
-            return;
-
         auto wf_option = std::dynamic_pointer_cast<wf::config::compound_option_t>(section->get_option("autostart"));
         auto autostart_names = wf_option->get_value<std::string>();
         option->options.clear();
@@ -305,7 +348,7 @@ OptionDynamicListWidget::OptionDynamicListWidget(Option *option) : Gtk::Box(Gtk:
             option->options.push_back(dyn_opt);
 
             auto widget = std::make_unique<AutostartWidget>(dyn_opt);
-            pack_start(*widget);
+            pack_start(*widget, false, false);
             widgets.push_back(std::move(widget));
         }
     }
@@ -318,7 +361,7 @@ OptionDynamicListWidget::OptionDynamicListWidget(Option *option) : Gtk::Box(Gtk:
     add_button.signal_clicked().connect([=] { /* TODO */ });
 
     add_box.pack_end(add_button, false, false);
-    pack_end(add_box, true, false);
+    pack_end(add_box, false, false);
 }
 
 OptionSubgroupWidget::OptionSubgroupWidget(Option *subgroup)
@@ -333,6 +376,39 @@ OptionSubgroupWidget::OptionSubgroupWidget(Option *subgroup)
     }
 }
 
+OptionGroupWidget::OptionGroupWidget(Option *group)
+{
+    add(options_layout);
+    options_layout.property_margin().set_value(10);
+    set_vexpand();
+
+    for (Option *option : group->options)
+    {
+        if (option->hidden)
+        {
+            continue;
+        }
+
+        bool fill_expand = false;
+        if (option->type == OPTION_TYPE_SUBGROUP && !option->options.empty())
+        {
+            option_widgets.push_back(std::make_unique<OptionSubgroupWidget>(option));
+        }
+        else if (option->type == OPTION_TYPE_DYNAMIC_LIST)
+        {
+            if (!OptionDynamicListWidget::IMPLEMENTED.count(option->name))
+                continue;
+            option_widgets.push_back(std::make_unique<OptionDynamicListWidget>(option));
+            fill_expand = true;
+        }
+        else
+        {
+            option_widgets.push_back(std::make_unique<OptionWidget>(option));
+        }
+        options_layout.pack_start(*option_widgets.back(), fill_expand, fill_expand);
+    }
+}
+
 PluginPage::PluginPage(Plugin *plugin)
 {
     for (auto *group : plugin->option_groups)
@@ -343,7 +419,6 @@ PluginPage::PluginPage(Plugin *plugin)
         }
         groups.push_back(OptionGroupWidget(group));
         append_page(groups.back(), group->name);
-        groups.back().property_margin().set_value(10);
     }
 };
 
