@@ -1,6 +1,7 @@
 #include "wcm.hpp"
 #include "utils.hpp"
 
+#include <libevdev/libevdev.h>
 #include <wayfire/config/compound-option.hpp>
 #include <wayfire/config/types.hpp>
 #include <wayfire/config/xml.hpp>
@@ -13,13 +14,114 @@ bool KeyEntry::check_and_confirm(const std::string &key_str)
     if (key_str.find_first_not_of(' ') != std::string::npos && key_str.find('<') &&
         (key_str.find("BTN") || key_str.find("KEY")))
     {
-        auto dialog = Gtk::MessageDialog(
-            "Attempting to bind <b>" + key_str +
-                "</b> without modifier. You will be unable to use this key/button for anything else! Are you sure?",
-            true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
+        auto dialog = Gtk::MessageDialog("Attempting to bind <tt><b>" + key_str +
+                                             "</b></tt> without modifier. You will be unable to use this key/button "
+                                             "for anything else! Are you sure?",
+                                         true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
         return dialog.run() == Gtk::RESPONSE_YES;
     }
     return true;
+}
+
+mod_type KeyEntry::get_mod_from_keyval(guint keyval)
+{
+    if (keyval == GDK_KEY_Shift_L || keyval == GDK_KEY_Shift_R)
+        return MOD_TYPE_SHIFT;
+    if (keyval == GDK_KEY_Control_L || keyval == GDK_KEY_Control_R)
+        return MOD_TYPE_CONTROL;
+    if (keyval == GDK_KEY_Alt_L || keyval == GDK_KEY_Alt_R || keyval == GDK_KEY_Meta_L || keyval == GDK_KEY_Meta_R)
+        return MOD_TYPE_ALT;
+    if (keyval == GDK_KEY_Super_L || keyval == GDK_KEY_Super_R)
+        return MOD_TYPE_SUPER;
+    return MOD_TYPE_NONE;
+}
+
+std::string KeyEntry::grab_key()
+{
+    static const auto HW_OFFSET = 8;
+
+    // FIXME Pressing Escape without modifiers closes the dialog (is it bad actually?)
+    // FIXME Pressing Tab without modifiers does nothing (probably tries to select the next widget)
+    auto grab_dialog = Gtk::Dialog("Waiting for Binding", true);
+    auto label = Gtk::Label();
+    grab_dialog.get_content_area()->pack_start(label);
+    label.show();
+
+    uint mod_mask = 0;
+    std::string key_btn_string;
+
+    auto cur_state_string = [&mod_mask] {
+        std::string text;
+        if (mod_mask & MOD_TYPE_SHIFT)
+            text += "<Shift>";
+        if (mod_mask & MOD_TYPE_CONTROL)
+            text += "<Control>";
+        if (mod_mask & MOD_TYPE_ALT)
+            text += "<Alt>";
+        if (mod_mask & MOD_TYPE_SUPER)
+            text += "<Super>";
+        return text;
+    };
+
+    auto update_label = [=, &label] {
+        const auto text = cur_state_string();
+        label.set_text(text.empty() ? "(No modifiers pressed)" : text);
+    };
+    update_label();
+
+    grab_dialog.signal_key_release_event().connect([&](GdkEventKey *event) {
+        mod_mask &= ~get_mod_from_keyval(event->keyval);
+        update_label();
+        return false;
+    });
+    grab_dialog.signal_key_press_event().connect([&](GdkEventKey *event) {
+        auto new_mod = get_mod_from_keyval(event->keyval);
+        mod_mask |= new_mod;
+        if (new_mod == MOD_TYPE_NONE)
+        {
+            key_btn_string = libevdev_event_code_get_name(EV_KEY, event->hardware_keycode - HW_OFFSET);
+            grab_dialog.response(Gtk::RESPONSE_ACCEPT);
+        }
+        else
+            update_label();
+        return true;
+    });
+    grab_dialog.signal_button_press_event().connect([&](GdkEventButton *event) {
+        key_btn_string.clear();
+        switch (event->button)
+        {
+            case GDK_BUTTON_PRIMARY:
+                key_btn_string = "BTN_LEFT";
+                break;
+            case GDK_BUTTON_MIDDLE:
+                key_btn_string = "BTN_MIDDLE";
+                break;
+            case GDK_BUTTON_SECONDARY:
+                key_btn_string = "BTN_RIGHT";
+                break;
+            case 4:
+                key_btn_string = "BTN_SIDE";
+                break;
+            case 5:
+                key_btn_string = "BTN_EXTRA";
+                break;
+            default:
+                break;
+        }
+        grab_dialog.response(Gtk::RESPONSE_ACCEPT);
+        return true;
+    });
+
+    if (!WCM::get_instance()->lock_input())
+        return "";
+
+    grab_dialog.fullscreen();
+    auto result = grab_dialog.run();
+    WCM::get_instance()->unlock_input();
+
+    if (result == Gtk::RESPONSE_ACCEPT)
+        return cur_state_string() + key_btn_string;
+    return "";
 }
 
 KeyEntry::KeyEntry(Option *option)
@@ -32,7 +134,14 @@ KeyEntry::KeyEntry(Option *option)
     set_transition_type(Gtk::STACK_TRANSITION_TYPE_CROSSFADE);
 
     grab_button.set_label(wf_option->get_value_str());
-    grab_button.signal_clicked().connect([=] { /* TODO */ });
+    grab_button.signal_clicked().connect([=] {
+        const auto value = grab_key();
+        if (!value.empty() && check_and_confirm(value))
+        {
+            grab_button.set_label(value);
+            option->set_save(value);
+        }
+    });
     edit_button.set_image_from_icon_name("gtk-edit");
     edit_button.set_tooltip_text("Edit binding");
     edit_button.signal_clicked().connect([=] {
@@ -692,6 +801,38 @@ bool WCM::init_input_inhibitor()
     }
 
     return true;
+}
+
+bool WCM::lock_input()
+{
+    if (!inhibitor_manager)
+    {
+        std::cerr << "Compositor does not support wlr_input_inhibit_manager_v1!" << std::endl;
+
+        return false;
+    }
+
+    if (screen_lock)
+    {
+        return false;
+    }
+
+    /* Lock input */
+    screen_lock = zwlr_input_inhibit_manager_v1_get_inhibitor(inhibitor_manager);
+
+    return true;
+}
+
+void WCM::unlock_input()
+{
+    if (!screen_lock)
+    {
+        return;
+    }
+
+    zwlr_input_inhibitor_v1_destroy(screen_lock);
+    wl_display_flush(gdk_wayland_display_get_wl_display(gdk_display_get_default()));
+    screen_lock = nullptr;
 }
 
 void WCM::create_main_layout()

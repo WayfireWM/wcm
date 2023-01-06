@@ -35,6 +35,7 @@ enum option_type
 
 enum mod_type
 {
+    MOD_TYPE_NONE = 0,
     MOD_TYPE_SHIFT = 1 << 0,
     MOD_TYPE_CONTROL = 1 << 1,
     MOD_TYPE_ALT = 1 << 2,

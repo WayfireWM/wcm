@@ -86,6 +86,7 @@ class KeyEntry : public Gtk::Stack
     Gtk::Button ok_button;
     Gtk::Button cancel_button;
 
+    mod_type get_mod_from_keyval(guint keyval);
     bool check_and_confirm(const std::string& key_str);
     std::string grab_key();
 
@@ -268,6 +269,8 @@ class WCM
     {
         inhibitor_manager = value;
     }
+    bool lock_input();
+    void unlock_input();
 };
 
 #endif
