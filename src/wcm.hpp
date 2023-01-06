@@ -253,9 +253,9 @@ class WCM
     Gtk::Label plugin_enabled_label = Gtk::Label("Use This Plugin");
     PrettyButton back_button = PrettyButton("Back", "go-previous");
 
-    cairo_surface_t *grab_window_surface;
-    zwlr_input_inhibitor_v1 *screen_lock;
-    zwlr_input_inhibit_manager_v1 *inhibitor_manager;
+    cairo_surface_t *grab_window_surface = nullptr;
+    zwlr_input_inhibitor_v1 *screen_lock = nullptr;
+    zwlr_input_inhibit_manager_v1 *inhibitor_manager = nullptr;
 
     // WCM is a singleton
     static inline WCM *instance = nullptr;
