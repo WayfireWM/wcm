@@ -224,7 +224,7 @@ class WCM
 
     Gtk::Box main_left_panel_layout = Gtk::Box(Gtk::ORIENTATION_VERTICAL);
     Gtk::Label filter_label;
-    Gtk::Entry search_entry;
+    Gtk::SearchEntry search_entry;
     PrettyButton close_button = PrettyButton("Close", "window-close");
     PrettyButton output_config_button = PrettyButton("Configure Outputs", "computer");
 

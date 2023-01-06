@@ -850,8 +850,7 @@ void WCM::create_main_layout()
     main_left_panel_layout.pack_start(filter_label, false, false);
 
     search_entry.property_margin().set_value(10);
-    search_entry.set_icon_from_icon_name("system-search", Gtk::ENTRY_ICON_SECONDARY);
-    search_entry.signal_changed().connect([&] { main_page->set_filter(search_entry.get_text()); });
+    search_entry.signal_search_changed().connect([&] { main_page->set_filter(search_entry.get_text()); });
     search_entry.signal_key_press_event().connect([&](GdkEventKey *event) {
         if (event->keyval == GDK_KEY_Escape)
             search_entry.set_text("");
