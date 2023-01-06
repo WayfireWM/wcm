@@ -78,6 +78,7 @@ class MainPage : public Gtk::ScrolledWindow
 class KeyEntry : public Gtk::Stack
 {
     Gtk::Box grab_layout = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
+    Gtk::Label grab_label = Gtk::Label("(none)");
     Gtk::Button grab_button;
     Gtk::Button edit_button;
 
@@ -87,11 +88,27 @@ class KeyEntry : public Gtk::Stack
     Gtk::Button cancel_button;
 
     mod_type get_mod_from_keyval(guint keyval);
-    bool check_and_confirm(const std::string& key_str);
+    bool check_and_confirm(const std::string &key_str);
     std::string grab_key();
 
+    sigc::signal<void> changed;
+
     public:
-    KeyEntry(Option *option);
+    KeyEntry();
+    inline sigc::signal<void> signal_changed()
+    {
+        return changed;
+    }
+    inline std::string get_value() const
+    {
+        return grab_label.get_text();
+    }
+    void set_value(const std::string &value)
+    {
+        grab_label.set_label(value);
+        entry.set_text(value);
+        changed.emit();
+    }
 };
 
 class OptionWidget : public Gtk::Box

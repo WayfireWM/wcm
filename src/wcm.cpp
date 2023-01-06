@@ -41,7 +41,7 @@ std::string KeyEntry::grab_key()
     static const auto HW_OFFSET = 8;
 
     auto grab_dialog = Gtk::Dialog("Waiting for Binding", true);
-    auto label = Gtk::Label();
+    auto label = Gtk::Label("none");
     grab_dialog.get_content_area()->pack_start(label);
     label.show();
 
@@ -72,18 +72,20 @@ std::string KeyEntry::grab_key()
         update_label();
         return false;
     });
-    grab_dialog.signal_key_press_event().connect([&](GdkEventKey *event) {
-        auto new_mod = get_mod_from_keyval(event->keyval);
-        mod_mask |= new_mod;
-        if (new_mod == MOD_TYPE_NONE)
-        {
-            key_btn_string = libevdev_event_code_get_name(EV_KEY, event->hardware_keycode - HW_OFFSET);
-            grab_dialog.response(Gtk::RESPONSE_ACCEPT);
-        }
-        else
-            update_label();
-        return true;
-    }, false);
+    grab_dialog.signal_key_press_event().connect(
+        [&](GdkEventKey *event) {
+            auto new_mod = get_mod_from_keyval(event->keyval);
+            mod_mask |= new_mod;
+            if (new_mod == MOD_TYPE_NONE)
+            {
+                key_btn_string = libevdev_event_code_get_name(EV_KEY, event->hardware_keycode - HW_OFFSET);
+                grab_dialog.response(Gtk::RESPONSE_ACCEPT);
+            }
+            else
+                update_label();
+            return true;
+        },
+        false);
     grab_dialog.signal_button_press_event().connect([&](GdkEventButton *event) {
         key_btn_string.clear();
         switch (event->button)
@@ -122,28 +124,25 @@ std::string KeyEntry::grab_key()
     return "";
 }
 
-KeyEntry::KeyEntry(Option *option)
+KeyEntry::KeyEntry()
 {
-    auto section = WCM::get_instance()->get_config_section(option->plugin);
-    auto wf_option = section->get_option(option->name);
-
     add(grab_layout);
     add(edit_layout);
     set_transition_type(Gtk::STACK_TRANSITION_TYPE_CROSSFADE);
 
-    grab_button.set_label(wf_option->get_value_str());
+    grab_label.set_ellipsize(Pango::ELLIPSIZE_END);
+    grab_button.add(grab_label);
     grab_button.signal_clicked().connect([=] {
         const auto value = grab_key();
         if (!value.empty() && check_and_confirm(value))
         {
-            grab_button.set_label(value);
-            option->set_save(value);
+            set_value(value);
         }
     });
     edit_button.set_image_from_icon_name("gtk-edit");
     edit_button.set_tooltip_text("Edit binding");
     edit_button.signal_clicked().connect([=] {
-        entry.set_text(grab_button.get_label());
+        entry.set_text(get_value());
         set_visible_child(edit_layout);
     });
     grab_layout.pack_start(grab_button, true, true);
@@ -156,8 +155,7 @@ KeyEntry::KeyEntry(Option *option)
         const std::string value = entry.get_text();
         if (check_and_confirm(value))
         {
-            grab_button.set_label(value);
-            option->set_save<std::string>(value);
+            set_value(value);
             set_visible_child(grab_layout);
         }
     });
@@ -213,9 +211,7 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
         case OPTION_TYPE_INT:
         {
             auto value_optional = wf::option_type::from_string<int>(wf_option->get_value_str());
-            if (!value_optional)
-                return;
-            int value = value_optional.value();
+            int value = value_optional ? value_optional.value() : std::get<int>(option->default_value);
 
             if (option->int_labels.empty())
             {
@@ -223,6 +219,8 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
                     Gtk::Adjustment::create(value, option->data.min, option->data.max, 1));
                 spin_button->signal_value_changed().connect(
                     [=, widget = spin_button.get()] { option->set_save(widget->get_value_as_int()); });
+                reset_button.signal_clicked().connect(
+                    [=, widget = spin_button.get()] { widget->set_value(std::get<int>(option->default_value)); });
                 pack_end(std::move(spin_button));
             }
             else
@@ -236,6 +234,8 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
                 combo_box->signal_changed().connect([=, widget = combo_box.get()] {
                     option->set_save(option->int_labels.at(widget->get_active_text()));
                 });
+                reset_button.signal_clicked().connect(
+                    [=, widget = combo_box.get()] { widget->set_active(std::get<int>(option->default_value)); });
                 pack_end(std::move(combo_box), true, true);
             }
         }
@@ -244,14 +244,14 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
         case OPTION_TYPE_BOOL:
         {
             auto value_optional = wf::option_type::from_string<bool>(wf_option->get_value_str());
-            if (!value_optional)
-                return;
-            bool value = value_optional.value();
+            bool value = value_optional ? value_optional.value() : std::get<int>(option->default_value);
 
             auto check_button = std::make_unique<Gtk::CheckButton>();
             check_button->set_active(value);
             check_button->signal_toggled().connect(
                 [=, widget = check_button.get()] { option->set_save(widget->get_active()); });
+            reset_button.signal_clicked().connect(
+                [=, widget = check_button.get()] { widget->set_active(std::get<int>(option->default_value)); });
             pack_end(std::move(check_button));
         }
         break;
@@ -259,14 +259,14 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
         case OPTION_TYPE_DOUBLE:
         {
             auto value_optional = wf::option_type::from_string<double>(wf_option->get_value_str());
-            if (!value_optional)
-                return;
-            double value = value_optional.value();
+            double value = value_optional ? value_optional.value() : std::get<double>(option->default_value);
 
             auto spin_box = std::make_unique<Gtk::SpinButton>(
                 Gtk::Adjustment::create(value, option->data.min, option->data.max, option->data.precision),
                 option->data.precision, 3);
             spin_box->signal_changed().connect([=, widget = spin_box.get()] { option->set_save(widget->get_value()); });
+            reset_button.signal_clicked().connect(
+                [=, widget = spin_box.get()] { widget->set_value(std::get<double>(option->default_value)); });
             pack_end(std::move(spin_box));
         }
         break;
@@ -275,7 +275,13 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
         case OPTION_TYPE_BUTTON:
         case OPTION_TYPE_KEY:
         {
-            pack_end(std::make_unique<KeyEntry>(option), true, true);
+            auto key_entry = std::make_unique<KeyEntry>();
+            key_entry->set_value(wf_option->get_value_str());
+            key_entry->signal_changed().connect(
+                [=, widget = key_entry.get()] { option->set_save(widget->get_value()); });
+            reset_button.signal_clicked().connect(
+                [=, widget = key_entry.get()] { widget->set_value(std::get<std::string>(option->default_value)); });
+            pack_end(std::move(key_entry), true, true);
         }
         break;
 
@@ -315,6 +321,8 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
                     pack_end(std::move(file_choose_button));
                 }
 
+                reset_button.signal_clicked().connect(
+                    [=, widget = entry.get()] { widget->set_text(std::get<std::string>(option->default_value)); });
                 pack_end(std::move(entry), true, true);
             }
             else
@@ -322,13 +330,14 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
                 auto combo_box = std::make_unique<Gtk::ComboBoxText>();
                 for (const auto &[name, str_value] : option->str_labels)
                 {
-                    combo_box->append(name);
-                    if (str_value == wf_option->get_default_value_str())
-                        combo_box->set_active_text(name);
+                    combo_box->append(str_value, name);
+                    if (str_value == wf_option->get_value_str())
+                        combo_box->set_active_id(str_value);
                 }
-                combo_box->signal_changed().connect([=, widget = combo_box.get()] {
-                    option->set_save(option->str_labels.at(widget->get_active_text()));
-                });
+                combo_box->signal_changed().connect(
+                    [=, widget = combo_box.get()] { option->set_save<std::string>(widget->get_active_id()); });
+                reset_button.signal_clicked().connect(
+                    [=, widget = combo_box.get()] { widget->set_active_id(wf_option->get_default_value_str()); });
                 pack_end(std::move(combo_box), true, true);
             }
         }
@@ -337,21 +346,26 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
         case OPTION_TYPE_COLOR:
         {
             auto value_optional = wf::option_type::from_string<wf::color_t>(wf_option->get_value_str());
-            if (!value_optional)
-                return;
-            wf::color_t value = value_optional.value();
+            wf::color_t value =
+                value_optional
+                    ? value_optional.value()
+                    : wf::option_type::from_string<wf::color_t>(std::get<std::string>(option->default_value)).value();
 
             Gdk::RGBA rgba;
-            rgba.set_red(value.r);
-            rgba.set_green(value.g);
-            rgba.set_blue(value.b);
-            rgba.set_alpha(value.a);
+            rgba.set_rgba(value.r, value.g, value.b, value.a);
             auto color_button = std::make_unique<Gtk::ColorButton>(rgba);
             color_button->set_title(option->disp_name);
-            color_button->signal_color_set().connect([=, widget = color_button.get()] {
+            color_button->property_rgba().signal_changed().connect([=, widget = color_button.get()] {
                 auto rgba = widget->get_rgba();
                 wf::color_t color = {rgba.get_red(), rgba.get_green(), rgba.get_blue(), rgba.get_alpha()};
                 option->set_save(color);
+            });
+            reset_button.signal_clicked().connect([=, widget = color_button.get()] {
+                auto color =
+                    wf::option_type::from_string<wf::color_t>(std::get<std::string>(option->default_value)).value();
+                Gdk::RGBA rgba;
+                rgba.set_rgba(color.r, color.g, color.b, color.a);
+                widget->set_rgba(rgba);
             });
             pack_end(std::move(color_button));
         }
@@ -367,7 +381,14 @@ AutostartDynamicList::AutostartWidget::AutostartWidget(Option *option) : Gtk::Bo
     command_entry.set_text(std::get<std::string>(option->default_value));
     command_entry.signal_changed().connect([=] { option->set_save<std::string>(command_entry.get_text()); });
     choose_button.set_image_from_icon_name("application-x-executable");
-    choose_button.signal_clicked().connect([=] { /* TODO */ });
+    choose_button.set_tooltip_text("Choose Executable");
+    choose_button.signal_clicked().connect([&] {
+        auto dialog = Gtk::FileChooserDialog("Choose Executable");
+        dialog.add_button("Cancel", Gtk::RESPONSE_CANCEL);
+        dialog.add_button("Open", Gtk::RESPONSE_ACCEPT);
+        if (dialog.run() == Gtk::RESPONSE_ACCEPT)
+            command_entry.set_text(dialog.get_filename());
+    });
     run_button.set_image_from_icon_name("media-playback-start");
     run_button.signal_clicked().connect([=] { Glib::spawn_command_line_async(command_entry.get_text()); });
     remove_button.set_image_from_icon_name("list-remove");
@@ -398,7 +419,8 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
     vbox.property_margin().set_value(5);
 
     Option *key_option = option->create_command_option(opt_name, OPTION_TYPE_ACTIVATOR);
-    key_entry = std::make_unique<KeyEntry>(key_option);
+    key_entry = std::make_unique<KeyEntry>();
+    key_entry->signal_changed().connect([=] { key_option->set_save(key_entry->get_value()); });
 
     Option *command_option = option->create_command_option(command, OPTION_TYPE_STRING);
 
