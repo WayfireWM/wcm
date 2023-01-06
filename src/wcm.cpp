@@ -40,8 +40,6 @@ std::string KeyEntry::grab_key()
 {
     static const auto HW_OFFSET = 8;
 
-    // FIXME Pressing Escape without modifiers closes the dialog (is it bad actually?)
-    // FIXME Pressing Tab without modifiers does nothing (probably tries to select the next widget)
     auto grab_dialog = Gtk::Dialog("Waiting for Binding", true);
     auto label = Gtk::Label();
     grab_dialog.get_content_area()->pack_start(label);
@@ -85,7 +83,7 @@ std::string KeyEntry::grab_key()
         else
             update_label();
         return true;
-    });
+    }, false);
     grab_dialog.signal_button_press_event().connect([&](GdkEventButton *event) {
         key_btn_string.clear();
         switch (event->button)
