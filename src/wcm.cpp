@@ -390,8 +390,10 @@ AutostartDynamicList::AutostartWidget::AutostartWidget(Option *option) : Gtk::Bo
             command_entry.set_text(dialog.get_filename());
     });
     run_button.set_image_from_icon_name("media-playback-start");
+    run_button.set_tooltip_text("Run command");
     run_button.signal_clicked().connect([=] { Glib::spawn_command_line_async(command_entry.get_text()); });
     remove_button.set_image_from_icon_name("list-remove");
+    remove_button.set_tooltip_text("Remove from autostart list");
     remove_button.signal_clicked().connect([=] { /* TODO */ });
     pack_start(command_entry, true, true);
     pack_start(choose_button, false, false);
