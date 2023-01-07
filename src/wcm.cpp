@@ -51,13 +51,13 @@ std::string KeyEntry::grab_key()
     auto cur_state_string = [&mod_mask] {
         std::string text;
         if (mod_mask & MOD_TYPE_SHIFT)
-            text += "<Shift>";
+            text += "<shift> ";
         if (mod_mask & MOD_TYPE_CONTROL)
-            text += "<Control>";
+            text += "<ctrl> ";
         if (mod_mask & MOD_TYPE_ALT)
-            text += "<Alt>";
+            text += "<alt> ";
         if (mod_mask & MOD_TYPE_SUPER)
-            text += "<Super>";
+            text += "<super> ";
         return text;
     };
 
@@ -174,8 +174,9 @@ std::ostream &operator<<(std::ostream &out, const wf::color_t &color)
 template <class value_type>
 void Option::set_value(wf_section section, const value_type &value)
 {
-    std::cout << name << " = " << value << ": ";
-    section->get_option_or(name)->set_value_str(wf::option_type::to_string<value_type>(value));
+    std::cout << section->get_name() << "." << name << " = " << value << "; ";
+    section->get_option(name)->set_value_str(wf::option_type::to_string<value_type>(value));
+    std::cout << section->get_option(name)->get_value_str() << "; ";
 }
 
 template <class... ArgTypes>
@@ -394,7 +395,13 @@ AutostartDynamicList::AutostartWidget::AutostartWidget(Option *option) : Gtk::Bo
     run_button.signal_clicked().connect([=] { Glib::spawn_command_line_async(command_entry.get_text()); });
     remove_button.set_image_from_icon_name("list-remove");
     remove_button.set_tooltip_text("Remove from autostart list");
-    remove_button.signal_clicked().connect([=] { /* TODO */ });
+    remove_button.signal_clicked().connect([=] {
+        auto section = WCM::get_instance()->get_config_section(option->plugin);
+        section->unregister_option(section->get_option(option->name));
+        WCM::get_instance()->save_config(option->plugin);
+        delete option;
+        ((AutostartDynamicList *)get_parent())->remove(*this);
+    });
     pack_start(command_entry, true, true);
     pack_start(choose_button, false, false);
     pack_start(run_button, false, false);
@@ -420,11 +427,11 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
     expander.add(vbox);
     vbox.property_margin().set_value(5);
 
-    Option *key_option = option->create_command_option(opt_name, OPTION_TYPE_ACTIVATOR);
+    Option *key_option = option->create_child_option(opt_name, OPTION_TYPE_ACTIVATOR);
     key_entry = std::make_unique<KeyEntry>();
     key_entry->signal_changed().connect([=] { key_option->set_save(key_entry->get_value()); });
 
-    Option *command_option = option->create_command_option(command, OPTION_TYPE_STRING);
+    Option *command_option = option->create_child_option(command, OPTION_TYPE_STRING);
 
     type_label.set_size_request(200);
     type_label.set_alignment(Gtk::ALIGN_START);
@@ -483,16 +490,27 @@ AutostartDynamicList::AutostartDynamicList(Option *option)
         if (std::get<std::string>(option->default_value) != "string")
             continue;
 
-        Option *dyn_opt = new Option();
-        dyn_opt->name = opt_name;
-        dyn_opt->type = OPTION_TYPE_STRING;
-        dyn_opt->parent = option;
-        dyn_opt->plugin = option->plugin;
+        Option *dyn_opt = option->create_child_option(opt_name, OPTION_TYPE_STRING);
         dyn_opt->default_value = executable;
-        option->options.push_back(dyn_opt);
 
         pack_widget(std::make_unique<AutostartWidget>(dyn_opt));
     }
+
+    add_button.set_tooltip_text("Add new command");
+    add_button.signal_clicked().connect([=] {
+        static const std::string prefix = "autostart";
+        int i = 0;
+        while (section->get_option_or(prefix + std::to_string(i)))
+            ++i;
+        const auto name = prefix + std::to_string(i);
+        const std::string executable = "<command>";
+        section->register_new_option(std::make_shared<wf::config::option_t<std::string>>(name, executable));
+        WCM::get_instance()->save_config(option->plugin);
+        Option *dyn_opt = option->create_child_option(name, OPTION_TYPE_STRING);
+        dyn_opt->default_value = executable;
+        pack_widget(std::make_unique<AutostartWidget>(dyn_opt));
+        show_all();
+    });
 }
 
 BindingsDynamicList::BindingsDynamicList(Option *option)
@@ -999,12 +1017,110 @@ void WCM::load_config_files()
 #endif
 }
 
+/**
+ * Adapted from wf-config internal source code.
+ *
+ * Go through all options in the section, try to match them against the prefix
+ * of the compound option, thus build a new value and set it.
+ */
+void update_compound_from_section(wf::config::compound_option_t *compound,
+                                  const std::shared_ptr<wf::config::section_t> &section)
+{
+    auto options = section->get_registered_options();
+    std::vector<std::vector<std::string>> new_value;
+
+    struct tuple_in_construction_t
+    {
+        // How many of the tuple elements were initialized
+        size_t initialized = 0;
+        std::vector<std::string> values;
+    };
+
+    std::map<std::string, std::vector<std::string>> new_values;
+    const auto &entries = compound->get_entries();
+
+    for (size_t n = 0; n < entries.size(); n++)
+    {
+        const auto &prefix = entries[n]->get_prefix();
+        for (auto &opt : options)
+        {
+            if (wf::config::xml::get_option_xml_node(opt))
+            {
+                continue;
+            }
+
+            if (begins_with(opt->get_name(), prefix))
+            {
+                // We have found a match.
+                // Find the suffix we should store values in.
+                std::string suffix = opt->get_name().substr(prefix.size());
+                if (!new_values.count(suffix) && (n > 0))
+                {
+                    // Skip entries which did not have their first value set,
+                    // because these will not be fully constructed in the end.
+                    continue;
+                }
+
+                auto &tuple = new_values[suffix];
+
+                // Parse the value from the option, with the n-th type.
+                if (!entries[n]->is_parsable(opt->get_value_str()))
+                {
+                    continue;
+                }
+
+                if (n == 0)
+                {
+                    // Push the suffix first
+                    tuple.push_back(suffix);
+                }
+
+                // Update the Nth entry in the tuple (+1 because the first entry
+                // is the amount of initialized entries).
+                tuple.push_back(opt->get_value_str());
+            }
+        }
+    }
+
+    wf::config::compound_option_t::stored_type_t value;
+    for (auto &e : new_values)
+    {
+        // Ignore entires which do not have all entries set
+        if (e.second.size() != entries.size() + 1)
+        {
+            continue;
+        }
+
+        value.push_back(std::move(e.second));
+    }
+
+    compound->set_value_untyped(value);
+}
+
+/**
+ * Save the given configuration to the given file.
+ *
+ * Update the values of the compound options while doing this, as if
+ * they were set from the config file. This is necessary because wf-config will only
+ * save values in the compound list itself, not the options which represent the
+ * entries in the list.
+ */
 void WCM::save_to_file(wf::config::config_manager_t &mgr, const std::string &file)
 {
-    // TODO
     std::cout << "Saving to file " << file << std::endl;
 
-    // wf::config::save_configuration_to_file(mgr, file);
+    for (auto &section : mgr.get_all_sections())
+    {
+        for (auto &opt : section->get_registered_options())
+        {
+            auto as_compound = dynamic_cast<wf::config::compound_option_t *>(opt.get());
+            if (as_compound)
+            {
+                update_compound_from_section(as_compound, section);
+            }
+        }
+    }
+    wf::config::save_configuration_to_file(mgr, file);
 }
 
 bool WCM::save_config(Plugin *plugin)

@@ -321,11 +321,19 @@ Option::Option(option_type group_type, Plugin *plugin) : plugin(plugin), type(gr
 {
 }
 
-Option *Option::create_command_option(const std::string &name, option_type type)
+Option::~Option()
+{
+    if (parent)
+    {
+        auto &children = parent->options;
+        children.erase(std::remove(children.begin(), children.end(), this), children.end());
+    }
+}
+
+Option *Option::create_child_option(const std::string &name, option_type type)
 {
     auto *option = new Option();
     option->name = name;
-    option->command = true;
     option->parent = this;
     options.push_back(option);
     option->plugin = plugin;

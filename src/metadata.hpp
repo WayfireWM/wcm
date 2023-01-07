@@ -88,8 +88,9 @@ class Option
     Option(xmlNode *cur_node, Plugin *plugin);
     Option(option_type group_type, Plugin *plugin);
     Option() = default;
+    ~Option();
 
-    Option *create_command_option(const std::string &name, option_type type);
+    Option *create_child_option(const std::string &name, option_type type);
 
     Plugin *plugin;
     std::string name;
@@ -101,7 +102,6 @@ class Option
     opt_data default_value;
     var_data data;
     Option *parent;
-    bool command;
     bool hidden = false;
 
     std::vector<Option *> options;
