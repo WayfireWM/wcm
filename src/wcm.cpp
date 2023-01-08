@@ -422,6 +422,7 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
     auto [wf_opt, opt_name] = always_opt       ? std::tie(always_opt, always_binding_name)
                               : repeatable_opt ? std::tie(repeatable_opt, repeat_binding_name)
                                                : std::tie(regular_opt, regular_binding_name);
+    binding_option = wf_opt;
 
     add(expander);
     expander.add(vbox);
@@ -429,6 +430,7 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
 
     Option *key_option = option->create_child_option(opt_name, OPTION_TYPE_ACTIVATOR);
     key_entry = std::make_unique<KeyEntry>();
+    key_entry->set_value(binding_option->get_value_str());
     key_entry->signal_changed().connect([=] { key_option->set_save(key_entry->get_value()); });
 
     Option *command_option = option->create_child_option(command, OPTION_TYPE_STRING);
@@ -440,7 +442,15 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
     type_combo_box.append("Repeat");
     type_combo_box.append("Always");
     type_combo_box.set_active(always_opt ? 2 : repeatable_opt ? 1 : 0);
-    type_combo_box.signal_changed().connect([=] { /* TODO */ });
+    type_combo_box.signal_changed().connect([=] {
+        section->unregister_option(binding_option);
+        auto type = type_combo_box.get_active_row_number();
+        key_option->name = type == 2 ? always_binding_name : type == 1 ? repeat_binding_name : regular_binding_name;
+        binding_option =
+            std::make_shared<wf::config::option_t<std::string>>(key_option->name, binding_option->get_value_str());
+        section->register_new_option(binding_option);
+        WCM::get_instance()->save_config(option->plugin);
+    });
     type_box.pack_start(type_combo_box, true, true);
     vbox.pack_start(type_box, false, false);
 

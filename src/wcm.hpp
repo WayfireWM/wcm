@@ -178,6 +178,8 @@ class BindingsDynamicList : public DynamicListBase
         Gtk::Entry command_entry;
         Gtk::Button remove_button;
 
+        std::shared_ptr<wf::config::option_base_t> binding_option;
+
         BindingWidget(const std::string &cmd_name, Option *option, wf_section section);
     };
 
