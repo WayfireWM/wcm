@@ -659,7 +659,8 @@ void Plugin::init_widget()
     widget.pack_start(enabled_check, false, false);
     if (!is_core_plugin() && type == PLUGIN_TYPE_WAYFIRE)
     {
-        enabled_check.signal_toggled().connect([=] {});
+        enabled_check.signal_toggled().connect(
+            [=] { WCM::get_instance()->set_plugin_enabled(this, enabled_check.get_active()); });
     }
     else
     {
@@ -765,9 +766,7 @@ void WCM::parse_config(wf::config::config_manager_t &config_manager)
 
 std::string::size_type find_plugin(Plugin *p, const std::string &plugins)
 {
-    char c1 = 0, c2 = 0;
     std::string::size_type pos = 0;
-
     while (true)
     {
         pos = plugins.find(p->name, pos);
@@ -777,10 +776,8 @@ std::string::size_type find_plugin(Plugin *p, const std::string &plugins)
             break;
         }
 
-        c1 = plugins[std::max((int)pos - 1, 0)];
-        c2 = plugins[pos + p->name.length()];
-
-        if (((c1 == ' ') || (c1 == 0) || (pos == 0)) && ((c2 == ' ') || (c2 == 0)))
+        if ((pos == 0 || plugins[pos - 1] == ' ') &&
+            (pos + p->name.length() == plugins.length() || plugins[pos + p->name.length()] == ' '))
         {
             return pos;
         }
@@ -812,12 +809,10 @@ WCM::WCM(Glib::RefPtr<Gtk::Application> app) : window(Gtk::ApplicationWindow(app
         std::cerr << "Binding grabs will not work" << std::endl;
     }
 
-    auto section = wf_config_mgr.get_section("core");
-    auto option = section->get_option("plugins");
-    auto plugins = option->get_value_str();
-    for (auto *plugin : this->plugins)
+    const auto plugins_str = wf_config_mgr.get_section("core")->get_option("plugins")->get_value_str();
+    for (auto *plugin : plugins)
     {
-        plugin->enabled = plugin_enabled(plugin, plugins);
+        plugin->enabled = plugin_enabled(plugin, plugins_str);
     }
 
     auto icon = Gdk::Pixbuf::create_from_file(ICONDIR "/wcm.png");
@@ -911,6 +906,39 @@ void WCM::unlock_input()
     screen_lock = nullptr;
 }
 
+void WCM::set_plugin_enabled(Plugin *plugin, bool enabled)
+{
+    if (!plugin || plugin->is_core_plugin() || plugin->type == PLUGIN_TYPE_WF_SHELL)
+        return;
+
+    plugin->enabled = enabled;
+    plugin->enabled_check.set_active(enabled);
+    auto wf_opt = wf_config_mgr.get_section("core")->get_option("plugins");
+    std::string enabled_plugins = wf_opt->get_value_str();
+
+    if (!enabled)
+    {
+        auto pos = find_plugin(plugin, enabled_plugins);
+        if (pos == std::string::npos)
+            return;
+        while (pos != std::string::npos)
+        {
+            enabled_plugins.erase(pos - (/* remove space before */ pos != 0 ? 1 : 0),
+                                  plugin->name.length() + (enabled_plugins.length() != plugin->name.length() ? 1 : 0));
+            pos = find_plugin(plugin, enabled_plugins);
+        }
+    }
+    else
+    {
+        if (find_plugin(plugin, enabled_plugins) != std::string::npos)
+            return;
+        enabled_plugins.append((enabled_plugins.empty() ? "" : " ") + plugin->name);
+    }
+
+    wf_opt->set_value_str(enabled_plugins);
+    save_to_file(wf_config_mgr, wf_config_file);
+}
+
 void WCM::create_main_layout()
 {
     window.signal_key_press_event().connect([](GdkEventKey *event) {
@@ -961,9 +989,11 @@ void WCM::create_main_layout()
     plugin_description_label.set_margin_right(50);
     plugin_left_panel_layout.pack_start(plugin_enabled_box, false, false);
     plugin_enabled_box.set_margin_top(25);
-    plugin_enabled_box.pack_start(plugin_enabled_button);
-    plugin_enabled_button.signal_toggled().connect(
-        [=] { /* current_plugin->set_enabled(plugin_enabled_button.get_active()); */ });
+    plugin_enabled_box.pack_start(plugin_enabled_check);
+    plugin_enabled_check.signal_toggled().connect([=] {
+        if (current_plugin)
+            set_plugin_enabled(current_plugin, plugin_enabled_check.get_active());
+    });
     plugin_enabled_box.pack_start(plugin_enabled_label);
     plugin_enabled_box.set_halign(Gtk::ALIGN_CENTER);
     plugin_left_panel_layout.pack_end(back_button, false, false);
@@ -983,10 +1013,10 @@ void WCM::create_main_layout()
 
 void WCM::open_page(Plugin *plugin)
 {
-    current_plugin = plugin;
     if (plugin)
     {
         plugin_enabled_box.set_visible(!plugin->is_core_plugin() && plugin->type != PLUGIN_TYPE_WF_SHELL);
+        plugin_enabled_check.set_active(plugin->enabled);
         plugin_name_label.set_markup("<span size=\"large\"><b>" + plugin->disp_name + "</b></span>");
         plugin_description_label.set_markup("<span size=\"10000\"><b>" + plugin->tooltip + "</b></span>");
         plugin_page = std::make_unique<PluginPage>(plugin);
@@ -1000,6 +1030,7 @@ void WCM::open_page(Plugin *plugin)
         main_stack.set_visible_child(*main_page);
         left_stack.set_visible_child(main_left_panel_layout);
     }
+    current_plugin = plugin;
 }
 
 void WCM::load_config_files()

@@ -257,7 +257,7 @@ class WCM
     Gtk::Label plugin_name_label;
     Gtk::Label plugin_description_label;
     Gtk::Box plugin_enabled_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
-    Gtk::CheckButton plugin_enabled_button;
+    Gtk::CheckButton plugin_enabled_check;
     Gtk::Label plugin_enabled_label = Gtk::Label("Use This Plugin");
     PrettyButton back_button = PrettyButton("Back", "go-previous");
 
@@ -277,6 +277,8 @@ class WCM
         return instance;
     }
     void open_page(Plugin *plugin = nullptr);
+
+    void set_plugin_enabled(Plugin *plugin, bool enabled);
     void load_config_files();
     inline void parse_config()
     {
@@ -290,6 +292,7 @@ class WCM
     }
 #endif
     bool save_config(Plugin *plugin);
+
     inline void set_inhibitor_manager(zwlr_input_inhibit_manager_v1 *value)
     {
         inhibitor_manager = value;
