@@ -140,6 +140,12 @@ class DynamicListBase : public Gtk::Box
         widgets.push_back(std::move(widget));
     }
 
+    inline void remove(Gtk::Widget *widget)
+    {
+        widgets.erase(std::find_if(widgets.begin(), widgets.end(),
+                                   [=](std::unique_ptr<Gtk::Widget> &w) { return w.get() == widget; }));
+    }
+
     DynamicListBase();
 };
 
@@ -178,7 +184,7 @@ class BindingsDynamicList : public DynamicListBase
         Gtk::Entry command_entry;
         Gtk::Button remove_button;
 
-        std::shared_ptr<wf::config::option_base_t> binding_option;
+        std::shared_ptr<wf::config::option_base_t> binding_wf_opt;
 
         BindingWidget(const std::string &cmd_name, Option *option, wf_section section);
     };

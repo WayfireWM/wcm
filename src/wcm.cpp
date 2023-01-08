@@ -400,7 +400,7 @@ AutostartDynamicList::AutostartWidget::AutostartWidget(Option *option) : Gtk::Bo
         section->unregister_option(section->get_option(option->name));
         WCM::get_instance()->save_config(option->plugin);
         delete option;
-        ((AutostartDynamicList *)get_parent())->remove(*this);
+        ((AutostartDynamicList *)get_parent())->remove(this);
     });
     pack_start(command_entry, true, true);
     pack_start(choose_button, false, false);
@@ -422,7 +422,7 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
     auto [wf_opt, opt_name] = always_opt       ? std::tie(always_opt, always_binding_name)
                               : repeatable_opt ? std::tie(repeatable_opt, repeat_binding_name)
                                                : std::tie(regular_opt, regular_binding_name);
-    binding_option = wf_opt;
+    binding_wf_opt = wf_opt;
 
     add(expander);
     expander.add(vbox);
@@ -430,7 +430,7 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
 
     Option *key_option = option->create_child_option(opt_name, OPTION_TYPE_ACTIVATOR);
     key_entry = std::make_unique<KeyEntry>();
-    key_entry->set_value(binding_option->get_value_str());
+    key_entry->set_value(binding_wf_opt->get_value_str());
     key_entry->signal_changed().connect([=] { key_option->set_save(key_entry->get_value()); });
 
     Option *command_option = option->create_child_option(command, OPTION_TYPE_STRING);
@@ -443,12 +443,12 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
     type_combo_box.append("Always");
     type_combo_box.set_active(always_opt ? 2 : repeatable_opt ? 1 : 0);
     type_combo_box.signal_changed().connect([=] {
-        section->unregister_option(binding_option);
+        section->unregister_option(binding_wf_opt);
         auto type = type_combo_box.get_active_row_number();
         key_option->name = type == 2 ? always_binding_name : type == 1 ? repeat_binding_name : regular_binding_name;
-        binding_option =
-            std::make_shared<wf::config::option_t<std::string>>(key_option->name, binding_option->get_value_str());
-        section->register_new_option(binding_option);
+        binding_wf_opt =
+            std::make_shared<wf::config::option_t<std::string>>(key_option->name, binding_wf_opt->get_value_str());
+        section->register_new_option(binding_wf_opt);
         WCM::get_instance()->save_config(option->plugin);
     });
     type_box.pack_start(type_combo_box, true, true);
@@ -474,6 +474,14 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
     command_entry.signal_changed().connect([=] { command_option->set_save<std::string>(command_entry.get_text()); });
     command_box.pack_start(command_entry, true, true);
     remove_button.set_image_from_icon_name("list-remove");
+    remove_button.signal_clicked().connect([=] {
+        ((BindingsDynamicList *)get_parent())->remove(this);
+        section->unregister_option(always_opt);
+        section->unregister_option(repeatable_opt);
+        section->unregister_option(regular_opt);
+        section->unregister_option(executable_opt);
+        WCM::get_instance()->save_config(option->plugin);
+    });
     command_box.pack_start(remove_button, false, false);
     vbox.pack_start(command_box);
 }
