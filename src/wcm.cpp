@@ -423,6 +423,10 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
                               : repeatable_opt ? std::tie(repeatable_opt, repeat_binding_name)
                                                : std::tie(regular_opt, regular_binding_name);
     binding_wf_opt = wf_opt;
+    if (!binding_wf_opt)
+    {
+        binding_wf_opt = std::make_shared<wf::config::option_t<std::string>>(regular_binding_name, "none");
+    }
 
     add(expander);
     expander.add(vbox);
@@ -547,6 +551,20 @@ BindingsDynamicList::BindingsDynamicList(Option *option)
     {
         pack_widget(std::make_unique<BindingWidget>(cmd_name, option, section));
     }
+
+    add_button.signal_clicked().connect([=] {
+        int i = 0;
+        while (section->get_option_or(exec_prefix + std::to_string(i)))
+            ++i;
+        const auto cmd_name = std::to_string(i);
+        section->register_new_option(
+            std::make_shared<wf::config::option_t<std::string>>(exec_prefix + cmd_name, "<command>"));
+        section->register_new_option(
+            std::make_shared<wf::config::option_t<std::string>>("binding_" + cmd_name, "none"));
+        WCM::get_instance()->save_config(option->plugin);
+        pack_widget(std::make_unique<BindingWidget>(cmd_name, option, section));
+        show_all();
+    });
 }
 
 OptionSubgroupWidget::OptionSubgroupWidget(Option *subgroup)
