@@ -12,7 +12,7 @@
 bool KeyEntry::check_and_confirm(const std::string &key_str)
 {
     if (key_str.find_first_not_of(' ') != std::string::npos && key_str.find('<') &&
-        (key_str.find("BTN") || key_str.find("KEY")))
+        (key_str.find("BTN") != std::string::npos || key_str.find("KEY") != std::string::npos))
     {
         auto dialog = Gtk::MessageDialog("Attempting to bind <tt><b>" + key_str +
                                              "</b></tt> without modifier. You will be unable to use this key/button "
@@ -1017,7 +1017,7 @@ void WCM::open_page(Plugin *plugin)
     {
         plugin_enabled_box.set_visible(!plugin->is_core_plugin() && plugin->type != PLUGIN_TYPE_WF_SHELL);
         plugin_enabled_check.set_active(plugin->enabled);
-        plugin_name_label.set_markup("<span size=\"large\"><b>" + plugin->disp_name + "</b></span>");
+        plugin_name_label.set_markup("<span size=\"12000\"><b>" + plugin->disp_name + "</b></span>");
         plugin_description_label.set_markup("<span size=\"10000\"><b>" + plugin->tooltip + "</b></span>");
         plugin_page = std::make_unique<PluginPage>(plugin);
         main_stack.add(*plugin_page);
