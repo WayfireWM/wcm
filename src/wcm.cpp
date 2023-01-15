@@ -415,7 +415,7 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
     const auto repeat_binding_name = "repeatable_binding_" + cmd_name;
     const auto always_binding_name = "always_binding_" + cmd_name;
 
-    auto executable_opt = section->get_option_or(command);
+    auto executable_opt = section->get_option(command);
     auto regular_opt = section->get_option_or(regular_binding_name);
     auto repeatable_opt = section->get_option_or(repeat_binding_name);
     auto always_opt = section->get_option_or(always_binding_name);
@@ -469,14 +469,14 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
     command_label.set_size_request(200);
     command_label.set_alignment(Gtk::ALIGN_START);
     command_box.pack_start(command_label, false, false);
+    expander.set_label("Command " + cmd_name);
     command_entry.signal_changed().connect([=] {
         expander.set_label("Command " + cmd_name + ": " + command_entry.get_text());
         auto *label = (Gtk::Label *)expander.get_label_widget();
         label->set_ellipsize(Pango::ELLIPSIZE_END);
         label->set_tooltip_text(command_entry.get_text());
     });
-    if (executable_opt)
-        command_entry.set_text(executable_opt->get_value_str());
+    command_entry.set_text(executable_opt->get_value_str());
     command_entry.signal_changed().connect([=] { command_option->set_save<std::string>(command_entry.get_text()); });
     command_box.pack_start(command_entry, true, true);
     remove_button.set_image_from_icon_name("list-remove");
@@ -559,8 +559,7 @@ BindingsDynamicList::BindingsDynamicList(Option *option)
         while (section->get_option_or(exec_prefix + std::to_string(i)))
             ++i;
         const auto cmd_name = std::to_string(i);
-        section->register_new_option(
-            std::make_shared<wf::config::option_t<std::string>>(exec_prefix + cmd_name, ""));
+        section->register_new_option(std::make_shared<wf::config::option_t<std::string>>(exec_prefix + cmd_name, ""));
         section->register_new_option(
             std::make_shared<wf::config::option_t<std::string>>("binding_" + cmd_name, "none"));
         WCM::get_instance()->save_config(option->plugin);
