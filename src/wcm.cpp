@@ -642,6 +642,7 @@ MainPage::Category::Category(const Glib::ustring &name, const Glib::ustring &ico
     vbox.set_margin_top(10);
     vbox.set_margin_bottom(10);
     flowbox.set_selection_mode(Gtk::SELECTION_NONE);
+    flowbox.set_min_children_per_line(3);
 }
 
 void Plugin::init_widget()
@@ -819,7 +820,7 @@ WCM::WCM(Glib::RefPtr<Gtk::Application> app) : window(Gtk::ApplicationWindow(app
     auto icon = Gdk::Pixbuf::create_from_file(ICONDIR "/wcm.png");
     window.set_icon(icon);
     window.set_size_request(750, 550);
-    window.set_default_size(1200, 580);
+    window.set_default_size(1000, 580);
     window.set_title("Wayfire Config Manager");
     create_main_layout();
     window.show_all();
