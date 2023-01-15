@@ -24,8 +24,7 @@
  *
  */
 
-#ifndef WCM_HPP
-#define WCM_HPP
+#pragma once
 
 #include <algorithm>
 #include <gdk/gdkwayland.h>
@@ -300,5 +299,3 @@ class WCM
     bool lock_input();
     void unlock_input();
 };
-
-#endif

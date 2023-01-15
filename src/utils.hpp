@@ -1,5 +1,4 @@
-#ifndef UTILS_HPP
-#define UTILS_HPP
+#pragma once
 
 #include <gtkmm.h>
 #include <string>
@@ -35,5 +34,3 @@ class PrettyButton : public Gtk::Button
     Gtk::Image image;
     Gtk::Label label;
 };
-
-#endif

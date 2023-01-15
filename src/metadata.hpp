@@ -1,5 +1,4 @@
-#ifndef METADATA_HPP
-#define METADATA_HPP
+#pragma once
 
 #include <gtkmm.h>
 #include <string>
@@ -140,5 +139,3 @@ class Plugin
         return name == "core" || name == "input" || name == "workarounds";
     }
 };
-
-#endif
