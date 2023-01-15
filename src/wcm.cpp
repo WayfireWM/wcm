@@ -430,6 +430,8 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string &cmd_name, O
 
     add(expander);
     expander.add(vbox);
+    if (executable_opt->get_value_str().empty())
+        expander.set_expanded();
     vbox.property_margin().set_value(5);
 
     Option *key_option = option->create_child_option(opt_name, OPTION_TYPE_ACTIVATOR);
@@ -558,7 +560,7 @@ BindingsDynamicList::BindingsDynamicList(Option *option)
             ++i;
         const auto cmd_name = std::to_string(i);
         section->register_new_option(
-            std::make_shared<wf::config::option_t<std::string>>(exec_prefix + cmd_name, "<command>"));
+            std::make_shared<wf::config::option_t<std::string>>(exec_prefix + cmd_name, ""));
         section->register_new_option(
             std::make_shared<wf::config::option_t<std::string>>("binding_" + cmd_name, "none"));
         WCM::get_instance()->save_config(option->plugin);
