@@ -64,7 +64,7 @@ class MainPage : public Gtk::ScrolledWindow
     };
 
     const std::vector<Plugin *> &plugins;
-    Gtk::Box vbox = Gtk::Box(Gtk::ORIENTATION_VERTICAL);
+    Gtk::Box vbox = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
     Glib::RefPtr<Gtk::SizeGroup> size_group = Gtk::SizeGroup::create(Gtk::SIZE_GROUP_BOTH);
     std::array<Gtk::Separator, NUM_CATEGORIES - 1> separators;
     std::array<Category, NUM_CATEGORIES> categories = {
