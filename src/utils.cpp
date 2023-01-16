@@ -14,7 +14,8 @@ bool find_string(std::string text, std::string pattern)
     return text.find(pattern) != std::string::npos;
 }
 
-bool begins_with(const std::string &str, const std::string &prefix)
+bool begins_with(const std::string & str, const std::string & prefix)
 {
-    return prefix.length() <= str.length() && str.substr(0, prefix.length()) == prefix;
+    return prefix.length() <= str.length() &&
+           str.substr(0, prefix.length()) == prefix;
 }

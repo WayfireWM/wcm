@@ -41,12 +41,12 @@
 
 class MainPage : public Gtk::ScrolledWindow
 {
-    public:
+  public:
     static const int NUM_CATEGORIES = 8;
-    MainPage(const std::vector<Plugin *> &plugins);
-    void set_filter(const Glib::ustring &filter);
+    MainPage(const std::vector<Plugin*> & plugins);
+    void set_filter(const Glib::ustring & filter);
 
-    private:
+  private:
     struct Category
     {
         Glib::ustring name;
@@ -59,24 +59,27 @@ class MainPage : public Gtk::ScrolledWindow
 
         Gtk::FlowBox flowbox;
 
-        Category(const Glib::ustring &name_string, const Glib::ustring &icon_name);
+        Category(const Glib::ustring & name_string, const Glib::ustring & icon_name);
         void add_plugin(Plugin *plugin);
     };
 
-    const std::vector<Plugin *> &plugins;
+    const std::vector<Plugin*> & plugins;
     Gtk::Box vbox = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
-    Glib::RefPtr<Gtk::SizeGroup> size_group = Gtk::SizeGroup::create(Gtk::SIZE_GROUP_BOTH);
+    Glib::RefPtr<Gtk::SizeGroup> size_group = Gtk::SizeGroup::create(
+        Gtk::SIZE_GROUP_BOTH);
     std::array<Gtk::Separator, NUM_CATEGORIES - 1> separators;
     std::array<Category, NUM_CATEGORIES> categories = {
-        Category{"General", "preferences-system"}, {"Accessibility", "preferences-desktop-accessibility"},
-        {"Desktop", "preferences-desktop"},        {"Shell", "user-desktop"},
-        {"Effects", "applications-graphics"},      {"Window Management", "applications-accessories"},
-        {"Utility", "applications-other"},         {"Other", "applications-other"}};
+        Category{"General", "preferences-system"},
+        {"Accessibility", "preferences-desktop-accessibility"},
+        {"Desktop", "preferences-desktop"}, {"Shell", "user-desktop"},
+        {"Effects", "applications-graphics"},
+        {"Window Management", "applications-accessories"},
+        {"Utility", "applications-other"}, {"Other", "applications-other"}};
 };
 
 class KeyEntry : public Gtk::Stack
 {
-    Gtk::Box grab_layout = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
+    Gtk::Box grab_layout  = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
     Gtk::Label grab_label = Gtk::Label("(none)");
     Gtk::Button grab_button;
     Gtk::Button edit_button;
@@ -87,22 +90,24 @@ class KeyEntry : public Gtk::Stack
     Gtk::Button cancel_button;
 
     mod_type get_mod_from_keyval(guint keyval);
-    bool check_and_confirm(const std::string &key_str);
+    bool check_and_confirm(const std::string & key_str);
     std::string grab_key();
 
     sigc::signal<void> changed;
 
-    public:
+  public:
     KeyEntry();
     inline sigc::signal<void> signal_changed()
     {
         return changed;
     }
+
     inline std::string get_value() const
     {
         return grab_label.get_text();
     }
-    void set_value(const std::string &value)
+
+    void set_value(const std::string & value)
     {
         grab_label.set_label(value);
         entry.set_text(value);
@@ -116,24 +121,25 @@ class OptionWidget : public Gtk::Box
     std::vector<std::unique_ptr<Gtk::Widget>> widgets;
     Gtk::Button reset_button;
 
-    inline void pack_end(std::unique_ptr<Gtk::Widget> &&widget, bool expand = false, bool fill = false)
+    inline void pack_end(std::unique_ptr<Gtk::Widget> && widget, bool expand = false,
+        bool fill = false)
     {
         Gtk::Box::pack_end(*widget, expand, fill);
         widgets.push_back(std::move(widget));
     }
 
-    public:
+  public:
     OptionWidget(Option *option);
 };
 
 class DynamicListBase : public Gtk::Box
 {
-    protected:
+  protected:
     Gtk::Box add_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL);
     Gtk::Button add_button;
 
     std::vector<std::unique_ptr<Gtk::Widget>> widgets;
-    inline void pack_widget(std::unique_ptr<Gtk::Widget> &&widget)
+    inline void pack_widget(std::unique_ptr<Gtk::Widget> && widget)
     {
         pack_start(*widget, false, false);
         widgets.push_back(std::move(widget));
@@ -142,7 +148,7 @@ class DynamicListBase : public Gtk::Box
     inline void remove(Gtk::Widget *widget)
     {
         widgets.erase(std::find_if(widgets.begin(), widgets.end(),
-                                   [=](std::unique_ptr<Gtk::Widget> &w) { return w.get() == widget; }));
+            [=] (std::unique_ptr<Gtk::Widget> & w) { return w.get() == widget; }));
     }
 
     DynamicListBase();
@@ -160,7 +166,7 @@ class AutostartDynamicList : public DynamicListBase
         AutostartWidget(Option *option);
     };
 
-    public:
+  public:
     AutostartDynamicList(Option *option);
 };
 
@@ -169,12 +175,12 @@ class BindingsDynamicList : public DynamicListBase
     struct BindingWidget : public Gtk::Frame
     {
         Gtk::Expander expander = Gtk::Expander("Command:");
-        Gtk::Box vbox = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
+        Gtk::Box vbox     = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
         Gtk::Box type_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
         Gtk::Box binding_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
         Gtk::Box command_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
 
-        Gtk::Label type_label = Gtk::Label("Type");
+        Gtk::Label type_label    = Gtk::Label("Type");
         Gtk::Label binding_label = Gtk::Label("Binding");
         Gtk::Label command_label = Gtk::Label("Command");
 
@@ -185,10 +191,11 @@ class BindingsDynamicList : public DynamicListBase
 
         std::shared_ptr<wf::config::option_base_t> binding_wf_opt;
 
-        BindingWidget(const std::string &cmd_name, Option *option, wf_section section);
+        BindingWidget(const std::string & cmd_name, Option *option,
+            wf_section section);
     };
 
-    public:
+  public:
     BindingsDynamicList(Option *option);
 };
 
@@ -198,7 +205,7 @@ class OptionSubgroupWidget : public Gtk::Frame
     Gtk::Box expander_layout = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
     std::vector<OptionWidget> option_widgets;
 
-    public:
+  public:
     OptionSubgroupWidget(Option *subgroup);
 };
 
@@ -207,7 +214,7 @@ class OptionGroupWidget : public Gtk::ScrolledWindow
     Gtk::Box options_layout = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
     std::vector<std::unique_ptr<Gtk::Widget>> option_widgets;
 
-    public:
+  public:
     OptionGroupWidget(Option *group);
 };
 
@@ -215,25 +222,26 @@ class PluginPage : public Gtk::Notebook
 {
     std::vector<OptionGroupWidget> groups;
 
-    public:
+  public:
     PluginPage(Plugin *plugin);
 };
 
 class WCM
 {
-    private:
-    void parse_config(wf::config::config_manager_t &config_manager);
+  private:
+    void parse_config(wf::config::config_manager_t & config_manager);
     bool init_input_inhibitor();
     void create_main_layout();
-    void save_to_file(wf::config::config_manager_t &mgr, const std::string &file);
+    void save_to_file(wf::config::config_manager_t & mgr, const std::string & file);
 
-    // these objects can be used when widgets are destroyed and emit `signal_changed` causing saving config
+    // these objects can be used when widgets are destroyed and emit `signal_changed`
+    // causing saving config
     // so these objects should be destroyed after widgets
     wf::config::config_manager_t wf_config_mgr;
     wf::config::config_manager_t wf_shell_config_mgr;
     std::string wf_config_file;
     std::string wf_shell_config_file;
-    std::vector<Plugin *> plugins;
+    std::vector<Plugin*> plugins;
 
     Plugin *current_plugin = nullptr;
 
@@ -250,7 +258,8 @@ class WCM
     Gtk::Label filter_label;
     Gtk::SearchEntry search_entry;
     PrettyButton close_button = PrettyButton("Close", "window-close");
-    PrettyButton output_config_button = PrettyButton("Configure Outputs", "computer");
+    PrettyButton output_config_button =
+        PrettyButton("Configure Outputs", "computer");
 
     Gtk::Box plugin_left_panel_layout = Gtk::Box(Gtk::ORIENTATION_VERTICAL);
     Gtk::Label plugin_name_label;
@@ -267,14 +276,19 @@ class WCM
     // WCM is a singleton
     static inline WCM *instance = nullptr;
 
-    public:
+  public:
     WCM(Glib::RefPtr<Gtk::Application> app);
     static inline WCM *get_instance()
     {
         if (instance == nullptr)
-            throw std::logic_error("Cannot get an instance of WCM before it's initialized");
+        {
+            throw std::logic_error(
+                "Cannot get an instance of WCM before it's initialized");
+        }
+
         return instance;
     }
+
     void open_page(Plugin *plugin = nullptr);
 
     void set_plugin_enabled(Plugin *plugin, bool enabled);
@@ -283,12 +297,14 @@ class WCM
     {
         parse_config(wf_config_mgr);
     }
+
     std::shared_ptr<wf::config::section_t> get_config_section(Plugin *plugin);
 #if HAVE_WFSHELL
     inline void parse_wfshell_config()
     {
         parse_config(wf_shell_config_mgr);
     }
+
 #endif
     bool save_config(Plugin *plugin);
 
@@ -296,6 +312,7 @@ class WCM
     {
         inhibitor_manager = value;
     }
+
     bool lock_input();
     void unlock_input();
 };

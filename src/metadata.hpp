@@ -34,16 +34,16 @@ enum option_type
 
 enum mod_type
 {
-    MOD_TYPE_NONE = 0,
-    MOD_TYPE_SHIFT = 1 << 0,
+    MOD_TYPE_NONE    = 0,
+    MOD_TYPE_SHIFT   = 1 << 0,
     MOD_TYPE_CONTROL = 1 << 1,
-    MOD_TYPE_ALT = 1 << 2,
-    MOD_TYPE_SUPER = 1 << 3,
+    MOD_TYPE_ALT     = 1 << 2,
+    MOD_TYPE_SUPER   = 1 << 3,
 };
 
 enum hint_type
 {
-    HINT_FILE = 1,
+    HINT_FILE      = 1,
     HINT_DIRECTORY = 2,
 };
 
@@ -74,22 +74,22 @@ class Plugin;
 
 class Option
 {
-    template <class value_type>
-    void set_value(wf_section section, const value_type &value);
+    template<class value_type>
+    void set_value(wf_section section, const value_type & value);
 
-    template <class... ArgTypes>
+    template<class... ArgTypes>
     void set_value(wf_section section, ArgTypes... args)
     {
         throw std::logic_error("Unimplemented");
     }
 
-    public:
+  public:
     Option(xmlNode *cur_node, Plugin *plugin);
     Option(option_type group_type, Plugin *plugin);
     Option() = default;
     ~Option();
 
-    Option *create_child_option(const std::string &name, option_type type);
+    Option *create_child_option(const std::string & name, option_type type);
 
     Plugin *plugin;
     std::string name;
@@ -103,26 +103,26 @@ class Option
     Option *parent;
     bool hidden = false;
 
-    std::vector<Option *> options;
+    std::vector<Option*> options;
     std::map<std::string, int> int_labels;
     std::map<std::string, std::string> str_labels;
 
-    template <class... ArgTypes>
-    void set_save(const ArgTypes &...args);
+    template<class... ArgTypes>
+    void set_save(const ArgTypes &... args);
 };
 
 class WCM;
 
 class Plugin
 {
-    public:
+  public:
     std::string name;
     std::string disp_name;
     std::string tooltip;
     std::string category;
     plugin_type type;
     bool enabled;
-    std::vector<Option *> option_groups;
+    std::vector<Option*> option_groups;
 
     // widget of the plugin which is shown on the main page
     Gtk::Box widget = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 5);
@@ -132,7 +132,8 @@ class Plugin
     Gtk::Image icon;
     Gtk::Label label;
 
-    static Plugin *get_plugin_data(xmlNode *node, Option *main_group = nullptr, Plugin *plugin = nullptr);
+    static Plugin *get_plugin_data(xmlNode *node, Option *main_group = nullptr,
+        Plugin *plugin = nullptr);
     void init_widget();
     inline bool is_core_plugin()
     {
