@@ -832,6 +832,7 @@ MainPage::Category::Category(const Glib::ustring & name,
     vbox.set_margin_top(10);
     vbox.set_margin_bottom(10);
     flowbox.set_selection_mode(Gtk::SELECTION_NONE);
+    flowbox.set_halign(Gtk::ALIGN_START);
     flowbox.set_min_children_per_line(3);
 }
 
