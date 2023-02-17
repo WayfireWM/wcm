@@ -1,10 +1,8 @@
 #include "wcm.hpp"
-#include "gtkmm/enums.h"
 #include "metadata.hpp"
 #include "utils.hpp"
 
 #include <libevdev/libevdev.h>
-#include <string>
 #include <wayfire/config/compound-option.hpp>
 #include <wayfire/config/section.hpp>
 #include <wayfire/config/types.hpp>

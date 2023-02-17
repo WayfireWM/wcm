@@ -27,7 +27,6 @@
 #pragma once
 
 #include <algorithm>
-#include <cmath>
 #include <cstring>
 #include <gdk/gdkwayland.h>
 #include <gtkmm.h>
@@ -39,7 +38,6 @@
 #include <wayfire/config/xml.hpp>
 #include <wlr-input-inhibitor-unstable-v1-client-protocol.h>
 
-#include "gtkmm/adjustment.h"
 #include "metadata.hpp"
 
 class MainPage : public Gtk::ScrolledWindow
