@@ -1,21 +1,27 @@
 #include "wcm.hpp"
+#include "gtkmm/enums.h"
+#include "metadata.hpp"
 #include "utils.hpp"
 
 #include <libevdev/libevdev.h>
+#include <string>
 #include <wayfire/config/compound-option.hpp>
+#include <wayfire/config/section.hpp>
 #include <wayfire/config/types.hpp>
 #include <wayfire/config/xml.hpp>
 #include <wordexp.h>
 
 #define OUTPUT_CONFIG_PROGRAM "wdisplays"
 
+constexpr int OPTION_LABEL_SIZE = 200;
+
 bool KeyEntry::check_and_confirm(const std::string & key_str)
 {
-    if ((key_str.find_first_not_of(' ') != std::string::npos) && key_str.find('<') &&
+    if ((key_str.find_first_not_of(' ') != std::string::npos) && (key_str.front() != '<') &&
         ((key_str.find("BTN") != std::string::npos) ||
          (key_str.find("KEY") != std::string::npos)))
     {
-        auto dialog = Gtk::MessageDialog("Attempting to bind <tt><b>" + key_str +
+        auto dialog = Gtk::MessageDialog("Attempting to bind <tt><b>\"" + key_str + '"' +
             "</b></tt> without modifier. You will be unable to use this key/button "
             "for anything else! Are you sure?",
             true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
@@ -219,7 +225,7 @@ KeyEntry::KeyEntry()
 std::ostream& operator <<(std::ostream & out, const wf::color_t & color)
 {
     return out << "rgba(" << color.r << ", " << color.g << ", " << color.b << ", " <<
-        color.a << ")";
+           color.a << ")";
 }
 
 template<class value_type>
@@ -250,7 +256,7 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
 {
     name_label.set_text(option->disp_name);
     name_label.set_tooltip_markup(option->tooltip);
-    name_label.set_size_request(200);
+    name_label.set_size_request(OPTION_LABEL_SIZE);
     name_label.set_alignment(Gtk::ALIGN_START);
 
     reset_button.set_image_from_icon_name("edit-clear");
@@ -590,7 +596,7 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string & cmd_name,
     Option *command_option =
         option->create_child_option(command, OPTION_TYPE_STRING);
 
-    type_label.set_size_request(200);
+    type_label.set_size_request(OPTION_LABEL_SIZE);
     type_label.set_alignment(Gtk::ALIGN_START);
     type_box.pack_start(type_label, false, false);
     type_combo_box.append("Regular");
@@ -611,13 +617,13 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string & cmd_name,
     type_box.pack_start(type_combo_box, true, true);
     vbox.pack_start(type_box, false, false);
 
-    binding_label.set_size_request(200);
+    binding_label.set_size_request(OPTION_LABEL_SIZE);
     binding_label.set_alignment(Gtk::ALIGN_START);
     binding_box.pack_start(binding_label, false, false);
     binding_box.pack_start(*key_entry, true, true);
     vbox.pack_start(binding_box, false, false);
 
-    command_label.set_size_request(200);
+    command_label.set_size_request(OPTION_LABEL_SIZE);
     command_label.set_alignment(Gtk::ALIGN_START);
     command_box.pack_start(command_label, false, false);
     expander.set_label("Command " + cmd_name);
@@ -646,6 +652,47 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string & cmd_name,
     });
     command_box.pack_start(remove_button, false, false);
     vbox.pack_start(command_box);
+}
+
+template<enum VswitchBindingKind kind>
+VswitchBindingsDynamicList<kind>::BindingWidget::BindingWidget(std::shared_ptr<wf::config::section_t> section,
+    Option *option, int workspace_index) : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10)
+{
+    Option *key_option = option->create_child_option(OPTION_PREFIX + std::to_string(
+        workspace_index), OPTION_TYPE_KEY);
+    binding_wf_opt = section->get_option(key_option->name);
+    key_entry.set_value(binding_wf_opt->get_value_str());
+    key_entry.signal_changed().connect([=]
+    {
+        key_option->set_save(key_entry.get_value());
+    });
+    label.set_alignment(Gtk::ALIGN_START);
+    // label.set_size_request(OPTION_LABEL_SIZE);
+    remove_button.set_image_from_icon_name("list-remove");
+    remove_button.signal_clicked().connect([=] ()
+    {
+        ((VswitchBindingsDynamicList<kind>*)get_parent())->remove(this);
+        section->unregister_option(binding_wf_opt);
+        WCM::get_instance()->save_config(option->plugin);
+    });
+
+    workspace_spin_button.set_tooltip_text("Workspace Index");
+    workspace_spin_button.set_value(workspace_index);
+    workspace_spin_button.signal_value_changed().connect([=]
+    {
+        section->unregister_option(binding_wf_opt);
+        key_option->name = OPTION_PREFIX + std::to_string(workspace_spin_button.get_value_as_int());
+        binding_wf_opt   =
+            std::make_shared<wf::config::option_t<std::string>>(key_option->name,
+                binding_wf_opt->get_value_str());
+        section->register_new_option(binding_wf_opt);
+        WCM::get_instance()->save_config(option->plugin);
+    });
+
+    pack_start(label, false, false);
+    pack_start(workspace_spin_button, false, false);
+    pack_end(remove_button, false, false);
+    pack_end(key_entry);
 }
 
 DynamicListBase::DynamicListBase() : Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10)
@@ -749,6 +796,68 @@ BindingsDynamicList::BindingsDynamicList(Option *option)
     });
 }
 
+template<>
+const std::string VswitchBindingsDynamicList<VswitchBindingKind::WITHOUT_WINDOW>::OPTION_PREFIX = "binding_";
+template<>
+const std::string VswitchBindingsDynamicList<VswitchBindingKind::WITH_WINDOW>::OPTION_PREFIX = "with_win_";
+template<>
+const std::string VswitchBindingsDynamicList<VswitchBindingKind::SEND_WINDOW>::OPTION_PREFIX = "send_win_";
+template<>
+const Glib::ustring VswitchBindingsWidget<VswitchBindingKind::WITHOUT_WINDOW>::LABEL_TEXT = "Go To Workspace";
+template<>
+const Glib::ustring VswitchBindingsWidget<VswitchBindingKind::WITH_WINDOW>::LABEL_TEXT =
+    "Go To Workspace With Window";
+template<>
+const Glib::ustring VswitchBindingsWidget<VswitchBindingKind::SEND_WINDOW>::LABEL_TEXT =
+    "Send Window To Workspace";
+
+template<enum VswitchBindingKind kind>
+VswitchBindingsDynamicList<kind>::VswitchBindingsDynamicList(Option *option)
+{
+    auto section = WCM::get_instance()->get_config_section(option->plugin);
+    option->options.clear();
+
+    for (auto vswitch_option : section->get_registered_options())
+    {
+        if (begins_with(vswitch_option->get_name(), OPTION_PREFIX))
+        {
+            try {
+                std::cerr << vswitch_option->get_name().substr(OPTION_PREFIX.size()) << std::endl;
+                int workspace_index = std::stoi(vswitch_option->get_name().substr(OPTION_PREFIX.size()));
+                pack_widget(std::make_unique<BindingWidget>(section, option, workspace_index));
+            } catch (const std::invalid_argument& e)
+            {
+                std::cerr << "Invalid workspace index: " << e.what() << std::endl;
+            }
+        }
+    }
+
+    add_button.signal_clicked().connect([=]
+    {
+        int workspace_index = 1;
+        while (section->get_option_or(OPTION_PREFIX + std::to_string(workspace_index)))
+        {
+            ++workspace_index;
+        }
+
+        Option *binding_option =
+            option->create_child_option(OPTION_PREFIX + std::to_string(workspace_index), OPTION_TYPE_STRING);
+        section->register_new_option(std::make_shared<wf::config::option_t<std::string>>(binding_option->name,
+            ""));
+        pack_widget(std::make_unique<BindingWidget>(section, binding_option, workspace_index));
+        show_all();
+        WCM::get_instance()->save_config(option->plugin);
+    });
+}
+
+template<enum VswitchBindingKind kind>
+VswitchBindingsWidget<kind>::VswitchBindingsWidget(Option *option) : dynamic_list(option)
+{
+    set_label(LABEL_TEXT + " Bindings");
+    dynamic_list.property_margin().set_value(5);
+    add(dynamic_list);
+}
+
 OptionSubgroupWidget::OptionSubgroupWidget(Option *subgroup)
 {
     add(expander);
@@ -756,7 +865,7 @@ OptionSubgroupWidget::OptionSubgroupWidget(Option *subgroup)
     expander.add(expander_layout);
     for (Option *option : subgroup->options)
     {
-        option_widgets.push_back(OptionWidget(option));
+        option_widgets.emplace_back(option);
         expander_layout.pack_start(option_widgets.back());
     }
 }
@@ -780,6 +889,7 @@ OptionGroupWidget::OptionGroupWidget(Option *group)
             option_widgets.push_back(std::make_unique<OptionSubgroupWidget>(option));
         } else if (option->type == OPTION_TYPE_DYNAMIC_LIST)
         {
+            std::cout << option->name << std::endl;
             if (option->name == "autostart")
             {
                 option_widgets.push_back(std::make_unique<AutostartDynamicList>(
@@ -787,6 +897,18 @@ OptionGroupWidget::OptionGroupWidget(Option *group)
             } else if (option->name == "bindings")
             {
                 option_widgets.push_back(std::make_unique<BindingsDynamicList>(
+                    option));
+            } else if (option->name == "workspace_bindings")
+            {
+                option_widgets.push_back(std::make_unique<VswitchBindingsWidget<VswitchBindingKind::WITHOUT_WINDOW>>(
+                    option));
+            } else if (option->name == "workspace_bindings_win")
+            {
+                option_widgets.push_back(std::make_unique<VswitchBindingsWidget<VswitchBindingKind::WITH_WINDOW>>(
+                    option));
+            } else if (option->name == "bindings_win")
+            {
+                option_widgets.push_back(std::make_unique<VswitchBindingsWidget<VswitchBindingKind::SEND_WINDOW>>(
                     option));
             }
             // TODO other dynamic lists
@@ -814,7 +936,7 @@ PluginPage::PluginPage(Plugin *plugin)
             continue;
         }
 
-        groups.push_back(OptionGroupWidget(group));
+        groups.emplace_back(group);
         append_page(groups.back(), group->name);
     }
 }
@@ -996,8 +1118,8 @@ std::string::size_type find_plugin(Plugin *p, const std::string & plugins)
 bool plugin_enabled(Plugin *p, const std::string & plugins)
 {
     return p->is_core_plugin() || p->type == PLUGIN_TYPE_WF_SHELL || find_plugin(p,
-        plugins)
-           != std::string::npos;
+        plugins) !=
+           std::string::npos;
 }
 
 WCM::WCM(Glib::RefPtr<Gtk::Application> app) : window(Gtk::ApplicationWindow(app))
