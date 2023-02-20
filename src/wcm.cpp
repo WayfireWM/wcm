@@ -1,10 +1,8 @@
 #include "wcm.hpp"
-#include "metadata.hpp"
 #include "utils.hpp"
 
 #include <libevdev/libevdev.h>
 #include <wayfire/config/compound-option.hpp>
-#include <wayfire/config/section.hpp>
 #include <wayfire/config/types.hpp>
 #include <wayfire/config/xml.hpp>
 #include <wordexp.h>
@@ -223,7 +221,7 @@ KeyEntry::KeyEntry()
 std::ostream& operator <<(std::ostream & out, const wf::color_t & color)
 {
     return out << "rgba(" << color.r << ", " << color.g << ", " << color.b << ", " <<
-           color.a << ")";
+        color.a << ")";
 }
 
 template<class value_type>
@@ -665,7 +663,6 @@ VswitchBindingsDynamicList<kind>::BindingWidget::BindingWidget(std::shared_ptr<w
         key_option->set_save(key_entry.get_value());
     });
     label.set_alignment(Gtk::ALIGN_START);
-    // label.set_size_request(OPTION_LABEL_SIZE);
     remove_button.set_image_from_icon_name("list-remove");
     remove_button.signal_clicked().connect([=] ()
     {

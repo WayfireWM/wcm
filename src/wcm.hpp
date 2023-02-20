@@ -27,14 +27,12 @@
 #pragma once
 
 #include <algorithm>
-#include <cstring>
 #include <gdk/gdkwayland.h>
 #include <gtkmm.h>
 #include <iostream>
 #include <variant>
 #include <vector>
 #include <wayfire/config/file.hpp>
-#include <wayfire/config/option.hpp>
 #include <wayfire/config/xml.hpp>
 #include <wlr-input-inhibitor-unstable-v1-client-protocol.h>
 
