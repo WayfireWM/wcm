@@ -30,7 +30,6 @@
 #include <gdk/gdkwayland.h>
 #include <gtkmm.h>
 #include <iostream>
-#include <string.h>
 #include <variant>
 #include <vector>
 #include <wayfire/config/file.hpp>
@@ -89,9 +88,9 @@ class KeyEntry : public Gtk::Stack
     Gtk::Button ok_button;
     Gtk::Button cancel_button;
 
-    mod_type get_mod_from_keyval(guint keyval);
-    bool check_and_confirm(const std::string & key_str);
-    std::string grab_key();
+    static mod_type get_mod_from_keyval(guint keyval);
+    static bool check_and_confirm(const std::string & key_str);
+    static std::string grab_key();
 
     sigc::signal<void> changed;
 
@@ -167,7 +166,7 @@ class AutostartDynamicList : public DynamicListBase
     };
 
   public:
-    AutostartDynamicList(Option *option);
+    explicit AutostartDynamicList(Option *option);
 };
 
 class BindingsDynamicList : public DynamicListBase
@@ -196,7 +195,46 @@ class BindingsDynamicList : public DynamicListBase
     };
 
   public:
-    BindingsDynamicList(Option *option);
+    explicit BindingsDynamicList(Option *option);
+};
+
+enum class VswitchBindingKind
+{
+    WITHOUT_WINDOW,
+    WITH_WINDOW,
+    SEND_WINDOW,
+};
+
+template<enum VswitchBindingKind>
+class VswitchBindingsDynamicList : public DynamicListBase
+{
+    static const std::string OPTION_PREFIX;
+
+    struct BindingWidget : public Gtk::Box
+    {
+        Gtk::Label label = Gtk::Label("Workspace");
+        Gtk::SpinButton workspace_spin_button = Gtk::SpinButton(Gtk::Adjustment::create(1, 1, 30));
+        KeyEntry key_entry;
+        Gtk::Button remove_button;
+
+        std::shared_ptr<wf::config::option_base_t> binding_wf_opt;
+
+        BindingWidget(std::shared_ptr<wf::config::section_t> section, Option *option, int workspace_index);
+    };
+
+  public:
+    explicit VswitchBindingsDynamicList(Option *option);
+};
+
+template<enum VswitchBindingKind kind>
+class VswitchBindingsWidget : public Gtk::Frame
+{
+    VswitchBindingsDynamicList<kind> dynamic_list;
+
+    static const Glib::ustring LABEL_TEXT;
+
+  public:
+    explicit VswitchBindingsWidget(Option *option);
 };
 
 class OptionSubgroupWidget : public Gtk::Frame
