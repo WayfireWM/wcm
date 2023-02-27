@@ -221,7 +221,7 @@ KeyEntry::KeyEntry()
 std::ostream& operator <<(std::ostream & out, const wf::color_t & color)
 {
     return out << "rgba(" << color.r << ", " << color.g << ", " << color.b << ", " <<
-        color.a << ")";
+           color.a << ")";
 }
 
 template<class value_type>
@@ -1126,18 +1126,18 @@ WCM::WCM(Glib::RefPtr<Gtk::Application> app)
 
     instance = this;
 
-    app->add_main_option_entry([this](const Glib::ustring &, const Glib::ustring & value, bool)
+    app->add_main_option_entry([this] (const Glib::ustring &, const Glib::ustring & value, bool)
     {
         wf_config_file = value;
         return true;
     }, "config", 'c', "Wayfire config file to use", "file");
-    app->add_main_option_entry([this](const Glib::ustring &, const Glib::ustring & value, bool)
+    app->add_main_option_entry([this] (const Glib::ustring &, const Glib::ustring & value, bool)
     {
         wf_shell_config_file = value;
         return true;
     }, "shell-config", 's', "wf-shell config file to use", "file");
 
-    app->signal_startup().connect([this, app]()
+    app->signal_startup().connect([this, app] ()
     {
         load_config_files();
         parse_config();
@@ -1157,7 +1157,7 @@ WCM::WCM(Glib::RefPtr<Gtk::Application> app)
             plugin->enabled = plugin_enabled(plugin, plugins_str);
         }
 
-        window = std::make_unique<Gtk::ApplicationWindow>(app);
+        window    = std::make_unique<Gtk::ApplicationWindow>(app);
         auto icon = Gdk::Pixbuf::create_from_file(ICONDIR "/wcm.png");
         window->set_icon(icon);
         window->set_size_request(750, 550);
@@ -1414,7 +1414,7 @@ void WCM::open_page(Plugin *plugin)
     current_plugin = plugin;
 }
 
-static std::string wordexp_str(const char* str)
+static std::string wordexp_str(const char *str)
 {
     wordexp_t exp;
     wordexp(str, &exp, 0);
@@ -1428,7 +1428,8 @@ void WCM::load_config_files()
     const char *wf_config_file_override = getenv("WAYFIRE_CONFIG_FILE");
     const char *wf_shell_config_file_override = getenv("WF_SHELL_CONFIG_FILE");
 
-    if (wf_config_file.empty()) {
+    if (wf_config_file.empty())
+    {
         wf_config_file = wordexp_str(wf_config_file_override ? wf_config_file_override : WAYFIRE_CONFIG_FILE);
     }
 
@@ -1450,8 +1451,10 @@ void WCM::load_config_files()
             WAYFIRE_SYSCONFDIR "/wayfire/defaults.ini",
             wf_config_file);
 
-    if (wf_shell_config_file.empty()) {
-        wf_shell_config_file = wordexp_str(wf_shell_config_file_override ? wf_shell_config_file_override : WF_SHELL_CONFIG_FILE);
+    if (wf_shell_config_file.empty())
+    {
+        wf_shell_config_file = wordexp_str(
+            wf_shell_config_file_override ? wf_shell_config_file_override : WF_SHELL_CONFIG_FILE);
     }
 
 #if HAVE_WFSHELL
