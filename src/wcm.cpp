@@ -1117,7 +1117,7 @@ bool plugin_enabled(Plugin *p, const std::string & plugins)
            std::string::npos;
 }
 
-WCM::WCM(Glib::RefPtr<Gtk::Application> app) : window(Gtk::ApplicationWindow(app))
+WCM::WCM(Glib::RefPtr<Gtk::Application> app)
 {
     if (instance)
     {
@@ -1125,31 +1125,47 @@ WCM::WCM(Glib::RefPtr<Gtk::Application> app) : window(Gtk::ApplicationWindow(app
     }
 
     instance = this;
-    load_config_files();
-    parse_config();
+
+    app->add_main_option_entry([this](const Glib::ustring &, const Glib::ustring & value, bool)
+    {
+        wf_config_file = value;
+        return true;
+    }, "config", 'c', "Wayfire config file to use", "file");
+    app->add_main_option_entry([this](const Glib::ustring &, const Glib::ustring & value, bool)
+    {
+        wf_shell_config_file = value;
+        return true;
+    }, "shell-config", 's', "wf-shell config file to use", "file");
+
+    app->signal_startup().connect([this, app]()
+    {
+        load_config_files();
+        parse_config();
 #if HAVE_WFSHELL
-    parse_wfshell_config();
+        parse_wfshell_config();
 #endif
 
-    if (!init_input_inhibitor())
-    {
-        std::cerr << "Binding grabs will not work" << std::endl;
-    }
+        if (!init_input_inhibitor())
+        {
+            std::cerr << "Binding grabs will not work" << std::endl;
+        }
 
-    const auto plugins_str =
-        wf_config_mgr.get_section("core")->get_option("plugins")->get_value_str();
-    for (auto *plugin : plugins)
-    {
-        plugin->enabled = plugin_enabled(plugin, plugins_str);
-    }
+        const auto plugins_str =
+            wf_config_mgr.get_section("core")->get_option("plugins")->get_value_str();
+        for (auto *plugin : plugins)
+        {
+            plugin->enabled = plugin_enabled(plugin, plugins_str);
+        }
 
-    auto icon = Gdk::Pixbuf::create_from_file(ICONDIR "/wcm.png");
-    window.set_icon(icon);
-    window.set_size_request(750, 550);
-    window.set_default_size(1000, 580);
-    window.set_title("Wayfire Config Manager");
-    create_main_layout();
-    window.show_all();
+        window = std::make_unique<Gtk::ApplicationWindow>(app);
+        auto icon = Gdk::Pixbuf::create_from_file(ICONDIR "/wcm.png");
+        window->set_icon(icon);
+        window->set_size_request(750, 550);
+        window->set_default_size(1000, 580);
+        window->set_title("Wayfire Config Manager");
+        create_main_layout();
+        window->show_all();
+    });
 }
 
 static void registry_add_object(void *data, struct wl_registry *registry,
@@ -1285,7 +1301,7 @@ void WCM::set_plugin_enabled(Plugin *plugin, bool enabled)
 
 void WCM::create_main_layout()
 {
-    window.signal_key_press_event().connect([] (GdkEventKey *event)
+    window->signal_key_press_event().connect([] (GdkEventKey *event)
     {
         if (event->state & GDK_CONTROL_MASK && (event->keyval == GDK_KEY_q))
         {
@@ -1370,7 +1386,7 @@ void WCM::create_main_layout()
     main_stack.set_transition_type(Gtk::STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
     global_layout.pack_start(left_stack, false, false);
     global_layout.pack_start(main_stack, true, true);
-    window.add(global_layout);
+    window->add(global_layout);
 }
 
 void WCM::open_page(Plugin *plugin)
@@ -1398,20 +1414,22 @@ void WCM::open_page(Plugin *plugin)
     current_plugin = plugin;
 }
 
-void WCM::load_config_files()
+static std::string wordexp_str(const char* str)
 {
     wordexp_t exp;
-    char *wf_config_file_override = getenv("WAYFIRE_CONFIG_FILE");
-    char *wf_shell_config_file_override = getenv("WF_SHELL_CONFIG_FILE");
+    wordexp(str, &exp, 0);
+    std::string result = exp.we_wordv[0];
+    wordfree(&exp);
+    return result;
+}
 
-    if (wf_config_file_override)
-    {
-        wf_config_file = wf_config_file_override;
-    } else
-    {
-        wordexp(WAYFIRE_CONFIG_FILE, &exp, 0);
-        wf_config_file = exp.we_wordv[0];
-        wordfree(&exp);
+void WCM::load_config_files()
+{
+    const char *wf_config_file_override = getenv("WAYFIRE_CONFIG_FILE");
+    const char *wf_shell_config_file_override = getenv("WF_SHELL_CONFIG_FILE");
+
+    if (wf_config_file.empty()) {
+        wf_config_file = wordexp_str(wf_config_file_override ? wf_config_file_override : WAYFIRE_CONFIG_FILE);
     }
 
     std::vector<std::string> wayfire_xmldirs;
@@ -1432,14 +1450,8 @@ void WCM::load_config_files()
             WAYFIRE_SYSCONFDIR "/wayfire/defaults.ini",
             wf_config_file);
 
-    if (wf_shell_config_file_override)
-    {
-        wf_shell_config_file = wf_shell_config_file_override;
-    } else
-    {
-        wordexp(WF_SHELL_CONFIG_FILE, &exp, 0);
-        wf_shell_config_file = exp.we_wordv[0];
-        wordfree(&exp);
+    if (wf_shell_config_file.empty()) {
+        wf_shell_config_file = wordexp_str(wf_shell_config_file_override ? wf_shell_config_file_override : WF_SHELL_CONFIG_FILE);
     }
 
 #if HAVE_WFSHELL
