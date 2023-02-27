@@ -1167,7 +1167,7 @@ WCM::WCM(Glib::RefPtr<Gtk::Application> app)
         window->show_all();
     });
 
-    app->signal_activate().connect([&] { wcm->window->present(); });
+    app->signal_activate().connect([&] { window->present(); });
 }
 
 static void registry_add_object(void *data, struct wl_registry *registry,
