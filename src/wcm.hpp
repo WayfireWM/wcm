@@ -245,7 +245,7 @@ class WCM
 
     Plugin *current_plugin = nullptr;
 
-    Gtk::ApplicationWindow window;
+    std::unique_ptr<Gtk::ApplicationWindow> window;
     Gtk::Box global_layout;
 
     Gtk::Stack main_stack; /* for animated transition */
