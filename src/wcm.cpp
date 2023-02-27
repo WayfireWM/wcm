@@ -1297,13 +1297,22 @@ void WCM::open_page(Plugin *plugin)
     current_plugin = plugin;
 }
 
+static std::string wordexp_str(const char* str)
+{
+    wordexp_t exp;
+    wordexp(str, &exp, 0);
+    std::string result = exp.we_wordv[0];
+    wordfree(&exp);
+    return result;
+}
+
 void WCM::load_config_files()
 {
     const char *wf_config_file_override = getenv("WAYFIRE_CONFIG_FILE");
     const char *wf_shell_config_file_override = getenv("WF_SHELL_CONFIG_FILE");
 
     if (wf_config_file.empty()) {
-        wf_config_file = wf_config_file_override ? wf_config_file_override : WAYFIRE_CONFIG_FILE;
+        wf_config_file = wordexp_str(wf_config_file_override ? wf_config_file_override : WAYFIRE_CONFIG_FILE);
     }
 
     std::vector<std::string> wayfire_xmldirs;
@@ -1325,7 +1334,7 @@ void WCM::load_config_files()
             wf_config_file);
 
     if (wf_shell_config_file.empty()) {
-        wf_shell_config_file = wf_shell_config_file_override ? wf_shell_config_file_override : WF_SHELL_CONFIG_FILE;
+        wf_shell_config_file = wordexp_str(wf_shell_config_file_override ? wf_shell_config_file_override : WF_SHELL_CONFIG_FILE);
     }
 
 #if HAVE_WFSHELL
