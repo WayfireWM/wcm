@@ -104,8 +104,8 @@ class Option
     bool hidden = false;
 
     std::vector<Option*> options;
-    std::map<std::string, int> int_labels;
-    std::map<std::string, std::string> str_labels;
+    std::vector<std::pair<std::string, int>> int_labels;
+    std::vector<std::pair<std::string, std::string>> str_labels;
 
     template<class... ArgTypes>
     void set_save(const ArgTypes &... args);

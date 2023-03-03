@@ -300,8 +300,13 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             combo_box->set_active(value);
             combo_box->signal_changed().connect([=, widget = combo_box.get()]
                 {
-                    option->set_save(option->int_labels.at(
-                        widget->get_active_text()));
+                    for (const auto & [name, int_value] : option->int_labels)
+                    {
+                        if (name == widget->get_active_text())
+                        {
+                            option->set_save(int_value);
+                        }
+                    }
                 });
             reset_button.signal_clicked().connect(
                 [=, widget = combo_box.get()]

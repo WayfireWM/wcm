@@ -304,12 +304,14 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
 
             if (li)
             {
-                int_labels[li->name] = li->value;
+                std::pair<std::string, int> pair(li->name, li->value);
+                int_labels.push_back(pair);
             }
 
             if (ls)
             {
-                str_labels[ls->name] = ls->value;
+                std::pair<std::string, std::string> pair(ls->name, ls->value);
+                str_labels.push_back(pair);
             }
         }
     }
