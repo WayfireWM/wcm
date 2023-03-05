@@ -483,6 +483,7 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
         Gdk::RGBA rgba;
         rgba.set_rgba(value.r, value.g, value.b, value.a);
         auto color_button = std::make_unique<Gtk::ColorButton>(rgba);
+        color_button->set_use_alpha(true);
         color_button->set_title(option->disp_name);
         color_button->property_rgba().signal_changed().connect([=,
                                                                 widget =
