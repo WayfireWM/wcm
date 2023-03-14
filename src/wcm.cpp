@@ -1363,6 +1363,7 @@ void WCM::create_main_layout()
     plugin_name_label.set_line_wrap();
     plugin_name_label.set_max_width_chars(15);
     plugin_name_label.set_alignment(Gtk::ALIGN_CENTER);
+    plugin_name_label.set_justify(Gtk::JUSTIFY_CENTER);
     plugin_name_label.property_margin().set_value(50);
     plugin_name_label.set_margin_bottom(25);
     plugin_left_panel_layout.pack_start(plugin_description_label, false, false);
