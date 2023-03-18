@@ -114,6 +114,14 @@ class KeyEntry : public Gtk::Stack
     }
 };
 
+class LayoutsEntry : public Gtk::Entry
+{
+    std::vector<Gtk::MenuItem> layouts;
+
+  public:
+    LayoutsEntry();
+};
+
 class OptionWidget : public Gtk::Box
 {
     Gtk::Label name_label;

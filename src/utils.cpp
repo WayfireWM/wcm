@@ -1,6 +1,9 @@
 #include "utils.hpp"
 #include <algorithm>
 
+#include <xkbcommon/xkbcommon.h>
+#include <xkbcommon/xkbregistry.h>
+
 bool find_string(std::string text, std::string pattern)
 {
     if (text.empty() || pattern.empty())
@@ -18,4 +21,27 @@ bool begins_with(const std::string & str, const std::string & prefix)
 {
     return prefix.length() <= str.length() &&
            str.substr(0, prefix.length()) == prefix;
+}
+
+std::map<std::string, std::string> read_layouts()
+{
+    rxkb_context *context = rxkb_context_new(rxkb_context_flags::RXKB_CONTEXT_NO_FLAGS);
+    if (!rxkb_context_parse_default_ruleset(context))
+    {
+        return {};
+    }
+
+    std::map<std::string, std::string> layouts;
+    for (rxkb_layout *layout = rxkb_layout_first(context);
+         layout != nullptr;
+         layout = rxkb_layout_next(layout))
+    {
+        if (rxkb_layout_get_variant(layout) == nullptr)
+        {
+            layouts.emplace(rxkb_layout_get_name(layout), rxkb_layout_get_description(layout));
+        }
+    }
+
+    rxkb_context_unref(context);
+    return layouts;
 }

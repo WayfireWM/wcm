@@ -218,6 +218,29 @@ KeyEntry::KeyEntry()
     edit_layout.pack_start(ok_button, false, false);
 }
 
+LayoutsEntry::LayoutsEntry()
+{
+    for (const auto & [name, description] : read_layouts())
+    {
+        layouts.emplace_back(name + " — " + description);
+        layouts.back().signal_activate().connect([name = name, this] ()
+        {
+            set_text(get_text() + "," + name);
+        });
+    }
+
+    set_tooltip_text("Open context menu to choose layout");
+
+    signal_populate_popup().connect([&] (Gtk::Menu *menu)
+    {
+        for (auto & layout_item : layouts)
+        {
+            menu->append(layout_item);
+            layout_item.show();
+        }
+    });
+}
+
 std::ostream& operator <<(std::ostream & out, const wf::color_t & color)
 {
     return out << "rgba(" << color.r << ", " << color.g << ", " << color.b << ", " <<
@@ -390,7 +413,15 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
     {
         if (option->str_labels.empty())
         {
-            auto entry = std::make_unique<Gtk::Entry>();
+            std::unique_ptr<Gtk::Entry> entry;
+            if (option->name == "xkb_layout")
+            {
+                entry = std::make_unique<LayoutsEntry>();
+            } else
+            {
+                entry = std::make_unique<Gtk::Entry>();
+            }
+
             entry->set_text(wf_option->get_value_str());
             entry->signal_changed().connect(
                 [=, widget = entry.get()]
