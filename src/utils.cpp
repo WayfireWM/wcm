@@ -1,7 +1,6 @@
 #include "utils.hpp"
 #include <algorithm>
 
-#include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbregistry.h>
 
 bool find_string(std::string text, std::string pattern)
