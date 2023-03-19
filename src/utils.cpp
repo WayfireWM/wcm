@@ -23,10 +23,10 @@ bool begins_with(const std::string & str, const std::string & prefix)
            str.substr(0, prefix.length()) == prefix;
 }
 
-std::map<std::string, std::string> read_layouts()
+std::map<std::string, std::string> get_xkb_layouts(const std::string& ruleset)
 {
     rxkb_context *context = rxkb_context_new(rxkb_context_flags::RXKB_CONTEXT_NO_FLAGS);
-    if (!rxkb_context_parse_default_ruleset(context))
+    if (!rxkb_context_parse(context, ruleset.c_str()))
     {
         return {};
     }
@@ -44,4 +44,21 @@ std::map<std::string, std::string> read_layouts()
 
     rxkb_context_unref(context);
     return layouts;
+}
+
+std::map<std::string, std::string> get_xkb_models(const std::string& ruleset)
+{
+    rxkb_context *context = rxkb_context_new(rxkb_context_flags::RXKB_CONTEXT_NO_FLAGS);
+    if (!rxkb_context_parse(context, ruleset.c_str()))
+    {
+        return {};
+    }
+
+    std::map<std::string, std::string> models;
+    for (rxkb_model *model = rxkb_model_first(context); model != nullptr; model = rxkb_model_next(model))
+    {
+        models.emplace(rxkb_model_get_name(model), rxkb_model_get_description(model));
+    }
+
+    return models;
 }

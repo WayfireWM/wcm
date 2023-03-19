@@ -218,14 +218,33 @@ KeyEntry::KeyEntry()
     edit_layout.pack_start(ok_button, false, false);
 }
 
+static void add_comma_with_space(Glib::ustring& text)
+{
+    auto last_non_space = std::find_if_not(text.rbegin(), text.rend(), [] (char ch)
+    {
+        return std::isspace(ch);
+    });
+    if ((last_non_space != text.rend()) && (*last_non_space != ','))
+    {
+        text += ',';
+    }
+
+    if (!text.empty() && (*text.end() == ','))
+    {
+        text += ' ';
+    }
+}
+
 LayoutsEntry::LayoutsEntry()
 {
-    for (const auto & [name, description] : read_layouts())
+    for (const auto & [name, description] : get_xkb_layouts(WCM::get_instance()->get_xkb_rules()))
     {
         layouts.emplace_back(name + " — " + description);
         layouts.back().signal_activate().connect([name = name, this] ()
         {
-            set_text(get_text() + "," + name);
+            auto text = get_text();
+            add_comma_with_space(text);
+            set_text(text + name);
         });
     }
 
@@ -233,11 +252,38 @@ LayoutsEntry::LayoutsEntry()
 
     signal_populate_popup().connect([&] (Gtk::Menu *menu)
     {
+        menu->append(separator);
         for (auto & layout_item : layouts)
         {
             menu->append(layout_item);
-            layout_item.show();
         }
+
+        menu->show_all();
+    });
+}
+
+XkbModelEntry::XkbModelEntry()
+{
+    for (const auto & [name, description] : get_xkb_models(WCM::get_instance()->get_xkb_rules()))
+    {
+        models.emplace_back(name + " — " + description);
+        models.back().signal_activate().connect([name = name, this] ()
+        {
+            set_text(name);
+        });
+    }
+
+    set_tooltip_text("Open context menu to choose model");
+
+    signal_populate_popup().connect([&] (Gtk::Menu *menu)
+    {
+        menu->append(separator);
+        for (auto & model_item : models)
+        {
+            menu->append(model_item);
+        }
+
+        menu->show_all();
     });
 }
 
@@ -417,6 +463,9 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             if (option->name == "xkb_layout")
             {
                 entry = std::make_unique<LayoutsEntry>();
+            } else if (option->name == "xkb_model")
+            {
+                entry = std::make_unique<XkbModelEntry>();
             } else
             {
                 entry = std::make_unique<Gtk::Entry>();
