@@ -23,16 +23,19 @@ bool begins_with(const std::string & str, const std::string & prefix)
            str.substr(0, prefix.length()) == prefix;
 }
 
+using rxkb_context_ptr = std::unique_ptr<rxkb_context, decltype(&rxkb_context_unref)>;
+
 std::map<std::string, std::string> get_xkb_layouts(const std::string& ruleset)
 {
-    rxkb_context *context = rxkb_context_new(rxkb_context_flags::RXKB_CONTEXT_NO_FLAGS);
-    if (!rxkb_context_parse(context, ruleset.c_str()))
+    rxkb_context_ptr context =
+    {rxkb_context_new(rxkb_context_flags::RXKB_CONTEXT_NO_FLAGS), &rxkb_context_unref};
+    if (!rxkb_context_parse(context.get(), ruleset.c_str()))
     {
         return {};
     }
 
     std::map<std::string, std::string> layouts;
-    for (rxkb_layout *layout = rxkb_layout_first(context);
+    for (rxkb_layout *layout = rxkb_layout_first(context.get());
          layout != nullptr;
          layout = rxkb_layout_next(layout))
     {
@@ -42,20 +45,22 @@ std::map<std::string, std::string> get_xkb_layouts(const std::string& ruleset)
         }
     }
 
-    rxkb_context_unref(context);
     return layouts;
 }
 
 std::map<std::string, std::string> get_xkb_models(const std::string& ruleset)
 {
-    rxkb_context *context = rxkb_context_new(rxkb_context_flags::RXKB_CONTEXT_NO_FLAGS);
-    if (!rxkb_context_parse(context, ruleset.c_str()))
+    rxkb_context_ptr context =
+    {rxkb_context_new(rxkb_context_flags::RXKB_CONTEXT_NO_FLAGS), &rxkb_context_unref};
+    if (!rxkb_context_parse(context.get(), ruleset.c_str()))
     {
         return {};
     }
 
     std::map<std::string, std::string> models;
-    for (rxkb_model *model = rxkb_model_first(context); model != nullptr; model = rxkb_model_next(model))
+    for (rxkb_model *model = rxkb_model_first(context.get());
+         model != nullptr;
+         model = rxkb_model_next(model))
     {
         models.emplace(rxkb_model_get_name(model), rxkb_model_get_description(model));
     }
