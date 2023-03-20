@@ -14,6 +14,9 @@ bool find_string(std::string text, std::string pattern);
 
 bool begins_with(const std::string & str, const std::string & prefix);
 
+std::map<std::string, std::string> get_xkb_layouts(const std::string& ruleset);
+std::map<std::string, std::string> get_xkb_models(const std::string& ruleset);
+
 /*!
  * Button with text and icon.
  */

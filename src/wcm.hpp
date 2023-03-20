@@ -114,6 +114,24 @@ class KeyEntry : public Gtk::Stack
     }
 };
 
+class LayoutsEntry : public Gtk::Entry
+{
+    Gtk::SeparatorMenuItem separator;
+    std::vector<Gtk::MenuItem> layouts;
+
+  public:
+    LayoutsEntry();
+};
+
+class XkbModelEntry : public Gtk::Entry
+{
+    Gtk::SeparatorMenuItem separator;
+    std::vector<Gtk::MenuItem> models;
+
+  public:
+    XkbModelEntry();
+};
+
 class OptionWidget : public Gtk::Box
 {
     Gtk::Label name_label;
@@ -345,6 +363,11 @@ class WCM
 
 #endif
     bool save_config(Plugin *plugin);
+
+    inline std::string get_xkb_rules()
+    {
+        return wf_config_mgr.get_section("input")->get_option("xkb_rules")->get_value_str();
+    }
 
     inline void set_inhibitor_manager(zwlr_input_inhibit_manager_v1 *value)
     {
