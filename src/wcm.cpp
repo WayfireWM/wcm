@@ -1710,15 +1710,12 @@ std::string WCM::find_icon(const std::string & name)
     if (c_xdg_data_dir != NULL)
     {
         xdg_data_dir = c_xdg_data_dir;
-    } else
+    } else if (c_user_home != NULL)
     {
-        if (c_user_home != NULL)
-        {
-            xdg_data_dir = (std::string)c_user_home + "/.local/share/";
-        }
+        xdg_data_dir = (std::string)c_user_home + "/.local/share/";
     }
 
-    if (xdg_data_dir.size())
+    if (!xdg_data_dir.empty())
     {
         icon_path = xdg_data_dir + "/wayfire/icons/" + name;
         if (std::filesystem::exists(icon_path))
