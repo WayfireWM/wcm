@@ -348,6 +348,8 @@ class WCM
     void open_page(Plugin *plugin = nullptr);
 
     void set_plugin_enabled(Plugin *plugin, bool enabled);
+    std::string find_icon(const std::string & icon_name);
+
     void load_config_files();
     inline void parse_config()
     {
