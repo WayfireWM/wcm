@@ -1723,5 +1723,6 @@ std::string WCM::find_icon(const std::string & name)
             return icon_path;
         }
     }
+
     return ICONDIR "/" + name;
 }
