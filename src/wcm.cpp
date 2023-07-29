@@ -1010,6 +1010,7 @@ OptionGroupWidget::OptionGroupWidget(Option *group)
 
 PluginPage::PluginPage(Plugin *plugin)
 {
+    set_scrollable();
     for (auto *group : plugin->option_groups)
     {
         if ((group->type != OPTION_TYPE_GROUP) || group->hidden)
