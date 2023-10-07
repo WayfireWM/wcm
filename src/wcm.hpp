@@ -27,6 +27,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <gdk/gdkwayland.h>
 #include <gtkmm.h>
 #include <iostream>
