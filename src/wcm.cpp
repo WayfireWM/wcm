@@ -1434,7 +1434,7 @@ void WCM::create_main_layout()
     });
     main_left_panel_layout.pack_end(output_config_button, false, false);
 
-    if (system("which " OUTPUT_CONFIG_PROGRAM " > /dev/null 2>&1") != 0)
+    if (system("command -v " OUTPUT_CONFIG_PROGRAM " > /dev/null 2>&1") != 0)
     {
         output_config_button.set_sensitive(false);
         output_config_button.set_tooltip_markup(
