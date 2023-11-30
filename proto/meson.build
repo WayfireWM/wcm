@@ -1,14 +1,10 @@
 wayland_protos = dependency('wayland-protocols')
 wayland_client = dependency('wayland-client')
-
-wl_protocol_dir = wayland_protos.get_pkgconfig_variable('pkgdatadir')
-
-wayland_scanner = find_program('wayland-scanner')
-
-wayland_scanner_server = generator(
-	wayland_scanner,
-	output: '@BASENAME@-protocol.h',
-	arguments: ['server-header', '@INPUT@', '@OUTPUT@'],
+wl_protocol_dir = wayland_protos.get_variable('pkgdatadir')
+wayland_scanner_dep = dependency('wayland-scanner', native: true)
+wayland_scanner = find_program(
+	wayland_scanner_dep.get_variable('wayland_scanner'),
+	native: true,
 )
 
 wayland_scanner_code = generator(
@@ -24,14 +20,13 @@ wayland_scanner_client = generator(
 )
 
 client_protocols = [
-    './wlr-input-inhibitor-unstable-v1.xml'
+	join_paths(wl_protocol_dir, 'unstable/keyboard-shortcuts-inhibit/keyboard-shortcuts-inhibit-unstable-v1.xml'),
 ]
 
 wl_protos_client_src = []
 wl_protos_headers = []
 
-foreach p : client_protocols
-	xml = join_paths(p)
+foreach xml : client_protocols
 	wl_protos_headers += wayland_scanner_client.process(xml)
 	wl_protos_client_src += wayland_scanner_code.process(xml)
 endforeach
