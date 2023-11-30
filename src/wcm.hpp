@@ -35,7 +35,7 @@
 #include <vector>
 #include <wayfire/config/file.hpp>
 #include <wayfire/config/xml.hpp>
-#include <wlr-input-inhibitor-unstable-v1-client-protocol.h>
+#include <keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h>
 
 #include "metadata.hpp"
 
@@ -327,8 +327,8 @@ class WCM
     PrettyButton back_button = PrettyButton("Back", "go-previous");
 
     cairo_surface_t *grab_window_surface = nullptr;
-    zwlr_input_inhibitor_v1 *screen_lock = nullptr;
-    zwlr_input_inhibit_manager_v1 *inhibitor_manager = nullptr;
+    zwp_keyboard_shortcuts_inhibitor_v1 *shortcuts_inhibitor     = nullptr;
+    zwp_keyboard_shortcuts_inhibit_manager_v1 *inhibitor_manager = nullptr;
 
     // WCM is a singleton
     static inline WCM *instance = nullptr;
@@ -372,11 +372,11 @@ class WCM
         return wf_config_mgr.get_section("input")->get_option("xkb_rules")->get_value_str();
     }
 
-    inline void set_inhibitor_manager(zwlr_input_inhibit_manager_v1 *value)
+    inline void set_inhibitor_manager(zwp_keyboard_shortcuts_inhibit_manager_v1 *value)
     {
         inhibitor_manager = value;
     }
 
-    bool lock_input();
+    bool lock_input(Gtk::Dialog *grab_dialog);
     void unlock_input();
 };
