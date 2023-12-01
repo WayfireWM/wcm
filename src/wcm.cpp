@@ -1305,7 +1305,7 @@ bool WCM::init_input_inhibitor()
     wl_display_roundtrip(display);
     if (!inhibitor_manager)
     {
-        std::cerr << "Compositor does not support " <<
+        std::cerr << "Compositor does not advertise " <<
             "zwp_keyboard_shortcuts_inhibit_manager_v1" << std::endl;
 
         return false;
@@ -1318,8 +1318,17 @@ bool WCM::lock_input(Gtk::Dialog *grab_dialog)
 {
     if (!inhibitor_manager)
     {
-        std::cerr << "Compositor does not support zwp_keyboard_shortcuts_inhibit_manager_v1!" <<
+        std::cerr << "Compositor does not advertise zwp_keyboard_shortcuts_inhibit_manager_v1!" <<
             std::endl;
+
+        auto error_dialog = Gtk::Dialog(
+            "Compositor does not advertise zwp_keyboard_shortcuts_inhibit_manager_v1!", *window,
+            Gtk::DIALOG_DESTROY_WITH_PARENT);
+        auto label = Gtk::Label("To use input binding capture, enable shortcuts-inhibit plugin.");
+        error_dialog.get_content_area()->pack_start(label, true, true, 50);
+        error_dialog.add_button("Ok", 0);
+        label.show();
+        error_dialog.run();
 
         return false;
     }
