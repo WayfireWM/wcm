@@ -30,6 +30,7 @@ enum option_type
     OPTION_TYPE_GROUP,
     OPTION_TYPE_SUBGROUP,
     OPTION_TYPE_DYNAMIC_LIST,
+    OPTION_TYPE_ANIMATION,
 };
 
 enum mod_type
