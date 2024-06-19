@@ -1044,14 +1044,15 @@ MainPage::Category::Category(const Glib::ustring & name,
 
 void Plugin::init_widget()
 {
-    label.set_text(disp_name);
-    label.set_ellipsize(Pango::ELLIPSIZE_END);
     const auto icon_path = WCM::get_instance()->find_icon("plugin-" + name + ".svg");
     if (std::filesystem::exists(icon_path))
     {
         icon.set(icon_path);
         button_layout.pack_start(icon);
     }
+
+    label.set_text(disp_name);
+    label.set_ellipsize(Pango::ELLIPSIZE_END);
     button_layout.pack_start(label);
     button_layout.set_halign(Gtk::ALIGN_START);
     button.set_tooltip_markup(tooltip);
