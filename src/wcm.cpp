@@ -1048,9 +1048,11 @@ void Plugin::init_widget()
     if (std::filesystem::exists(icon_path))
     {
         icon.set(icon_path);
-        button_layout.pack_start(icon);
+    } else {
+        icon.set(WCM::get_instance()->find_icon("fallback-plugin-icon.svg"));
     }
 
+    button_layout.pack_start(icon);
     label.set_text(disp_name);
     label.set_ellipsize(Pango::ELLIPSIZE_END);
     button_layout.pack_start(label);
