@@ -1048,7 +1048,8 @@ void Plugin::init_widget()
     if (std::filesystem::exists(icon_path))
     {
         icon.set(icon_path);
-    } else {
+    } else
+    {
         icon.set(WCM::get_instance()->find_icon("fallback-plugin-icon.svg"));
     }
 
