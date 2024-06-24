@@ -410,7 +410,7 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
         auto update_option_value = [=, length_widget = spin_button.get(), easing_widget = combo_box.get()]
             {
                 option->set_save(std::to_string(
-                    (int)length_widget->get_value()) + "ms " + easing_widget->get_active_text().c_str());
+                    length_widget->get_value_as_int()) + "ms " + easing_widget->get_active_text().c_str());
             };
         spin_button->signal_changed().connect(update_option_value);
         combo_box->signal_changed().connect(std::move(update_option_value));
