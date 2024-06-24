@@ -86,6 +86,11 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
         } else if (type == "dynamic-list")
         {
             this->type = OPTION_TYPE_DYNAMIC_LIST;
+        } else if (type == "animation")
+        {
+            this->type     = OPTION_TYPE_ANIMATION;
+            this->data.min = 0;
+            this->data.max = DBL_MAX;
         } else
         {
             printf("WARN: [%s] unknown option type: %s\n", plugin->name.c_str(),
@@ -131,6 +136,10 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
             {
               case OPTION_TYPE_INT:
                 this->default_value = atoi((char*)node->children->content);
+                break;
+
+              case OPTION_TYPE_ANIMATION:
+                this->default_value = (char*)node->children->content;
                 break;
 
               case OPTION_TYPE_BOOL:
@@ -182,7 +191,8 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
             }
 
             if ((this->type != OPTION_TYPE_INT) &&
-                (this->type != OPTION_TYPE_DOUBLE))
+                (this->type != OPTION_TYPE_DOUBLE) &&
+                (this->type != OPTION_TYPE_ANIMATION))
             {
                 printf("WARN: [%s] min defined for option type !int && !double\n",
                     plugin->name.c_str());
@@ -197,7 +207,8 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
             }
 
             if ((this->type != OPTION_TYPE_INT) &&
-                (this->type != OPTION_TYPE_DOUBLE))
+                (this->type != OPTION_TYPE_DOUBLE) &&
+                (this->type != OPTION_TYPE_ANIMATION))
             {
                 printf("WARN: [%s] max defined for option type !int && !double\n",
                     plugin->name.c_str());
