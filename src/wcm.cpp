@@ -402,7 +402,18 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
         auto combo_box = std::make_unique<Gtk::ComboBoxText>();
         for (const auto& easing : wf::animation::smoothing::get_available_smooth_functions())
         {
-            combo_box->append(easing);
+            static const std::map<std::string, int> preffered_easing_position = {
+                {"linear", 0},
+                {"circle", 1},
+                {"sigmoid", 2},
+            };
+            if (preffered_easing_position.count(easing) != 0)
+            {
+                combo_box->insert(preffered_easing_position.at(easing), easing);
+            } else
+            {
+                combo_box->append(easing);
+            }
         }
 
         combo_box->set_active_text(easing_value);
