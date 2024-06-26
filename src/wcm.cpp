@@ -339,28 +339,9 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
     switch (option->type)
     {
       case OPTION_TYPE_INT:
-      case OPTION_TYPE_ANIMATION:
     {
-        int value;
-        int default_value;
-        std::string current_easing_type;
-        if (option->type == OPTION_TYPE_INT)
-        {
-            value = wf::option_type::from_string<int>(wf_option->get_value_str()).value_or(
-                std::get<int>(option->default_value));
-            default_value = std::get<int>(option->default_value);
-        } else // OPTION_TYPE_ANIMATION
-        {
-            auto set_value =
-                wf::option_type::from_string<wf::animation_description_t>(wf_option->get_value_str());
-            value = set_value.has_value() ? set_value->length_ms : std::get<int>(option->default_value);
-            default_value =
-                wf::option_type::from_string<wf::animation_description_t>(std::get<std::string>(option->
-                    default_value))->length_ms;
-            current_easing_type = wf::option_type::from_string<wf::animation_description_t>(
-                wf_option->get_value_str())->easing_name;
-        }
-
+        int value = wf::option_type::from_string<int>(wf_option->get_value_str()).value_or(
+            std::get<int>(option->default_value));
         if (option->int_labels.empty())
         {
             auto spin_button = std::make_unique<Gtk::SpinButton>(
@@ -369,91 +350,14 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             spin_button->signal_value_changed().connect(
                 [=, widget = spin_button.get()]
                 {
-                    if (option->type == OPTION_TYPE_INT)
-                    {
-                        option->set_save(widget->get_value_as_int());
-                    } else
-                    {
-                        auto set_value =
-                            wf::option_type::from_string<wf::animation_description_t>(
-                                wf_option->get_value_str());
-                        auto easing =
-                            set_value.has_value() ? set_value->easing_name : std::get<std::string>(option->
-                                default_value);
-                        std::string animation_value = std::to_string(
-                            widget->get_value_as_int()) + "ms " + easing;
-                        option->set_save(animation_value);
-                    }
+                    option->set_save(widget->get_value_as_int());
                 });
-            auto spinner = spin_button.get();
+            reset_button.signal_clicked().connect(
+                [=, widget = spin_button.get()]
+                {
+                    widget->set_value(std::get<int>(option->default_value));
+                });
             pack_end(std::move(spin_button));
-            if (option->type == OPTION_TYPE_INT)
-            {
-                reset_button.signal_clicked().connect(
-                    [=, widget = spin_button.get()]
-                    {
-                        widget->set_value(std::get<int>(option->default_value));
-                    });
-            }
-
-            if (option->type == OPTION_TYPE_ANIMATION)
-            {
-                auto combo_box = std::make_unique<Gtk::ComboBoxText>();
-                std::string easing_types[] = {"linear", "circle", "sigmoid", "easeOutElastic"};
-                for (const auto & name : easing_types)
-                {
-                    combo_box->append(name);
-                }
-
-                for (size_t i = 0; i < sizeof(easing_types); i++)
-                {
-                    if (easing_types[i] == current_easing_type)
-                    {
-                        combo_box->set_active(i);
-                        break;
-                    }
-                }
-
-                combo_box->signal_changed().connect([=, widget = combo_box.get()]
-                    {
-                        int current_value;
-                        auto opt_string = wf_option->get_value_str();
-                        auto set_value  = wf::option_type::from_string<wf::animation_description_t>(
-                            opt_string);
-                        current_value =
-                            set_value.has_value() ? set_value->length_ms : std::get<int>(
-                                option->default_value);
-                        std::string animation_value = std::to_string(
-                            current_value) + "ms " + widget->get_active_text();
-                        option->set_save(animation_value);
-                    });
-                reset_button.signal_clicked().connect(
-                    [&, widget = combo_box.get(), spinner, option, default_value]
-                    {
-                        std::cout << __func__ << std::endl;
-                        if (current_easing_type == easing_types[3])
-                        {
-                            widget->set_active(3);
-                        } else if (current_easing_type == easing_types[2])
-                        {
-                            widget->set_active(2);
-                        } else if (current_easing_type == easing_types[1])
-                        {
-                            widget->set_active(1);
-                        } else // if (current_easing_type == easing_types[0])
-                        {
-                            widget->set_active(0);
-                        }
-
-                        std::cout << default_value << std::endl;
-                        spinner->set_value(default_value);
-                        std::string animation_value = std::to_string(
-                            default_value) + "ms " + widget->get_active_text();
-                        std::cout << animation_value << std::endl;
-                        option->set_save(animation_value);
-                    });
-                pack_end(std::move(combo_box));
-            }
         } else
         {
             auto combo_box = std::make_unique<Gtk::ComboBoxText>();
@@ -480,6 +384,55 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
                 });
             pack_end(std::move(combo_box), true, true);
         }
+    }
+    break;
+
+      case OPTION_TYPE_ANIMATION:
+    {
+        auto set_value = wf::option_type::from_string<wf::animation_description_t>(
+            wf_option->get_value_str());
+        auto default_value =
+            wf::option_type::from_string<wf::animation_description_t>(std::get<std::string>(option->
+                default_value));
+        int length_value = set_value ? set_value->length_ms : default_value->length_ms;
+        std::string easing_value = set_value ? set_value->easing_name : default_value->easing_name;
+
+        auto spin_button = std::make_unique<Gtk::SpinButton>(
+            Gtk::Adjustment::create(length_value, option->data.min, option->data.max, 1));
+        auto combo_box = std::make_unique<Gtk::ComboBoxText>();
+        for (const auto& easing : wf::animation::smoothing::get_available_smooth_functions())
+        {
+            static const std::map<std::string, int> preffered_easing_position = {
+                {"linear", 0},
+                {"circle", 1},
+                {"sigmoid", 2},
+            };
+            if (preffered_easing_position.count(easing) != 0)
+            {
+                combo_box->insert(preffered_easing_position.at(easing), easing);
+            } else
+            {
+                combo_box->append(easing);
+            }
+        }
+
+        combo_box->set_active_text(easing_value);
+
+        auto update_option_value = [=, length_widget = spin_button.get(), easing_widget = combo_box.get()]
+            {
+                option->set_save(std::to_string(
+                    length_widget->get_value_as_int()) + "ms " + easing_widget->get_active_text().c_str());
+            };
+        spin_button->signal_changed().connect(update_option_value);
+        combo_box->signal_changed().connect(std::move(update_option_value));
+        reset_button.signal_clicked().connect([=, length_widget = spin_button.get(),
+                                               easing_widget = combo_box.get()]
+            {
+                length_widget->set_value(default_value->length_ms);
+                easing_widget->set_active_text(default_value->easing_name);
+            });
+        pack_end(std::move(spin_button));
+        pack_end(std::move(combo_box));
     }
     break;
 
