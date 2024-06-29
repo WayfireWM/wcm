@@ -138,6 +138,7 @@ class OptionWidget : public Gtk::Box
     Gtk::Label name_label;
     std::vector<std::unique_ptr<Gtk::Widget>> widgets;
     Gtk::Button reset_button;
+    sigc::trackable tracker;
 
     inline void pack_end(std::unique_ptr<Gtk::Widget> && widget, bool expand = false,
         bool fill = false)
