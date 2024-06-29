@@ -347,11 +347,11 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             auto spin_button = std::make_unique<Gtk::SpinButton>(
                 Gtk::Adjustment::create(value, option->data.min, option->data.max,
                     1));
-            spin_button->signal_value_changed().connect(
+            spin_button->signal_changed().connect(sigc::track_obj(
                 [=, widget = spin_button.get()]
                 {
                     option->set_save(widget->get_value_as_int());
-                });
+                }, tracker));
             reset_button.signal_clicked().connect(
                 [=, widget = spin_button.get()]
                 {
@@ -423,7 +423,7 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
                 option->set_save(std::to_string(
                     length_widget->get_value_as_int()) + "ms " + easing_widget->get_active_text().c_str());
             };
-        spin_button->signal_changed().connect(update_option_value);
+        spin_button->signal_changed().connect(sigc::track_obj(update_option_value, tracker));
         combo_box->signal_changed().connect(std::move(update_option_value));
         reset_button.signal_clicked().connect([=, length_widget = spin_button.get(),
                                                easing_widget = combo_box.get()]
@@ -470,10 +470,10 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             Gtk::Adjustment::create(value, option->data.min, option->data.max,
                 option->data.precision),
             option->data.precision, 3);
-        spin_box->signal_changed().connect([=, widget = spin_box.get()]
+        spin_box->signal_changed().connect(sigc::track_obj([=, widget = spin_box.get()]
             {
                 option->set_save(widget->get_value());
-            });
+            }, tracker));
         reset_button.signal_clicked().connect(
             [=, widget = spin_box.get()]
             {
