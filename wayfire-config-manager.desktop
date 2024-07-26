@@ -4,4 +4,4 @@ Comment=Configure Wayfire Settings
 Exec=wcm
 Icon=wcm
 Type=Application
-Categories=Utility;
+Categories=Settings;DestkopSettings;Utility;
