@@ -39,6 +39,13 @@
 
 #include "metadata.hpp"
 
+struct animate_option
+{
+    Option *option;
+    Gtk::SpinButton *spin_button;
+    Gtk::ComboBoxText *combo_box;
+};
+
 class MainPage : public Gtk::ScrolledWindow
 {
   public:
@@ -140,6 +147,13 @@ class OptionWidget : public Gtk::Box
     Gtk::Button reset_button;
     sigc::trackable tracker;
 
+    guint int_sb_handle;
+    guint animate_sb_handle;
+    guint animate_cb_handle;
+    std::unique_ptr<Gtk::SpinButton> animate_spin_button, int_spin_button;
+    std::unique_ptr<Gtk::ComboBoxText> animate_combo_box;
+    animate_option ao;
+
     inline void pack_end(std::unique_ptr<Gtk::Widget> && widget, bool expand = false,
         bool fill = false)
     {
@@ -149,6 +163,7 @@ class OptionWidget : public Gtk::Box
 
   public:
     OptionWidget(Option *option);
+    ~OptionWidget();
 };
 
 class DynamicListBase : public Gtk::Box
@@ -261,7 +276,7 @@ class OptionSubgroupWidget : public Gtk::Frame
 {
     Gtk::Expander expander;
     Gtk::Box expander_layout = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
-    std::vector<OptionWidget> option_widgets;
+    std::vector<std::unique_ptr<OptionWidget>> option_widgets;
 
   public:
     OptionSubgroupWidget(Option *subgroup);

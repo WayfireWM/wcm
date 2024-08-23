@@ -319,6 +319,41 @@ void Option::set_save(const ArgTypes &... args)
     WCM::get_instance()->save_config(plugin);
 }
 
+static void update_int_sb_option_value(GtkSpinButton *spin_button, Option *option)
+{
+    option->set_save(std::to_string(gtk_spin_button_get_value_as_int(spin_button)));
+}
+
+static void update_animate_sb_option_value(GtkSpinButton *spin_button, animate_option *option)
+{
+    option->option->set_save(std::to_string(gtk_spin_button_get_value_as_int(
+        spin_button)) + "ms " + gtk_combo_box_text_get_active_text(option->combo_box->gobj()));
+}
+
+static void update_animate_cb_option_value(GtkComboBoxText *combo_box, animate_option *option)
+{
+    option->option->set_save(std::to_string(gtk_spin_button_get_value_as_int(
+        option->spin_button->gobj())) + "ms " + gtk_combo_box_text_get_active_text(combo_box));
+}
+
+OptionWidget::~OptionWidget()
+{
+    if (int_spin_button)
+    {
+        g_signal_handler_disconnect(int_spin_button->gobj(), int_sb_handle);
+    }
+
+    if (animate_spin_button)
+    {
+        g_signal_handler_disconnect(animate_spin_button->gobj(), animate_sb_handle);
+    }
+
+    if (animate_combo_box)
+    {
+        g_signal_handler_disconnect(animate_combo_box->gobj(), animate_cb_handle);
+    }
+}
+
 OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTAL,
         10)
 {
@@ -344,20 +379,18 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             std::get<int>(option->default_value));
         if (option->int_labels.empty())
         {
-            auto spin_button = std::make_unique<Gtk::SpinButton>(
+            int_spin_button = std::make_unique<Gtk::SpinButton>(
                 Gtk::Adjustment::create(value, option->data.min, option->data.max,
                     1));
-            spin_button->signal_changed().connect(sigc::track_obj(
-                [=, widget = spin_button.get()]
-                {
-                    option->set_save(widget->get_value_as_int());
-                }, tracker));
+            int_sb_handle =
+                g_signal_connect(int_spin_button->gobj(), "value-changed", G_CALLBACK(
+                    update_int_sb_option_value), option);
             reset_button.signal_clicked().connect(
-                [=, widget = spin_button.get()]
+                [=, widget = int_spin_button.get()]
                 {
                     widget->set_value(std::get<int>(option->default_value));
                 });
-            pack_end(std::move(spin_button));
+            pack_end(std::move(int_spin_button));
         } else
         {
             auto combo_box = std::make_unique<Gtk::ComboBoxText>();
@@ -397,9 +430,9 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
         int length_value = set_value ? set_value->length_ms : default_value->length_ms;
         std::string easing_value = set_value ? set_value->easing_name : default_value->easing_name;
 
-        auto spin_button = std::make_unique<Gtk::SpinButton>(
+        animate_spin_button = std::make_unique<Gtk::SpinButton>(
             Gtk::Adjustment::create(length_value, option->data.min, option->data.max, 1));
-        auto combo_box = std::make_unique<Gtk::ComboBoxText>();
+        animate_combo_box = std::make_unique<Gtk::ComboBoxText>();
         for (const auto& easing : wf::animation::smoothing::get_available_smooth_functions())
         {
             static const std::map<std::string, int> preffered_easing_position = {
@@ -409,30 +442,34 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             };
             if (preffered_easing_position.count(easing) != 0)
             {
-                combo_box->insert(preffered_easing_position.at(easing), easing);
+                animate_combo_box->insert(preffered_easing_position.at(easing), easing);
             } else
             {
-                combo_box->append(easing);
+                animate_combo_box->append(easing);
             }
         }
 
-        combo_box->set_active_text(easing_value);
+        ao = {
+            .option = option,
+            .spin_button = animate_spin_button.get(),
+            .combo_box   = animate_combo_box.get(),
+        };
 
-        auto update_option_value = [=, length_widget = spin_button.get(), easing_widget = combo_box.get()]
-            {
-                option->set_save(std::to_string(
-                    length_widget->get_value_as_int()) + "ms " + easing_widget->get_active_text().c_str());
-            };
-        spin_button->signal_changed().connect(sigc::track_obj(update_option_value, tracker));
-        combo_box->signal_changed().connect(std::move(update_option_value));
-        reset_button.signal_clicked().connect([=, length_widget = spin_button.get(),
-                                               easing_widget = combo_box.get()]
+        animate_combo_box->set_active_text(easing_value);
+        animate_sb_handle =
+            g_signal_connect(animate_spin_button->gobj(), "value-changed", G_CALLBACK(
+                update_animate_sb_option_value), &ao);
+        animate_cb_handle =
+            g_signal_connect(animate_combo_box->gobj(), "changed", G_CALLBACK(
+                update_animate_cb_option_value), &ao);
+        reset_button.signal_clicked().connect([=, length_widget = animate_spin_button.get(),
+                                               easing_widget = animate_combo_box.get()]
             {
                 length_widget->set_value(default_value->length_ms);
                 easing_widget->set_active_text(default_value->easing_name);
             });
-        pack_end(std::move(spin_button));
-        pack_end(std::move(combo_box));
+        pack_end(std::move(animate_spin_button));
+        pack_end(std::move(animate_combo_box));
     }
     break;
 
@@ -995,8 +1032,8 @@ OptionSubgroupWidget::OptionSubgroupWidget(Option *subgroup)
     expander.add(expander_layout);
     for (Option *option : subgroup->options)
     {
-        option_widgets.emplace_back(option);
-        expander_layout.pack_start(option_widgets.back());
+        option_widgets.push_back(std::make_unique<OptionWidget>(option));
+        expander_layout.pack_start(*option_widgets.back());
     }
 }
 
