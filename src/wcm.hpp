@@ -314,6 +314,7 @@ class WCM
     wf::config::config_manager_t wf_shell_config_mgr;
     std::string wf_config_file;
     std::string wf_shell_config_file;
+    std::string start_plugin;
     std::vector<Plugin*> plugins;
 
     Plugin *current_plugin = nullptr;
@@ -395,4 +396,5 @@ class WCM
 
     bool lock_input(Gtk::Dialog *grab_dialog);
     void unlock_input();
+    Plugin* find_plugin_by_name(std::vector<Plugin*> plugins, std::string search_name);
 };
