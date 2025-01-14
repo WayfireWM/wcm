@@ -396,5 +396,5 @@ class WCM
 
     bool lock_input(Gtk::Dialog *grab_dialog);
     void unlock_input();
-    Plugin* find_plugin_by_name(std::vector<Plugin*> plugins, std::string search_name);
+    Plugin *find_plugin_by_name(std::vector<Plugin*> plugins, std::string search_name);
 };
