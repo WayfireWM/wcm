@@ -1745,14 +1745,15 @@ void update_compound_from_section(wf::config::compound_option_t *compound,
     compound->set_value_untyped(value);
 }
 
-Plugin* WCM::find_plugin_by_name(std::vector<Plugin*> plugins, std::string search_name)
+Plugin*WCM::find_plugin_by_name(std::vector<Plugin*> plugins, std::string search_name)
 {
     auto it = std::find_if(plugins.begin(), plugins.end(),
         [&search_name](const Plugin* plugin) {
             return plugin->name == search_name; // Compare the plugin name
         });
 
-    if (it != plugins.end()) {
+    if (it != plugins.end()) 
+    {
         return *it; // Return the found Plugin pointer
     }
     std::cout << "plugin not found, name invalid" << std::endl;
