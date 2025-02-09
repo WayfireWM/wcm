@@ -1584,8 +1584,8 @@ void WCM::create_main_layout()
     window->add(global_layout);
     if (!start_plugin.empty())
     {
-        Plugin* launch_plugin = find_plugin_by_name(plugins,start_plugin);
-        std::cout << "Opening Plugin: " << start_plugin << std::endl; 
+        Plugin* launch_plugin = find_plugin_by_name(plugins, start_plugin);
+        std::cout << "Opening Plugin: " << start_plugin << std::endl;
         this->open_page(launch_plugin);
     }
 }
@@ -1749,7 +1749,7 @@ void update_compound_from_section(wf::config::compound_option_t *compound,
 Plugin*WCM::find_plugin_by_name(std::vector<Plugin*> plugins, std::string search_name)
 {
     auto it = std::find_if(plugins.begin(), plugins.end(),
-        [&search_name](const Plugin* plugin)
+        [&search_name] (const Plugin* plugin)
     {
         return plugin->name == search_name; // Compare the plugin name
     });
