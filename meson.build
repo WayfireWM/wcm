@@ -36,4 +36,4 @@ subdir('icons')
 subdir('proto')
 subdir('src')
 
-install_data('wayfire-config-manager.desktop', install_dir: join_paths(share_dir, 'applications'))
+install_data('wcm.desktop', install_dir: join_paths(share_dir, 'applications'))

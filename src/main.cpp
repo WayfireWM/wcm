@@ -2,7 +2,7 @@
 
 int main(int argc, char **argv)
 {
-    auto app = Gtk::Application::create("org.gtk.wayfire-config-manager");
+    auto app = Gtk::Application::create();
     std::unique_ptr<WCM> wcm = std::make_unique<WCM>(app);
     return app->run(argc, argv);
 }
