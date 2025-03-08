@@ -10,7 +10,7 @@ wayfire_metadata_dir = wayfire.get_variable(pkgconfig: 'metadatadir')
 wayfire_sysconf_dir = wayfire.get_variable(pkgconfig: 'sysconfdir')
 
 share_dir = join_paths(get_option('prefix'), 'share')
-icon_dir = join_paths(share_dir, 'wayfire', 'icons')
+icon_dir = join_paths(share_dir, 'wcm', 'icons')
 
 add_global_arguments('-DWAYFIRE_METADATADIR="' + wayfire_metadata_dir + '"', language : 'cpp')
 add_global_arguments('-DWAYFIRE_SYSCONFDIR="' + wayfire_sysconf_dir + '"', language : 'cpp')
