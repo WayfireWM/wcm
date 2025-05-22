@@ -28,10 +28,6 @@ evdev = dependency('libevdev')
 
 add_project_arguments('-DICONDIR="' + icon_dir + '"', language : 'cpp')
 
-if get_option('enable_wdisplays') == true
-    wdisplays = subproject('wdisplays')
-endif
-
 subdir('icons')
 subdir('proto')
 subdir('src')
