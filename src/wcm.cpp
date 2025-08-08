@@ -1050,7 +1050,7 @@ void Plugin::init_widget()
         icon.set(icon_path);
     } else
     {
-        icon.set(WCM::get_instance()->find_icon("fallback-plugin-icon.svg"));
+        icon.set_from_icon_name("wcm", Gtk::ICON_SIZE_DND);
     }
 
     button_layout.pack_start(icon);
