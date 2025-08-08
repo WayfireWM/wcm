@@ -1128,10 +1128,18 @@ MainPage::Category::Category(const Glib::ustring & name,
 
 void Plugin::init_widget()
 {
+    const auto icon_path = WCM::get_instance()->find_icon("plugin-" + name + ".svg");
+    if (std::filesystem::exists(icon_path))
+    {
+        icon.set(icon_path);
+    } else
+    {
+        icon.set_from_icon_name("wcm", Gtk::ICON_SIZE_DND);
+    }
+
+    button_layout.pack_start(icon);
     label.set_text(disp_name);
     label.set_ellipsize(Pango::ELLIPSIZE_END);
-    icon.set(WCM::get_instance()->find_icon("plugin-" + name + ".svg"));
-    button_layout.pack_start(icon);
     button_layout.pack_start(label);
     button_layout.set_halign(Gtk::ALIGN_START);
     button.set_tooltip_markup(tooltip);
