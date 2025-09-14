@@ -1610,9 +1610,11 @@ void WCM::open_page(Plugin *plugin)
             !plugin->is_core_plugin() && plugin->type != PLUGIN_TYPE_WF_SHELL);
         plugin_enabled_check.set_active(plugin->enabled);
         plugin_name_label.set_markup(
-            "<span size=\"12000\"><b>" + std::string(dgettext(gettext_domain_name.c_str(), plugin->disp_name.c_str())) + "</b></span>");
+            "<span size=\"12000\"><b>" +
+            std::string(dgettext(gettext_domain_name.c_str(), plugin->disp_name.c_str())) + "</b></span>");
         plugin_description_label.set_markup(
-            "<span size=\"10000\"><b>" + std::string(dgettext(gettext_domain_name.c_str(), plugin->tooltip.c_str())) + "</b></span>");
+            "<span size=\"10000\"><b>" +
+            std::string(dgettext(gettext_domain_name.c_str(), plugin->tooltip.c_str())) + "</b></span>");
         plugin_page = std::make_unique<PluginPage>(plugin);
         main_stack.add(*plugin_page);
         plugin_page->show_all();
