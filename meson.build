@@ -7,7 +7,6 @@ add_global_arguments('-DWF_SHELL_CONFIG_FILE="' + get_option('wf_shell_config_fi
 
 wayfire = dependency('wayfire', version: '>=0.11.0')
 wf_shell = dependency('wf-shell', required : get_option('wf_shell'))
-intl_dependency = dependency('intl')
 
 wayfire_metadata_dir = wayfire.get_variable(pkgconfig: 'metadatadir')
 wayfire_locale_dir = join_paths(fs.parent(wayfire_metadata_dir), 'locale')
