@@ -1,6 +1,7 @@
 #include "wcm.hpp"
 #include "utils.hpp"
 
+#include <libintl.h>
 #include <filesystem>
 #include <libevdev/libevdev.h>
 #include <wayfire/config/compound-option.hpp>
