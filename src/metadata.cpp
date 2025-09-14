@@ -25,6 +25,8 @@
  */
 
 #include "wcm.hpp"
+#include <libintl.h>
+#include <locale.h>
 #include <stdio.h>
 #include <wayfire/config/xml.hpp>
 
@@ -119,12 +121,13 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
         }
 
         std::string node_name = (char*)node->name;
+        std::string gettext_domain_name = "plugin-" + plugin->name;
         if (node_name == "_short")
         {
-            this->disp_name = (char*)node->children->content;
+            this->disp_name = dgettext(gettext_domain_name.c_str(), (char*)node->children->content);
         } else if (node_name == "_long")
         {
-            this->tooltip = (char*)node->children->content;
+            this->tooltip = dgettext(gettext_domain_name.c_str(), (char*)node->children->content);
         } else if (node_name == "default")
         {
             if (!node->children)
@@ -379,6 +382,8 @@ Plugin*Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *pl
             if (prop)
             {
                 plugin->name = (char*)prop;
+                // Initialise translations
+                bindtextdomain(("plugin-" + plugin->name).c_str(), WAYFIRE_LOCALEDIR);
             }
 
             free(prop);

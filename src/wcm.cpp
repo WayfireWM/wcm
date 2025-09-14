@@ -1096,6 +1096,7 @@ OptionGroupWidget::OptionGroupWidget(Option *group)
 
 PluginPage::PluginPage(Plugin *plugin)
 {
+    std::string gettext_domain_name = "plugin-" + plugin->name;
     set_scrollable();
     for (auto *group : plugin->option_groups)
     {
@@ -1105,7 +1106,7 @@ PluginPage::PluginPage(Plugin *plugin)
         }
 
         groups.emplace_back(group);
-        append_page(groups.back(), group->name);
+        append_page(groups.back(), dgettext(gettext_domain_name.c_str(), group->name.c_str()));
     }
 }
 
@@ -1138,11 +1139,12 @@ void Plugin::init_widget()
     }
 
     button_layout.pack_start(icon);
-    label.set_text(disp_name);
+    std::string gettext_domain_name = "plugin-" + name;
+    label.set_text(dgettext(gettext_domain_name.c_str(), disp_name.c_str()));
     label.set_ellipsize(Pango::ELLIPSIZE_END);
     button_layout.pack_start(label);
     button_layout.set_halign(Gtk::ALIGN_START);
-    button.set_tooltip_markup(tooltip);
+    button.set_tooltip_markup(dgettext(gettext_domain_name.c_str(), tooltip.c_str()));
     button.set_relief(Gtk::RELIEF_NONE);
     button.add(button_layout);
     enabled_check.set_active(enabled);
@@ -1600,15 +1602,16 @@ void WCM::create_main_layout()
 
 void WCM::open_page(Plugin *plugin)
 {
+    std::string gettext_domain_name = "plugin-" + plugin->name;
     if (plugin)
     {
         plugin_enabled_box.set_visible(
             !plugin->is_core_plugin() && plugin->type != PLUGIN_TYPE_WF_SHELL);
         plugin_enabled_check.set_active(plugin->enabled);
         plugin_name_label.set_markup(
-            "<span size=\"12000\"><b>" + plugin->disp_name + "</b></span>");
+            "<span size=\"12000\"><b>" + std::string(dgettext(gettext_domain_name.c_str(), plugin->disp_name.c_str())) + "</b></span>");
         plugin_description_label.set_markup(
-            "<span size=\"10000\"><b>" + plugin->tooltip + "</b></span>");
+            "<span size=\"10000\"><b>" + std::string(dgettext(gettext_domain_name.c_str(), plugin->tooltip.c_str())) + "</b></span>");
         plugin_page = std::make_unique<PluginPage>(plugin);
         main_stack.add(*plugin_page);
         plugin_page->show_all();
