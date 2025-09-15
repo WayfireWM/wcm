@@ -1107,7 +1107,7 @@ OptionGroupWidget::OptionGroupWidget(Option *group)
 
 PluginPage::PluginPage(Plugin *plugin)
 {
-    std::string gettext_domain_name = "plugin-" + plugin->name;
+    std::string gettext_domain_name = "wf-plugin-" + plugin->name;
     set_scrollable();
     for (auto *group : plugin->option_groups)
     {
@@ -1150,7 +1150,7 @@ void Plugin::init_widget()
     }
 
     button_layout.pack_start(icon);
-    std::string gettext_domain_name = "plugin-" + name;
+    std::string gettext_domain_name = "wf-plugin-" + name;
     label.set_text(dgettext(gettext_domain_name.c_str(), disp_name.c_str()));
     label.set_ellipsize(Pango::ELLIPSIZE_END);
     button_layout.pack_start(label);
@@ -1613,7 +1613,7 @@ void WCM::create_main_layout()
 
 void WCM::open_page(Plugin *plugin)
 {
-    std::string gettext_domain_name = "plugin-" + plugin->name;
+    std::string gettext_domain_name = "wf-plugin-" + plugin->name;
     if (plugin)
     {
         plugin_enabled_box.set_visible(
