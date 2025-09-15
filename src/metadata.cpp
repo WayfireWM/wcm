@@ -123,7 +123,7 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
         }
 
         std::string node_name = (char*)node->name;
-        std::string gettext_domain_name = "plugin-" + plugin->name;
+        std::string gettext_domain_name = "wf-plugin-" + plugin->name;
         if (node_name == "_short")
         {
             this->disp_name = dgettext(gettext_domain_name.c_str(), (char*)node->children->content);

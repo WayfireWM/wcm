@@ -38,8 +38,6 @@ subdir('src')
 
 install_data('wcm.desktop', install_dir: join_paths(share_dir, 'applications'))
 
-message(wayfire_locale_dir)
-
 install_subdir('locale',
   install_dir : wayfire_locale_dir,
   strip_directory : true
