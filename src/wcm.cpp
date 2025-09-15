@@ -1613,9 +1613,9 @@ void WCM::create_main_layout()
 
 void WCM::open_page(Plugin *plugin)
 {
-    std::string gettext_domain_name = "wf-plugin-" + plugin->name;
     if (plugin)
     {
+        std::string gettext_domain_name = "wf-plugin-" + plugin->name;
         plugin_enabled_box.set_visible(
             !plugin->is_core_plugin() && plugin->type != PLUGIN_TYPE_WF_SHELL);
         plugin_enabled_check.set_active(plugin->enabled);
