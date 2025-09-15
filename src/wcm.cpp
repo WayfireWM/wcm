@@ -1,9 +1,10 @@
 #include "wcm.hpp"
 #include "utils.hpp"
 
-#include <libintl.h>
 #include <filesystem>
+#include <fmt/core.h>
 #include <libevdev/libevdev.h>
+#include <libintl.h>
 #include <wayfire/config/compound-option.hpp>
 #include <wayfire/config/types.hpp>
 #include <wayfire/config/xml.hpp>
@@ -11,6 +12,7 @@
 #include <wordexp.h>
 
 #define OUTPUT_CONFIG_PROGRAM "wdisplays"
+#define _(MSG) gettext(MSG)
 
 constexpr int OPTION_LABEL_SIZE = 200;
 
@@ -20,9 +22,9 @@ bool KeyEntry::check_and_confirm(const std::string & key_str)
         ((key_str.find("BTN") != std::string::npos) ||
          (key_str.find("KEY") != std::string::npos)))
     {
-        auto dialog = Gtk::MessageDialog("Attempting to bind <tt><b>\"" + key_str + '"' +
+        auto dialog = Gtk::MessageDialog(_(("Attempting to bind <tt><b>\"" + key_str + '"' +
             "</b></tt> without modifier. You will be unable to use this key/button "
-            "for anything else! Are you sure?",
+            "for anything else! Are you sure?").c_str()),
             true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
         return dialog.run() == Gtk::RESPONSE_YES;
     }
@@ -60,8 +62,8 @@ std::string KeyEntry::grab_key()
 {
     static const auto HW_OFFSET = 8;
 
-    auto grab_dialog = Gtk::Dialog("Waiting for Binding", true);
-    auto label = Gtk::Label("none");
+    auto grab_dialog = Gtk::Dialog(_("Waiting for Binding"), true);
+    auto label = Gtk::Label(_("none"));
     grab_dialog.get_content_area()->pack_start(label);
     label.show();
 
@@ -97,7 +99,7 @@ std::string KeyEntry::grab_key()
     auto update_label = [=, &label]
     {
         const auto text = cur_state_string();
-        label.set_text(text.empty() ? "(No modifiers pressed)" : text);
+        label.set_text(text.empty() ? _("(No modifiers pressed)") : text);
     };
     update_label();
 
@@ -194,7 +196,7 @@ KeyEntry::KeyEntry()
         }
     });
     edit_button.set_image_from_icon_name("gtk-edit");
-    edit_button.set_tooltip_text("Edit binding");
+    edit_button.set_tooltip_text(_("Edit binding"));
     edit_button.signal_clicked().connect([=]
     {
         entry.set_text(get_value());
@@ -205,7 +207,7 @@ KeyEntry::KeyEntry()
 
     edit_layout.pack_start(entry, true, true);
     ok_button.set_image_from_icon_name("gtk-ok");
-    ok_button.set_tooltip_text("Save binding");
+    ok_button.set_tooltip_text(_("Save binding"));
     ok_button.signal_clicked().connect([=]
     {
         const std::string value = entry.get_text();
@@ -216,7 +218,7 @@ KeyEntry::KeyEntry()
         }
     });
     cancel_button.set_image_from_icon_name("gtk-cancel");
-    cancel_button.set_tooltip_text("Cancel");
+    cancel_button.set_tooltip_text(_("Cancel"));
     cancel_button.signal_clicked().connect([=] { set_visible_child(grab_layout); });
     edit_layout.pack_start(cancel_button, false, false);
     edit_layout.pack_start(ok_button, false, false);
@@ -252,7 +254,7 @@ LayoutsEntry::LayoutsEntry()
         });
     }
 
-    set_tooltip_text("Open context menu to choose layout");
+    set_tooltip_text(_("Open context menu to choose layout"));
 
     signal_populate_popup().connect([&] (Gtk::Menu *menu)
     {
@@ -277,7 +279,7 @@ XkbModelEntry::XkbModelEntry()
         });
     }
 
-    set_tooltip_text("Open context menu to choose model");
+    set_tooltip_text(_("Open context menu to choose model"));
 
     signal_populate_popup().connect([&] (Gtk::Menu *menu)
     {
@@ -364,7 +366,7 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
     name_label.set_alignment(Gtk::ALIGN_START);
 
     reset_button.set_image_from_icon_name("edit-clear");
-    reset_button.set_tooltip_text("Reset to default");
+    reset_button.set_tooltip_text(_("Reset to default"));
 
     pack_start(name_label, false, false);
     Gtk::Box::pack_end(reset_button, false, false);
@@ -570,8 +572,8 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
                                            Gtk::FileChooserAction action)
                 {
                     auto dialog = Gtk::FileChooserDialog(label, action);
-                    dialog.add_button("Cancel", Gtk::RESPONSE_CANCEL);
-                    dialog.add_button("Open", Gtk::RESPONSE_ACCEPT);
+                    dialog.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
+                    dialog.add_button(_("Open"), Gtk::RESPONSE_ACCEPT);
                     if (dialog.run() == Gtk::RESPONSE_ACCEPT)
                     {
                         widget->set_text(dialog.get_filename());
@@ -581,11 +583,11 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             {
                 auto dir_choose_button = std::make_unique<Gtk::Button>();
                 dir_choose_button->set_image_from_icon_name("folder-open");
-                dir_choose_button->set_tooltip_text("Choose Directory");
+                dir_choose_button->set_tooltip_text(_("Choose Directory"));
                 dir_choose_button->signal_clicked().connect(
                     [=]
                     {
-                        run_dialog("Select Folder",
+                        run_dialog(_("Select Folder"),
                             Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
                     });
                 pack_end(std::move(dir_choose_button));
@@ -595,11 +597,11 @@ OptionWidget::OptionWidget(Option *option) : Gtk::Box(Gtk::ORIENTATION_HORIZONTA
             {
                 auto file_choose_button = std::make_unique<Gtk::Button>();
                 file_choose_button->set_image_from_icon_name("text-x-generic");
-                file_choose_button->set_tooltip_text("Choose File");
+                file_choose_button->set_tooltip_text(_("Choose File"));
                 file_choose_button->signal_clicked().connect(
                     [=]
                     {
-                        run_dialog("Select File", Gtk::FILE_CHOOSER_ACTION_OPEN);
+                        run_dialog(_("Select File"), Gtk::FILE_CHOOSER_ACTION_OPEN);
                     });
                 pack_end(std::move(file_choose_button));
             }
@@ -688,25 +690,25 @@ AutostartDynamicList::AutostartWidget::AutostartWidget(Option *option) : Gtk::Bo
         option->set_save<std::string>(command_entry.get_text());
     });
     choose_button.set_image_from_icon_name("application-x-executable");
-    choose_button.set_tooltip_text("Choose Executable");
+    choose_button.set_tooltip_text(_("Choose Executable"));
     choose_button.signal_clicked().connect([&]
     {
-        auto dialog = Gtk::FileChooserDialog("Choose Executable");
-        dialog.add_button("Cancel", Gtk::RESPONSE_CANCEL);
-        dialog.add_button("Open", Gtk::RESPONSE_ACCEPT);
+        auto dialog = Gtk::FileChooserDialog(_("Choose Executable"));
+        dialog.add_button(_("Cancel"), Gtk::RESPONSE_CANCEL);
+        dialog.add_button(_("Open"), Gtk::RESPONSE_ACCEPT);
         if (dialog.run() == Gtk::RESPONSE_ACCEPT)
         {
             command_entry.set_text(dialog.get_filename());
         }
     });
     run_button.set_image_from_icon_name("media-playback-start");
-    run_button.set_tooltip_text("Run command");
+    run_button.set_tooltip_text(_("Run command"));
     run_button.signal_clicked().connect([=]
     {
         Glib::spawn_command_line_async(command_entry.get_text());
     });
     remove_button.set_image_from_icon_name("list-remove");
-    remove_button.set_tooltip_text("Remove from autostart list");
+    remove_button.set_tooltip_text(_("Remove from autostart list"));
     remove_button.signal_clicked().connect([=]
     {
         auto section = WCM::get_instance()->get_config_section(option->plugin);
@@ -768,9 +770,9 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string & cmd_name,
     type_label.set_size_request(OPTION_LABEL_SIZE);
     type_label.set_alignment(Gtk::ALIGN_START);
     type_box.pack_start(type_label, false, false);
-    type_combo_box.append("Regular");
-    type_combo_box.append("Repeat");
-    type_combo_box.append("Always");
+    type_combo_box.append(_("Regular"));
+    type_combo_box.append(_("Repeat"));
+    type_combo_box.append(_("Always"));
     type_combo_box.set_active(always_opt ? 2 : repeatable_opt ? 1 : 0);
     type_combo_box.signal_changed().connect([=]
     {
@@ -795,10 +797,12 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string & cmd_name,
     command_label.set_size_request(OPTION_LABEL_SIZE);
     command_label.set_alignment(Gtk::ALIGN_START);
     command_box.pack_start(command_label, false, false);
-    expander.set_label("Command " + cmd_name);
+    expander.set_label(fmt::format(_("Command {name}"), fmt::arg("name", cmd_name)));
     command_entry.signal_changed().connect([=]
     {
-        expander.set_label("Command " + cmd_name + ": " + command_entry.get_text());
+        expander.set_label(fmt::format(_("Command {name}: {command}"),
+                                       fmt::arg("name", cmd_name),
+                                       fmt::arg("command", command_entry.get_text().c_str())));
         auto *label = (Gtk::Label*)expander.get_label_widget();
         label->set_ellipsize(Pango::ELLIPSIZE_END);
         label->set_tooltip_text(command_entry.get_text());
@@ -844,7 +848,7 @@ VswitchBindingsDynamicList<kind>::BindingWidget::BindingWidget(std::shared_ptr<w
         WCM::get_instance()->save_config(option->plugin);
     });
 
-    workspace_spin_button.set_tooltip_text("Workspace Index");
+    workspace_spin_button.set_tooltip_text(_("Workspace Index"));
     workspace_spin_button.set_value(workspace_index);
     workspace_spin_button.signal_value_changed().connect([=]
     {
@@ -897,7 +901,7 @@ AutostartDynamicList::AutostartDynamicList(Option *option)
         pack_widget(std::make_unique<AutostartWidget>(dyn_opt));
     }
 
-    add_button.set_tooltip_text("Add new command");
+    add_button.set_tooltip_text(_("Add new command"));
     add_button.signal_clicked().connect([=]
     {
         static const std::string prefix = "autostart";
@@ -971,13 +975,13 @@ const std::string VswitchBindingsDynamicList<VswitchBindingKind::WITH_WINDOW>::O
 template<>
 const std::string VswitchBindingsDynamicList<VswitchBindingKind::SEND_WINDOW>::OPTION_PREFIX = "send_win_";
 template<>
-const Glib::ustring VswitchBindingsWidget<VswitchBindingKind::WITHOUT_WINDOW>::LABEL_TEXT = "Go To Workspace";
+const Glib::ustring VswitchBindingsWidget<VswitchBindingKind::WITHOUT_WINDOW>::LABEL_TEXT = _("Go To Workspace");
 template<>
 const Glib::ustring VswitchBindingsWidget<VswitchBindingKind::WITH_WINDOW>::LABEL_TEXT =
-    "Go To Workspace With Window";
+    _("Go To Workspace With Window");
 template<>
 const Glib::ustring VswitchBindingsWidget<VswitchBindingKind::SEND_WINDOW>::LABEL_TEXT =
-    "Send Window To Workspace";
+    _("Send Window To Workspace");
 
 template<enum VswitchBindingKind kind>
 VswitchBindingsDynamicList<kind>::VswitchBindingsDynamicList(Option *option)
@@ -1003,13 +1007,19 @@ VswitchBindingsDynamicList<kind>::VswitchBindingsDynamicList(Option *option)
     add_button.signal_clicked().connect([=]
     {
         int workspace_index = 1;
-        while (section->get_option_or(OPTION_PREFIX + std::to_string(workspace_index)))
+        while (section->get_option_or(fmt::format(_("{workspace_option_prefix} {workspace_index}"),
+                                                  fmt::arg("workspace_option_prefix", OPTION_PREFIX),
+                                                  fmt::arg("workspace_index", std::to_string(workspace_index)))))
         {
             ++workspace_index;
         }
 
-        Option *binding_option =
-            option->create_child_option(OPTION_PREFIX + std::to_string(workspace_index), OPTION_TYPE_STRING);
+        Option *binding_option = option->create_child_option(
+                fmt::format(_("{workspace_option_prefix} {workspace_index}"),
+                            fmt::arg("workspace_option_prefix", OPTION_PREFIX),
+                            fmt::arg("workspace_index", std::to_string(workspace_index))),
+                OPTION_TYPE_STRING
+            );
         section->register_new_option(std::make_shared<wf::config::option_t<std::string>>(binding_option->name,
             ""));
         pack_widget(std::make_unique<BindingWidget>(section, binding_option, workspace_index));
@@ -1021,7 +1031,7 @@ VswitchBindingsDynamicList<kind>::VswitchBindingsDynamicList(Option *option)
 template<enum VswitchBindingKind kind>
 VswitchBindingsWidget<kind>::VswitchBindingsWidget(Option *option) : dynamic_list(option)
 {
-    set_label(LABEL_TEXT + " Bindings");
+    set_label(fmt::format("{option_name} Bindings", fmt::arg("option_name", LABEL_TEXT.c_str())));
     dynamic_list.property_margin().set_value(5);
     add(dynamic_list);
 }
@@ -1183,7 +1193,7 @@ MainPage::MainPage(const std::vector<Plugin*> & plugins) : plugins(plugins)
         std::find_if(categories.begin(), categories.end() - 1,
             [=] (const Category & cat)
         {
-            return cat.name == plugin->category;
+            return cat.name == Glib::ustring(_(plugin->category.c_str()));
         })->add_plugin(plugin);
         size_group->add_widget(plugin->widget);
     }
@@ -1214,7 +1224,7 @@ void MainPage::set_filter(const Glib::ustring & filter)
             find_string(plug->tooltip, filter);
         // the parent of `plug->widget` is `Gtk::FlowBoxItem`
         plug->widget.get_parent()->set_visible(plug_visible);
-        category_visible[plug->category] |= plug_visible;
+        category_visible[_(plug->category.c_str())] |= plug_visible;
     }
 
     categories[0].vbox.set_visible(category_visible[categories[0].name]);
@@ -1314,17 +1324,17 @@ WCM::WCM(Glib::RefPtr<Gtk::Application> app)
     {
         wf_config_file = value;
         return true;
-    }, "config", 'c', "Wayfire config file to use", "file");
+    }, "config", 'c', _("Wayfire config file to use"), "file");
     app->add_main_option_entry([this] (const Glib::ustring &, const Glib::ustring & value, bool)
     {
         wf_shell_config_file = value;
         return true;
-    }, "shell-config", 's', "wf-shell config file to use", "file");
+    }, "shell-config", 's', _("wf-shell config file to use"), "file");
     app->add_main_option_entry([this] (const Glib::ustring &, const Glib::ustring & value, bool)
     {
         start_plugin = value;
         return true;
-    }, "plugin", 'p', "plugin to open at launch, or none for default", "name");
+    }, "plugin", 'p', _("plugin to open at launch, or none for default"), "name");
 
     app->signal_startup().connect([this, app] ()
     {
@@ -1351,7 +1361,7 @@ WCM::WCM(Glib::RefPtr<Gtk::Application> app)
         window->set_icon(icon);
         window->set_size_request(750, 550);
         window->set_default_size(1000, 580);
-        window->set_title("Wayfire Config Manager");
+        window->set_title(_("Wayfire Config Manager"));
         create_main_layout();
         window->show_all();
     });
@@ -1424,7 +1434,7 @@ bool WCM::lock_input(Gtk::Dialog *grab_dialog)
         auto error_dialog = Gtk::Dialog(
             "Compositor does not advertise zwp_keyboard_shortcuts_inhibit_manager_v1!", *window,
             Gtk::DIALOG_DESTROY_WITH_PARENT);
-        auto label = Gtk::Label("To use input binding capture, enable shortcuts-inhibit plugin.");
+        auto label = Gtk::Label(_("To use input binding capture, enable shortcuts-inhibit plugin."));
         error_dialog.get_content_area()->pack_start(label, true, true, 50);
         error_dialog.add_button("Ok", 0);
         label.show();
@@ -1517,7 +1527,7 @@ void WCM::create_main_layout()
     main_page = std::make_unique<MainPage>(plugins);
 
     filter_label.property_margin().set_value(10);
-    filter_label.set_markup("<span size=\"large\"><b>Filter</b></span>");
+    filter_label.set_markup("<span size=\"large\"><b>" + std::string(_("Filter")) + "</b></span>");
     main_left_panel_layout.pack_start(filter_label, false, false);
 
     search_entry.property_margin().set_value(10);
@@ -1551,7 +1561,7 @@ void WCM::create_main_layout()
     {
         output_config_button.set_sensitive(false);
         output_config_button.set_tooltip_markup(
-            "Cannot find program <tt>wdisplays</tt>");
+            _("Cannot find program <tt>wdisplays</tt>"));
     }
 
     plugin_left_panel_layout.pack_start(plugin_name_label, false, false);

@@ -1,0 +1,234 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-15 01:08+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/metadata.cpp:382
+msgid "Uncategorized"
+msgstr ""
+
+#: src/metadata.cpp:411 src/wcm.hpp:83
+msgid "General"
+msgstr ""
+
+#: src/wcm.cpp:65
+msgid "Waiting for Binding"
+msgstr ""
+
+#: src/wcm.cpp:66
+msgid "none"
+msgstr ""
+
+#: src/wcm.cpp:102
+msgid "(No modifiers pressed)"
+msgstr ""
+
+#: src/wcm.cpp:199
+msgid "Edit binding"
+msgstr ""
+
+#: src/wcm.cpp:210
+msgid "Save binding"
+msgstr ""
+
+#: src/wcm.cpp:221 src/wcm.cpp:575 src/wcm.cpp:697
+msgid "Cancel"
+msgstr ""
+
+#: src/wcm.cpp:257
+msgid "Open context menu to choose layout"
+msgstr ""
+
+#: src/wcm.cpp:282
+msgid "Open context menu to choose model"
+msgstr ""
+
+#: src/wcm.cpp:369
+msgid "Reset to default"
+msgstr ""
+
+#: src/wcm.cpp:576 src/wcm.cpp:698
+msgid "Open"
+msgstr ""
+
+#: src/wcm.cpp:586
+msgid "Choose Directory"
+msgstr ""
+
+#: src/wcm.cpp:590
+msgid "Select Folder"
+msgstr ""
+
+#: src/wcm.cpp:600
+msgid "Choose File"
+msgstr ""
+
+#: src/wcm.cpp:604
+msgid "Select File"
+msgstr ""
+
+#: src/wcm.cpp:693 src/wcm.cpp:696
+msgid "Choose Executable"
+msgstr ""
+
+#: src/wcm.cpp:705
+msgid "Run command"
+msgstr ""
+
+#: src/wcm.cpp:711
+msgid "Remove from autostart list"
+msgstr ""
+
+#: src/wcm.cpp:773
+msgid "Regular"
+msgstr ""
+
+#: src/wcm.cpp:774
+msgid "Repeat"
+msgstr ""
+
+#: src/wcm.cpp:775
+msgid "Always"
+msgstr ""
+
+#: src/wcm.cpp:800
+msgid "Command {name}"
+msgstr ""
+
+#: src/wcm.cpp:803
+msgid "Command {name}: {command}"
+msgstr ""
+
+#: src/wcm.cpp:851
+msgid "Workspace Index"
+msgstr ""
+
+#: src/wcm.cpp:904
+msgid "Add new command"
+msgstr ""
+
+#: src/wcm.cpp:978
+msgid "Go To Workspace"
+msgstr ""
+
+#: src/wcm.cpp:981
+msgid "Go To Workspace With Window"
+msgstr ""
+
+#: src/wcm.cpp:984
+msgid "Send Window To Workspace"
+msgstr ""
+
+#: src/wcm.cpp:1010 src/wcm.cpp:1018
+msgid "{workspace_option_prefix} {workspace_index}"
+msgstr ""
+
+#: src/wcm.cpp:1327
+msgid "Wayfire config file to use"
+msgstr ""
+
+#: src/wcm.cpp:1332
+msgid "wf-shell config file to use"
+msgstr ""
+
+#: src/wcm.cpp:1337
+msgid "plugin to open at launch, or none for default"
+msgstr ""
+
+#: src/wcm.cpp:1364
+msgid "Wayfire Config Manager"
+msgstr ""
+
+#: src/wcm.cpp:1437
+msgid "To use input binding capture, enable shortcuts-inhibit plugin."
+msgstr ""
+
+#: src/wcm.cpp:1530
+msgid "Filter"
+msgstr ""
+
+#: src/wcm.cpp:1564
+msgid "Cannot find program <tt>wdisplays</tt>"
+msgstr ""
+
+#: src/wcm.hpp:84
+msgid "Accessibility"
+msgstr ""
+
+#: src/wcm.hpp:85
+msgid "Desktop"
+msgstr ""
+
+#: src/wcm.hpp:85
+msgid "Shell"
+msgstr ""
+
+#: src/wcm.hpp:86
+msgid "Effects"
+msgstr ""
+
+#: src/wcm.hpp:87
+msgid "Window Management"
+msgstr ""
+
+#: src/wcm.hpp:88
+msgid "Utility"
+msgstr ""
+
+#: src/wcm.hpp:88
+msgid "Other"
+msgstr ""
+
+#: src/wcm.hpp:94
+msgid "(none)"
+msgstr ""
+
+#: src/wcm.hpp:215
+msgid "Command:"
+msgstr ""
+
+#: src/wcm.hpp:221
+msgid "Type"
+msgstr ""
+
+#: src/wcm.hpp:222
+msgid "Binding"
+msgstr ""
+
+#: src/wcm.hpp:223
+msgid "Command"
+msgstr ""
+
+#: src/wcm.hpp:254
+msgid "Workspace"
+msgstr ""
+
+#: src/wcm.hpp:338
+msgid "Close"
+msgstr ""
+
+#: src/wcm.hpp:340
+msgid "Configure Outputs"
+msgstr ""
+
+#: src/wcm.hpp:347
+msgid "Use This Plugin"
+msgstr ""
+
+#: src/wcm.hpp:348
+msgid "Back"
+msgstr ""

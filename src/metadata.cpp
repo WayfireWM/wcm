@@ -30,6 +30,8 @@
 #include <stdio.h>
 #include <wayfire/config/xml.hpp>
 
+#define _(MSG) gettext(MSG)
+
 Option::Option(xmlNode *cur_node, Plugin *plugin)
 {
     xmlNode *node;
@@ -377,7 +379,7 @@ Plugin*Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *pl
         if (cur_node_name == "plugin")
         {
             plugin = new Plugin();
-            plugin->category = "Uncategorized";
+            plugin->category = _("Uncategorized");
             prop = xmlGetProp(cur_node, (xmlChar*)"name");
             if (prop)
             {
@@ -406,7 +408,7 @@ Plugin*Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *pl
             if (!main_group)
             {
                 main_group = new Option(OPTION_TYPE_GROUP, plugin);
-                main_group->name = "General";
+                main_group->name = _("General");
                 plugin->option_groups.push_back(main_group);
             }
 

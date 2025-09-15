@@ -9,10 +9,10 @@ wayfire = dependency('wayfire', version: '>=0.11.0')
 wf_shell = dependency('wf-shell', required : get_option('wf_shell'))
 
 wayfire_metadata_dir = wayfire.get_variable(pkgconfig: 'metadatadir')
-wayfire_locale_dir = join_paths(fs.parent(wayfire_metadata_dir), 'locale')
 wayfire_sysconf_dir = wayfire.get_variable(pkgconfig: 'sysconfdir')
 
 share_dir = join_paths(get_option('prefix'), 'share')
+wayfire_locale_dir = join_paths(share_dir, 'locale')
 icon_dir = join_paths(share_dir, 'wcm', 'icons')
 
 add_global_arguments('-DWAYFIRE_METADATADIR="' + wayfire_metadata_dir + '"', language : 'cpp')
@@ -37,3 +37,10 @@ subdir('proto')
 subdir('src')
 
 install_data('wcm.desktop', install_dir: join_paths(share_dir, 'applications'))
+
+message(wayfire_locale_dir)
+
+install_subdir('locale',
+  install_dir : wayfire_locale_dir,
+  strip_directory : true
+)

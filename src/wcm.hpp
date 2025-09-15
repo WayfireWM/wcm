@@ -31,6 +31,8 @@
 #include <gdk/gdkwayland.h>
 #include <gtkmm.h>
 #include <iostream>
+#include <fmt/core.h>
+#include <libintl.h>
 #include <variant>
 #include <vector>
 #include <wayfire/config/file.hpp>
@@ -38,6 +40,8 @@
 #include <keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h>
 
 #include "metadata.hpp"
+
+#define _(MSG) gettext(MSG)
 
 struct animate_option
 {
@@ -76,18 +80,18 @@ class MainPage : public Gtk::ScrolledWindow
         Gtk::SIZE_GROUP_BOTH);
     std::array<Gtk::Separator, NUM_CATEGORIES - 1> separators;
     std::array<Category, NUM_CATEGORIES> categories = {
-        Category{"General", "preferences-system"},
-        {"Accessibility", "preferences-desktop-accessibility"},
-        {"Desktop", "preferences-desktop"}, {"Shell", "user-desktop"},
-        {"Effects", "applications-graphics"},
-        {"Window Management", "applications-accessories"},
-        {"Utility", "applications-other"}, {"Other", "applications-other"}};
+        Category{_("General"), "preferences-system"},
+        {_("Accessibility"), "preferences-desktop-accessibility"},
+        {_("Desktop"), "preferences-desktop"}, {_("Shell"), "user-desktop"},
+        {_("Effects"), "applications-graphics"},
+        {_("Window Management"), "applications-accessories"},
+        {_("Utility"), "applications-other"}, {_("Other"), "applications-other"}};
 };
 
 class KeyEntry : public Gtk::Stack
 {
     Gtk::Box grab_layout  = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
-    Gtk::Label grab_label = Gtk::Label("(none)");
+    Gtk::Label grab_label = Gtk::Label(_("(none)"));
     Gtk::Button grab_button;
     Gtk::Button edit_button;
 
@@ -208,15 +212,15 @@ class BindingsDynamicList : public DynamicListBase
 {
     struct BindingWidget : public Gtk::Frame
     {
-        Gtk::Expander expander = Gtk::Expander("Command:");
+        Gtk::Expander expander = Gtk::Expander(_("Command:"));
         Gtk::Box vbox     = Gtk::Box(Gtk::ORIENTATION_VERTICAL, 10);
         Gtk::Box type_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
         Gtk::Box binding_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
         Gtk::Box command_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
 
-        Gtk::Label type_label    = Gtk::Label("Type");
-        Gtk::Label binding_label = Gtk::Label("Binding");
-        Gtk::Label command_label = Gtk::Label("Command");
+        Gtk::Label type_label    = Gtk::Label(_("Type"));
+        Gtk::Label binding_label = Gtk::Label(_("Binding"));
+        Gtk::Label command_label = Gtk::Label(_("Command"));
 
         Gtk::ComboBoxText type_combo_box;
         std::unique_ptr<KeyEntry> key_entry;
@@ -247,7 +251,7 @@ class VswitchBindingsDynamicList : public DynamicListBase
 
     struct BindingWidget : public Gtk::Box
     {
-        Gtk::Label label = Gtk::Label("Workspace");
+        Gtk::Label label = Gtk::Label(_("Workspace"));
         Gtk::SpinButton workspace_spin_button = Gtk::SpinButton(Gtk::Adjustment::create(1, 1, 30));
         KeyEntry key_entry;
         Gtk::Button remove_button;
@@ -331,17 +335,17 @@ class WCM
     Gtk::Box main_left_panel_layout = Gtk::Box(Gtk::ORIENTATION_VERTICAL);
     Gtk::Label filter_label;
     Gtk::SearchEntry search_entry;
-    PrettyButton close_button = PrettyButton("Close", "window-close");
+    PrettyButton close_button = PrettyButton(_("Close"), "window-close");
     PrettyButton output_config_button =
-        PrettyButton("Configure Outputs", "computer");
+        PrettyButton(_("Configure Outputs"), "computer");
 
     Gtk::Box plugin_left_panel_layout = Gtk::Box(Gtk::ORIENTATION_VERTICAL);
     Gtk::Label plugin_name_label;
     Gtk::Label plugin_description_label;
     Gtk::Box plugin_enabled_box = Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, 10);
     Gtk::CheckButton plugin_enabled_check;
-    Gtk::Label plugin_enabled_label = Gtk::Label("Use This Plugin");
-    PrettyButton back_button = PrettyButton("Back", "go-previous");
+    Gtk::Label plugin_enabled_label = Gtk::Label(_("Use This Plugin"));
+    PrettyButton back_button = PrettyButton(_("Back"), "go-previous");
 
     cairo_surface_t *grab_window_surface = nullptr;
     zwp_keyboard_shortcuts_inhibitor_v1 *shortcuts_inhibitor     = nullptr;
