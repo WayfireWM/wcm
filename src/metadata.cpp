@@ -115,6 +115,7 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
     }
 
     free(prop);
+    std::string gettext_domain_name = "wf-plugin-" + plugin->name;
     for (node = cur_node->children; node; node = node->next)
     {
         if (node->type != XML_ELEMENT_NODE)
@@ -123,7 +124,6 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
         }
 
         std::string node_name = (char*)node->name;
-        std::string gettext_domain_name = "wf-plugin-" + plugin->name;
         if (node_name == "_short")
         {
             this->disp_name = dgettext(gettext_domain_name.c_str(), (char*)node->children->content);
@@ -289,7 +289,7 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
 
                         if (is_name)
                         {
-                            li->name = strdup((char*)n->children->content);
+                            li->name = dgettext(gettext_domain_name.c_str(), strdup((char*)n->children->content));
                         }
                     } else if (this->type == OPTION_TYPE_STRING)
                     {
@@ -312,7 +312,7 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
 
                         if (is_name)
                         {
-                            ls->name = (char*)n->children->content;
+                            ls->name = dgettext(gettext_domain_name.c_str(), strdup((char*)n->children->content));
                         }
                     }
                 }
