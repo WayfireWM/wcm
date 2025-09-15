@@ -387,7 +387,7 @@ Plugin*Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *pl
             {
                 plugin->name = (char*)prop;
                 // Initialise translations
-                bindtextdomain(("plugin-" + plugin->name).c_str(), WAYFIRE_LOCALEDIR);
+                bindtextdomain(("wf-plugin-" + plugin->name).c_str(), WAYFIRE_LOCALEDIR);
             }
 
             free(prop);

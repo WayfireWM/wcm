@@ -1,3 +1,6 @@
+share_dir = join_paths(get_option('prefix'), 'share')
+wayfire_locale_dir = join_paths(share_dir, 'locale')
+
 fs = import('fs')
 
 mo_targets = []
