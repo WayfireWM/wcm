@@ -22,9 +22,10 @@ bool KeyEntry::check_and_confirm(const std::string & key_str)
         ((key_str.find("BTN") != std::string::npos) ||
          (key_str.find("KEY") != std::string::npos)))
     {
-        auto dialog = Gtk::MessageDialog(_(("Attempting to bind <tt><b>\"" + key_str + '"' +
-            "</b></tt> without modifier. You will be unable to use this key/button "
-            "for anything else! Are you sure?").c_str()),
+        auto dialog = Gtk::MessageDialog(
+            fmt::format(_("Attempting to bind <tt><b>\"{key_str}\"</b></tt> without modifier."
+                          " You will be unable to use this key/button for anything else!"
+                          " Are you sure?"), fmt::arg("key_str", key_str)),
             true, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO);
         return dialog.run() == Gtk::RESPONSE_YES;
     }

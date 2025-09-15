@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-15 01:08+0300\n"
+"POT-Creation-Date: 2025-09-15 14:54+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,143 +25,149 @@ msgstr ""
 msgid "General"
 msgstr ""
 
-#: src/wcm.cpp:65
-msgid "Waiting for Binding"
+#: src/wcm.cpp:26
+msgid ""
+"Attempting to bind <tt><b>\"{key_str}\"</b></tt> without modifier. You will "
+"be unable to use this key/button for anything else! Are you sure?"
 msgstr ""
 
 #: src/wcm.cpp:66
+msgid "Waiting for Binding"
+msgstr ""
+
+#: src/wcm.cpp:67
 msgid "none"
 msgstr ""
 
-#: src/wcm.cpp:102
+#: src/wcm.cpp:103
 msgid "(No modifiers pressed)"
 msgstr ""
 
-#: src/wcm.cpp:199
+#: src/wcm.cpp:200
 msgid "Edit binding"
 msgstr ""
 
-#: src/wcm.cpp:210
+#: src/wcm.cpp:211
 msgid "Save binding"
 msgstr ""
 
-#: src/wcm.cpp:221 src/wcm.cpp:575 src/wcm.cpp:697
+#: src/wcm.cpp:222 src/wcm.cpp:576 src/wcm.cpp:698
 msgid "Cancel"
 msgstr ""
 
-#: src/wcm.cpp:257
+#: src/wcm.cpp:258
 msgid "Open context menu to choose layout"
 msgstr ""
 
-#: src/wcm.cpp:282
+#: src/wcm.cpp:283
 msgid "Open context menu to choose model"
 msgstr ""
 
-#: src/wcm.cpp:369
+#: src/wcm.cpp:370
 msgid "Reset to default"
 msgstr ""
 
-#: src/wcm.cpp:576 src/wcm.cpp:698
+#: src/wcm.cpp:577 src/wcm.cpp:699
 msgid "Open"
 msgstr ""
 
-#: src/wcm.cpp:586
+#: src/wcm.cpp:587
 msgid "Choose Directory"
 msgstr ""
 
-#: src/wcm.cpp:590
+#: src/wcm.cpp:591
 msgid "Select Folder"
 msgstr ""
 
-#: src/wcm.cpp:600
+#: src/wcm.cpp:601
 msgid "Choose File"
 msgstr ""
 
-#: src/wcm.cpp:604
+#: src/wcm.cpp:605
 msgid "Select File"
 msgstr ""
 
-#: src/wcm.cpp:693 src/wcm.cpp:696
+#: src/wcm.cpp:694 src/wcm.cpp:697
 msgid "Choose Executable"
 msgstr ""
 
-#: src/wcm.cpp:705
+#: src/wcm.cpp:706
 msgid "Run command"
 msgstr ""
 
-#: src/wcm.cpp:711
+#: src/wcm.cpp:712
 msgid "Remove from autostart list"
 msgstr ""
 
-#: src/wcm.cpp:773
+#: src/wcm.cpp:774
 msgid "Regular"
 msgstr ""
 
-#: src/wcm.cpp:774
+#: src/wcm.cpp:775
 msgid "Repeat"
 msgstr ""
 
-#: src/wcm.cpp:775
+#: src/wcm.cpp:776
 msgid "Always"
 msgstr ""
 
-#: src/wcm.cpp:800
+#: src/wcm.cpp:801
 msgid "Command {name}"
 msgstr ""
 
-#: src/wcm.cpp:803
+#: src/wcm.cpp:804
 msgid "Command {name}: {command}"
 msgstr ""
 
-#: src/wcm.cpp:851
+#: src/wcm.cpp:852
 msgid "Workspace Index"
 msgstr ""
 
-#: src/wcm.cpp:904
+#: src/wcm.cpp:905
 msgid "Add new command"
 msgstr ""
 
-#: src/wcm.cpp:978
+#: src/wcm.cpp:979
 msgid "Go To Workspace"
 msgstr ""
 
-#: src/wcm.cpp:981
+#: src/wcm.cpp:982
 msgid "Go To Workspace With Window"
 msgstr ""
 
-#: src/wcm.cpp:984
+#: src/wcm.cpp:985
 msgid "Send Window To Workspace"
 msgstr ""
 
-#: src/wcm.cpp:1010 src/wcm.cpp:1018
+#: src/wcm.cpp:1011 src/wcm.cpp:1019
 msgid "{workspace_option_prefix} {workspace_index}"
 msgstr ""
 
-#: src/wcm.cpp:1327
+#: src/wcm.cpp:1328
 msgid "Wayfire config file to use"
 msgstr ""
 
-#: src/wcm.cpp:1332
+#: src/wcm.cpp:1333
 msgid "wf-shell config file to use"
 msgstr ""
 
-#: src/wcm.cpp:1337
+#: src/wcm.cpp:1338
 msgid "plugin to open at launch, or none for default"
 msgstr ""
 
-#: src/wcm.cpp:1364
+#: src/wcm.cpp:1365
 msgid "Wayfire Config Manager"
 msgstr ""
 
-#: src/wcm.cpp:1437
+#: src/wcm.cpp:1438
 msgid "To use input binding capture, enable shortcuts-inhibit plugin."
 msgstr ""
 
-#: src/wcm.cpp:1530
+#: src/wcm.cpp:1531
 msgid "Filter"
 msgstr ""
 
-#: src/wcm.cpp:1564
+#: src/wcm.cpp:1565
 msgid "Cannot find program <tt>wdisplays</tt>"
 msgstr ""
 
