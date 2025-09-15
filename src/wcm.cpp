@@ -802,8 +802,8 @@ BindingsDynamicList::BindingWidget::BindingWidget(const std::string & cmd_name,
     command_entry.signal_changed().connect([=]
     {
         expander.set_label(fmt::format(_("Command {name}: {command}"),
-                                       fmt::arg("name", cmd_name),
-                                       fmt::arg("command", command_entry.get_text().c_str())));
+            fmt::arg("name", cmd_name),
+            fmt::arg("command", command_entry.get_text().c_str())));
         auto *label = (Gtk::Label*)expander.get_label_widget();
         label->set_ellipsize(Pango::ELLIPSIZE_END);
         label->set_tooltip_text(command_entry.get_text());
@@ -976,7 +976,8 @@ const std::string VswitchBindingsDynamicList<VswitchBindingKind::WITH_WINDOW>::O
 template<>
 const std::string VswitchBindingsDynamicList<VswitchBindingKind::SEND_WINDOW>::OPTION_PREFIX = "send_win_";
 template<>
-const Glib::ustring VswitchBindingsWidget<VswitchBindingKind::WITHOUT_WINDOW>::LABEL_TEXT = _("Go To Workspace");
+const Glib::ustring VswitchBindingsWidget<VswitchBindingKind::WITHOUT_WINDOW>::LABEL_TEXT =
+    _("Go To Workspace");
 template<>
 const Glib::ustring VswitchBindingsWidget<VswitchBindingKind::WITH_WINDOW>::LABEL_TEXT =
     _("Go To Workspace With Window");
@@ -1009,18 +1010,17 @@ VswitchBindingsDynamicList<kind>::VswitchBindingsDynamicList(Option *option)
     {
         int workspace_index = 1;
         while (section->get_option_or(fmt::format(_("{workspace_option_prefix} {workspace_index}"),
-                                                  fmt::arg("workspace_option_prefix", OPTION_PREFIX),
-                                                  fmt::arg("workspace_index", std::to_string(workspace_index)))))
+            fmt::arg("workspace_option_prefix", OPTION_PREFIX),
+            fmt::arg("workspace_index", std::to_string(workspace_index)))))
         {
             ++workspace_index;
         }
 
         Option *binding_option = option->create_child_option(
-                fmt::format(_("{workspace_option_prefix} {workspace_index}"),
-                            fmt::arg("workspace_option_prefix", OPTION_PREFIX),
-                            fmt::arg("workspace_index", std::to_string(workspace_index))),
-                OPTION_TYPE_STRING
-            );
+            fmt::format(_("{workspace_option_prefix} {workspace_index}"),
+                fmt::arg("workspace_option_prefix", OPTION_PREFIX),
+                fmt::arg("workspace_index", std::to_string(workspace_index))),
+            OPTION_TYPE_STRING);
         section->register_new_option(std::make_shared<wf::config::option_t<std::string>>(binding_option->name,
             ""));
         pack_widget(std::make_unique<BindingWidget>(section, binding_option, workspace_index));

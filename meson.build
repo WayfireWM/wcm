@@ -40,7 +40,7 @@ install_data('wcm.desktop', install_dir: join_paths(share_dir, 'applications'))
 
 mo_targets = []
 
-po_files_raw = run_command('find', 'locale', '-name', '*.po').stdout().strip().split('\n')
+po_files_raw = run_command('find', 'locale', '-name', '*.po', check : false).stdout().strip().split('\n')
 po_files = files(po_files_raw)
 
 foreach po_file : po_files

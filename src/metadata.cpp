@@ -289,7 +289,8 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
 
                         if (is_name)
                         {
-                            li->name = dgettext(gettext_domain_name.c_str(), strdup((char*)n->children->content));
+                            li->name =
+                                dgettext(gettext_domain_name.c_str(), strdup((char*)n->children->content));
                         }
                     } else if (this->type == OPTION_TYPE_STRING)
                     {
@@ -312,7 +313,8 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
 
                         if (is_name)
                         {
-                            ls->name = dgettext(gettext_domain_name.c_str(), strdup((char*)n->children->content));
+                            ls->name =
+                                dgettext(gettext_domain_name.c_str(), strdup((char*)n->children->content));
                         }
                     }
                 }
