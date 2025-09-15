@@ -1,3 +1,5 @@
+fs = import('fs')
+
 mo_targets = []
 
 po_files_raw = run_command('find', '.', '-name', '*.po', check : true).stdout().strip().split('\n')
