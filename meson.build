@@ -19,11 +19,11 @@ add_global_arguments('-DWAYFIRE_METADATADIR="' + wayfire_metadata_dir + '"', lan
 add_global_arguments('-DWAYFIRE_LOCALEDIR="' + wayfire_locale_dir + '"', language : 'cpp')
 add_global_arguments('-DWAYFIRE_SYSCONFDIR="' + wayfire_sysconf_dir + '"', language : 'cpp')
 if wf_shell.found()
-  wf_shell_metadata_dir = wf_shell.get_variable(pkgconfig: 'metadatadir')
-  wf_shell_sysconf_dir = wf_shell.get_variable(pkgconfig: 'sysconfdir')
-  add_project_arguments('-DHAVE_WFSHELL=1', language : 'cpp')
-  add_global_arguments('-DWFSHELL_METADATADIR="' + wf_shell_metadata_dir + '"', language : 'cpp')
-  add_global_arguments('-DWFSHELL_SYSCONFDIR="' + wf_shell_sysconf_dir + '"', language : 'cpp')
+    wf_shell_metadata_dir = wf_shell.get_variable(pkgconfig: 'metadatadir')
+    wf_shell_sysconf_dir = wf_shell.get_variable(pkgconfig: 'sysconfdir')
+    add_project_arguments('-DHAVE_WFSHELL=1', language : 'cpp')
+    add_global_arguments('-DWFSHELL_METADATADIR="' + wf_shell_metadata_dir + '"', language : 'cpp')
+    add_global_arguments('-DWFSHELL_SYSCONFDIR="' + wf_shell_sysconf_dir + '"', language : 'cpp')
 endif
 add_global_arguments('-DICONDIR="' + icon_dir + '"', language : 'cpp')
 
