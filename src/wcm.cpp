@@ -10,9 +10,9 @@
 #include <wayfire/config/xml.hpp>
 #include <wayfire/util/duration.hpp>
 #include <wordexp.h>
+#include <glibmm/i18n.h>
 
 #define OUTPUT_CONFIG_PROGRAM "wdisplays"
-#define _(MSG) gettext(MSG)
 
 constexpr int OPTION_LABEL_SIZE = 200;
 

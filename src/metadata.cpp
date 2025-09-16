@@ -29,8 +29,7 @@
 #include <locale.h>
 #include <stdio.h>
 #include <wayfire/config/xml.hpp>
-
-#define _(MSG) gettext(MSG)
+#include <glibmm/i18n.h>
 
 Option::Option(xmlNode *cur_node, Plugin *plugin)
 {

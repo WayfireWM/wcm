@@ -38,10 +38,9 @@
 #include <wayfire/config/file.hpp>
 #include <wayfire/config/xml.hpp>
 #include <keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h>
+#include <glibmm/i18n.h>
 
 #include "metadata.hpp"
-
-#define _(MSG) gettext(MSG)
 
 struct animate_option
 {
