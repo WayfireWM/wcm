@@ -1009,20 +1009,15 @@ VswitchBindingsDynamicList<kind>::VswitchBindingsDynamicList(Option *option)
     add_button.signal_clicked().connect([=]
     {
         int workspace_index = 1;
-        while (section->get_option_or(fmt::format(_("{workspace_option_prefix} {workspace_index}"),
-            fmt::arg("workspace_option_prefix", OPTION_PREFIX),
-            fmt::arg("workspace_index", std::to_string(workspace_index)))))
+        while (section->get_option_or(OPTION_PREFIX + std::to_string(workspace_index)))
         {
             ++workspace_index;
         }
 
-        Option *binding_option = option->create_child_option(
-            fmt::format(_("{workspace_option_prefix} {workspace_index}"),
-                fmt::arg("workspace_option_prefix", OPTION_PREFIX),
-                fmt::arg("workspace_index", std::to_string(workspace_index))),
-            OPTION_TYPE_STRING);
-        section->register_new_option(std::make_shared<wf::config::option_t<std::string>>(binding_option->name,
-            ""));
+        Option *binding_option =
+            option->create_child_option(OPTION_PREFIX + std::to_string(workspace_index), OPTION_TYPE_STRING);
+        section->register_new_option(std::make_shared<wf::config::option_t<std::string>>(
+            binding_option->name, ""));
         pack_widget(std::make_unique<BindingWidget>(section, binding_option, workspace_index));
         show_all();
         WCM::get_instance()->save_config(option->plugin);
