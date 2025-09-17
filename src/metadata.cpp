@@ -25,8 +25,11 @@
  */
 
 #include "wcm.hpp"
+#include <libintl.h>
+#include <locale.h>
 #include <stdio.h>
 #include <wayfire/config/xml.hpp>
+#include <glibmm/i18n.h>
 
 Option::Option(xmlNode *cur_node, Plugin *plugin)
 {
@@ -111,6 +114,7 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
     }
 
     free(prop);
+    std::string gettext_domain_name = "wf-plugin-" + plugin->name;
     for (node = cur_node->children; node; node = node->next)
     {
         if (node->type != XML_ELEMENT_NODE)
@@ -121,10 +125,10 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
         std::string node_name = (char*)node->name;
         if (node_name == "_short")
         {
-            this->disp_name = (char*)node->children->content;
+            this->disp_name = dgettext(gettext_domain_name.c_str(), (char*)node->children->content);
         } else if (node_name == "_long")
         {
-            this->tooltip = (char*)node->children->content;
+            this->tooltip = dgettext(gettext_domain_name.c_str(), (char*)node->children->content);
         } else if (node_name == "default")
         {
             if (!node->children)
@@ -284,7 +288,8 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
 
                         if (is_name)
                         {
-                            li->name = strdup((char*)n->children->content);
+                            li->name =
+                                dgettext(gettext_domain_name.c_str(), strdup((char*)n->children->content));
                         }
                     } else if (this->type == OPTION_TYPE_STRING)
                     {
@@ -307,7 +312,8 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
 
                         if (is_name)
                         {
-                            ls->name = (char*)n->children->content;
+                            ls->name =
+                                dgettext(gettext_domain_name.c_str(), strdup((char*)n->children->content));
                         }
                     }
                 }
@@ -374,11 +380,13 @@ Plugin*Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *pl
         if (cur_node_name == "plugin")
         {
             plugin = new Plugin();
-            plugin->category = "Uncategorized";
+            plugin->category = _("Uncategorized");
             prop = xmlGetProp(cur_node, (xmlChar*)"name");
             if (prop)
             {
                 plugin->name = (char*)prop;
+                // Initialise translations
+                bindtextdomain(("wf-plugin-" + plugin->name).c_str(), WAYFIRE_LOCALEDIR);
             }
 
             free(prop);
@@ -401,7 +409,7 @@ Plugin*Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *pl
             if (!main_group)
             {
                 main_group = new Option(OPTION_TYPE_GROUP, plugin);
-                main_group->name = "General";
+                main_group->name = _("General");
                 plugin->option_groups.push_back(main_group);
             }
 

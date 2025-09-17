@@ -1,0 +1,247 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-15 14:54+0300\n"
+"PO-Revision-Date: 2025-09-15 15:00+0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ro_RO\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.7\n"
+
+#: src/metadata.cpp:382
+msgid "Uncategorized"
+msgstr "Necategorizat"
+
+#: src/metadata.cpp:411 src/wcm.hpp:83
+msgid "General"
+msgstr "Generale"
+
+#: src/wcm.cpp:26
+msgid ""
+"Attempting to bind <tt><b>\"{key_str}\"</b></tt> without modifier. You will "
+"be unable to use this key/button for anything else! Are you sure?"
+msgstr ""
+"Ați încercat să asociați «<tt><b>{key_str}</b></tt>» fără taste "
+"modificatoare; nu veți putea folosi această tastă/buton pentru nimic "
+"altceva. Sigur doriți să continuați?"
+
+#: src/wcm.cpp:66
+msgid "Waiting for Binding"
+msgstr "Se așteaptă asocierea"
+
+#: src/wcm.cpp:67
+msgid "none"
+msgstr "nimic"
+
+#: src/wcm.cpp:103
+msgid "(No modifiers pressed)"
+msgstr "(Fără taste modificatoare apăsate)"
+
+#: src/wcm.cpp:200
+msgid "Edit binding"
+msgstr "Editează asocierea"
+
+#: src/wcm.cpp:211
+msgid "Save binding"
+msgstr "Salvează asocierea"
+
+#: src/wcm.cpp:222 src/wcm.cpp:576 src/wcm.cpp:698
+msgid "Cancel"
+msgstr "Anulează"
+
+#: src/wcm.cpp:258
+msgid "Open context menu to choose layout"
+msgstr "Deschideți meniul contextual pentru a alege aranjamentul"
+
+#: src/wcm.cpp:283
+msgid "Open context menu to choose model"
+msgstr "Deschideți meniul contextual pentru a alege modelul"
+
+#: src/wcm.cpp:370
+msgid "Reset to default"
+msgstr "Resetează la opțiunile implicite"
+
+#: src/wcm.cpp:577 src/wcm.cpp:699
+msgid "Open"
+msgstr "Deschide"
+
+#: src/wcm.cpp:587
+msgid "Choose Directory"
+msgstr "Alegeți directorul"
+
+#: src/wcm.cpp:591
+msgid "Select Folder"
+msgstr "Alegeți director"
+
+#: src/wcm.cpp:601
+msgid "Choose File"
+msgstr "Alegeți fișierul"
+
+#: src/wcm.cpp:605
+msgid "Select File"
+msgstr "Alegeți fișier"
+
+#: src/wcm.cpp:694 src/wcm.cpp:697
+msgid "Choose Executable"
+msgstr "Alegeți executabilul"
+
+#: src/wcm.cpp:706
+msgid "Run command"
+msgstr "Execută comanda"
+
+#: src/wcm.cpp:712
+msgid "Remove from autostart list"
+msgstr "Elimină din lista de pornire automată"
+
+#: src/wcm.cpp:774
+msgid "Regular"
+msgstr "Obișnuită"
+
+#: src/wcm.cpp:775
+msgid "Repeat"
+msgstr "Repetată"
+
+#: src/wcm.cpp:776
+msgid "Always"
+msgstr "Mereu disponibilă"
+
+#: src/wcm.cpp:801
+msgid "Command {name}"
+msgstr "Comanda {name}"
+
+#: src/wcm.cpp:804
+msgid "Command {name}: {command}"
+msgstr "Comanda {name}: {command}"
+
+#: src/wcm.cpp:852
+msgid "Workspace Index"
+msgstr "Indicele biroului"
+
+#: src/wcm.cpp:905
+msgid "Add new command"
+msgstr "Adaugă o nouă comandă"
+
+#: src/wcm.cpp:979
+msgid "Go To Workspace"
+msgstr "Treci la birou"
+
+#: src/wcm.cpp:982
+msgid "Go To Workspace With Window"
+msgstr "Treci la birou cu fereastra"
+
+#: src/wcm.cpp:985
+msgid "Send Window To Workspace"
+msgstr "Trimite fereastra pe birou"
+
+#: src/wcm.cpp:1011 src/wcm.cpp:1019
+msgid "{workspace_option_prefix} {workspace_index}"
+msgstr "{workspace_option_prefix} {workspace_index}"
+
+#: src/wcm.cpp:1328
+msgid "Wayfire config file to use"
+msgstr "fișierul de configurare Wayfire de folosit"
+
+#: src/wcm.cpp:1333
+msgid "wf-shell config file to use"
+msgstr "fișierul de configurare wf-shell de folosit"
+
+#: src/wcm.cpp:1338
+msgid "plugin to open at launch, or none for default"
+msgstr ""
+"modul care să se deschidă la lansare, sau none pentru valoarea standard"
+
+#: src/wcm.cpp:1365
+msgid "Wayfire Config Manager"
+msgstr "Administratorul configurărilor Wayfire"
+
+#: src/wcm.cpp:1438
+msgid "To use input binding capture, enable shortcuts-inhibit plugin."
+msgstr ""
+"Pentru a folosi captarea asocierilor de intrare, activați modulul shortcuts-"
+"inhibit."
+
+#: src/wcm.cpp:1531
+msgid "Filter"
+msgstr "Filtru"
+
+#: src/wcm.cpp:1565
+msgid "Cannot find program <tt>wdisplays</tt>"
+msgstr "Nu se poate găsi programul <tt>wdisplays</tt>"
+
+#: src/wcm.hpp:84
+msgid "Accessibility"
+msgstr "Accesibilitate"
+
+#: src/wcm.hpp:85
+msgid "Desktop"
+msgstr "Birou"
+
+#: src/wcm.hpp:85
+msgid "Shell"
+msgstr "Interfața biroului"
+
+#: src/wcm.hpp:86
+msgid "Effects"
+msgstr "Efecte"
+
+#: src/wcm.hpp:87
+msgid "Window Management"
+msgstr "Gestionarea ferestrelor"
+
+#: src/wcm.hpp:88
+msgid "Utility"
+msgstr "Utilitare"
+
+#: src/wcm.hpp:88
+msgid "Other"
+msgstr "Altele"
+
+#: src/wcm.hpp:94
+msgid "(none)"
+msgstr "(nimic)"
+
+#: src/wcm.hpp:215
+msgid "Command:"
+msgstr "Comandă:"
+
+#: src/wcm.hpp:221
+msgid "Type"
+msgstr "Tip"
+
+#: src/wcm.hpp:222
+msgid "Binding"
+msgstr "Asociere"
+
+#: src/wcm.hpp:223
+msgid "Command"
+msgstr "Comandă"
+
+#: src/wcm.hpp:254
+msgid "Workspace"
+msgstr "Birou"
+
+#: src/wcm.hpp:338
+msgid "Close"
+msgstr "Închide"
+
+#: src/wcm.hpp:340
+msgid "Configure Outputs"
+msgstr "Configurează ieșiri"
+
+#: src/wcm.hpp:347
+msgid "Use This Plugin"
+msgstr "Folosește acest modul"
+
+#: src/wcm.hpp:348
+msgid "Back"
+msgstr "Înapoi"
