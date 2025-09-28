@@ -1,0 +1,179 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-17 07:55-0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator:\n"
+"Language-Team:\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Uncategorized"
+msgstr "Sin categorizar"
+
+msgid "General"
+msgstr "General"
+
+msgid ""
+"Attempting to bind <tt><b>\"{key_str}\"</b></tt> without modifier. You will "
+"be unable to use this key/button for anything else! Are you sure?"
+msgstr ""
+"Intentando asignar <tt><b>\"{key_str}\"</b></tt> sin modificador. ¡No podrá "
+"usar esta tecla o botón para nada más! ¿Está seguro?"
+
+msgid "Waiting for Binding"
+msgstr "Esperando asignación"
+
+msgid "none"
+msgstr "ninguno"
+
+msgid "(No modifiers pressed)"
+msgstr "(No hay modificadores pulsados)"
+
+msgid "Edit binding"
+msgstr "Editar asignación"
+
+msgid "Save binding"
+msgstr "Guardar asignación"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Open context menu to choose layout"
+msgstr "Abrir menú contextual para elegir la disposición"
+
+msgid "Open context menu to choose model"
+msgstr "Abrir menú contextual para elegir el modelo"
+
+msgid "Reset to default"
+msgstr "Restablecer a valores predeterminados"
+
+msgid "Open"
+msgstr "Abrir"
+
+msgid "Choose Directory"
+msgstr "Seleccionar directorio"
+
+msgid "Select Folder"
+msgstr "Seleccionar carpeta"
+
+msgid "Choose File"
+msgstr "Seleccionar archivo"
+
+msgid "Select File"
+msgstr "Seleccionar archivo"
+
+msgid "Choose Executable"
+msgstr "Seleccionar ejecutable"
+
+msgid "Run command"
+msgstr "Ejecutar comando"
+
+msgid "Remove from autostart list"
+msgstr "Eliminar de la lista de inicio automático"
+
+msgid "Regular"
+msgstr "Normal"
+
+msgid "Repeat"
+msgstr "Repetir"
+
+msgid "Always"
+msgstr "Siempre"
+
+msgid "Command {name}"
+msgstr "Comando {name}"
+
+msgid "Command {name}: {command}"
+msgstr "Comando {name}: {command}"
+
+msgid "Workspace Index"
+msgstr "Índice de espacio de trabajo"
+
+msgid "Add new command"
+msgstr "Añadir nuevo comando"
+
+msgid "Go To Workspace"
+msgstr "Ir al espacio de trabajo"
+
+msgid "Go To Workspace With Window"
+msgstr "Ir al espacio de trabajo con ventana"
+
+msgid "Send Window To Workspace"
+msgstr "Enviar ventana al espacio de trabajo"
+
+msgid "Wayfire config file to use"
+msgstr "Archivo de configuración de Wayfire a usar"
+
+msgid "wf-shell config file to use"
+msgstr "Archivo de configuración de wf-shell a usar"
+
+msgid "plugin to open at launch, or none for default"
+msgstr "complemento a abrir al iniciar, o ninguno por defecto"
+
+msgid "Wayfire Config Manager"
+msgstr "Gestor de configuración de Wayfire"
+
+msgid "To use input binding capture, enable shortcuts-inhibit plugin."
+msgstr "Para usar la captura de asignación de entradas, active el complemento shortcuts-inhibit."
+
+msgid "Filter"
+msgstr "Filtro"
+
+msgid "Cannot find program <tt>wdisplays</tt>"
+msgstr "No se encuentra el programa <tt>wdisplays</tt>"
+
+msgid "Accessibility"
+msgstr "Accesibilidad"
+
+msgid "Desktop"
+msgstr "Escritorio"
+
+msgid "Shell"
+msgstr "Shell"
+
+msgid "Effects"
+msgstr "Efectos"
+
+msgid "Window Management"
+msgstr "Gestión de ventanas"
+
+msgid "Utility"
+msgstr "Utilidad"
+
+msgid "Other"
+msgstr "Otro"
+
+msgid "(none)"
+msgstr "(ninguno)"
+
+msgid "Command:"
+msgstr "Comando:"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Binding"
+msgstr "Asignación"
+
+msgid "Command"
+msgstr "Comando"
+
+msgid "Workspace"
+msgstr "Espacio de trabajo"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "Configure Outputs"
+msgstr "Configurar salidas"
+
+msgid "Use This Plugin"
+msgstr "Usar este complemento"
+
+msgid "Back"
+msgstr "Atrás"
