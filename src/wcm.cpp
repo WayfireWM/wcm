@@ -1870,5 +1870,10 @@ std::string WCM::find_icon(const std::string & name)
         }
     }
 
-    return ICONDIR "/" + name;
+    if (std::filesystem::exists(WAYFIRE_ICONDIR "/" + name))
+    {
+        return WAYFIRE_ICONDIR "/" + name;
+    }
+
+    return WCM_ICONDIR "/" + name;
 }
