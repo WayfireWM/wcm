@@ -5,6 +5,8 @@ fs = import('fs')
 add_global_arguments('-DWAYFIRE_CONFIG_FILE="' + get_option('wayfire_config_file_path') + '"', language : 'cpp')
 add_global_arguments('-DWF_SHELL_CONFIG_FILE="' + get_option('wf_shell_config_file_path') + '"', language : 'cpp')
 
+dependency('pkg-config', required : true)
+evdev = dependency('libevdev')
 wayfire = dependency('wayfire', version: '>=0.11.0')
 wf_shell = dependency('wf-shell', required : get_option('wf_shell'))
 
@@ -13,7 +15,8 @@ wayfire_sysconf_dir = wayfire.get_variable(pkgconfig: 'sysconfdir')
 
 share_dir = join_paths(get_option('prefix'), 'share')
 wayfire_locale_dir = join_paths(share_dir, 'locale')
-icon_dir = join_paths(share_dir, 'wcm', 'icons')
+wcm_icon_dir = join_paths(share_dir, 'wcm', 'icons')
+wayfire_icon_dir = wayfire.get_variable(pkgconfig: 'icondir')
 
 add_global_arguments('-DWAYFIRE_METADATADIR="' + wayfire_metadata_dir + '"', language : 'cpp')
 add_global_arguments('-DWAYFIRE_LOCALEDIR="' + wayfire_locale_dir + '"', language : 'cpp')
@@ -21,16 +24,13 @@ add_global_arguments('-DWAYFIRE_SYSCONFDIR="' + wayfire_sysconf_dir + '"', langu
 if wf_shell.found()
     wf_shell_metadata_dir = wf_shell.get_variable(pkgconfig: 'metadatadir')
     wf_shell_sysconf_dir = wf_shell.get_variable(pkgconfig: 'sysconfdir')
-    add_project_arguments('-DHAVE_WFSHELL=1', language : 'cpp')
+    add_global_arguments('-DHAVE_WFSHELL=1', language : 'cpp')
     add_global_arguments('-DWFSHELL_METADATADIR="' + wf_shell_metadata_dir + '"', language : 'cpp')
     add_global_arguments('-DWFSHELL_SYSCONFDIR="' + wf_shell_sysconf_dir + '"', language : 'cpp')
 endif
-add_global_arguments('-DICONDIR="' + icon_dir + '"', language : 'cpp')
 
-dependency('pkg-config', required : true)
-evdev = dependency('libevdev')
-
-add_project_arguments('-DICONDIR="' + icon_dir + '"', language : 'cpp')
+add_global_arguments('-DWAYFIRE_ICONDIR="' + wayfire_icon_dir + '"', language : 'cpp')
+add_global_arguments('-DWCM_ICONDIR="' + wcm_icon_dir + '"', language : 'cpp')
 
 subdir('icons')
 subdir('proto')
