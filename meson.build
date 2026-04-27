@@ -15,7 +15,7 @@ wayfire_sysconf_dir = wayfire.get_variable(pkgconfig: 'sysconfdir')
 
 share_dir = join_paths(get_option('prefix'), 'share')
 wayfire_locale_dir = join_paths(share_dir, 'locale')
-wcm_icon_dir = join_paths(share_dir, 'wcm', 'icons')
+wcm_icon_dir = join_paths(share_dir, 'icons', 'hicolor', 'scalable', 'apps')
 wayfire_icon_dir = wayfire.get_variable(pkgconfig: 'icondir')
 
 add_global_arguments('-DWAYFIRE_METADATADIR="' + wayfire_metadata_dir + '"', language : 'cpp')
