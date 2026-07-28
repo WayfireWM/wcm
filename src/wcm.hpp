@@ -31,7 +31,6 @@
 #include <gdk/gdkwayland.h>
 #include <gtkmm.h>
 #include <iostream>
-#include <fmt/core.h>
 #include <libintl.h>
 #include <variant>
 #include <vector>

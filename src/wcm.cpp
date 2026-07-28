@@ -2,7 +2,7 @@
 #include "utils.hpp"
 
 #include <filesystem>
-#include <fmt/core.h>
+#include <fmt/format.h>
 #include <libevdev/libevdev.h>
 #include <libintl.h>
 #include <wayfire/config/compound-option.hpp>
