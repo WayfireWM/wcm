@@ -1665,6 +1665,33 @@ void WCM::load_config_files()
         }
     }
 
+    // also add XDG specific paths
+    namespace fs = std::filesystem;
+    fs::path xdg_data_dir;
+    if (char *c_xdg_data_dir = std::getenv("XDG_DATA_HOME"))
+    {
+        xdg_data_dir = fs::path(c_xdg_data_dir);
+    } else if (char *c_user_home = std::getenv("HOME"))
+    {
+        xdg_data_dir = fs::path(c_user_home) / ".local" / "share";
+    }
+
+    if (!xdg_data_dir.empty())
+    {
+        auto managed_metadata_path = xdg_data_dir / "wayfire" / "plugin-manager" /
+            "install" / "share" / "wayfire" / "metadata";
+        if (fs::exists(managed_metadata_path))
+        {
+            wayfire_xmldirs.push_back(managed_metadata_path.string());
+        }
+
+        auto metadata_path = xdg_data_dir / "wayfire" / "metadata";
+        if (fs::exists(metadata_path))
+        {
+            wayfire_xmldirs.push_back(metadata_path.string());
+        }
+    }
+
     wayfire_xmldirs.push_back(WAYFIRE_METADATADIR);
 
     wf_config_mgr =
