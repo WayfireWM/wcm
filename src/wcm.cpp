@@ -1890,6 +1890,13 @@ std::string WCM::find_icon(const std::string & name)
 
     if (!xdg_data_dir.empty())
     {
+        icon_path = xdg_data_dir +
+            "wayfire/plugin-manager/install/share/wayfire/icons/" + name;
+        if (std::filesystem::exists(icon_path))
+        {
+            return icon_path;
+        }
+
         icon_path = xdg_data_dir + "/wayfire/icons/" + name;
         if (std::filesystem::exists(icon_path))
         {
