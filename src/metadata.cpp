@@ -31,6 +31,12 @@
 #include <wayfire/config/xml.hpp>
 #include <glibmm/i18n.h>
 
+static xmlChar *
+node_text(const xmlNode *node)
+{
+    return (node->children) ? node->children->content : nullptr;
+}
+
 Option::Option(xmlNode *cur_node, Plugin *plugin)
 {
     xmlNode *node;
@@ -125,10 +131,22 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
         std::string node_name = (char*)node->name;
         if (node_name == "_short")
         {
-            this->disp_name = dgettext(gettext_domain_name.c_str(), (char*)node->children->content);
+            xmlChar *txt = node_text(node);
+            if (!txt)
+            {
+                continue;
+            }
+
+            this->disp_name = dgettext(gettext_domain_name.c_str(), (char*)txt);
         } else if (node_name == "_long")
         {
-            this->tooltip = dgettext(gettext_domain_name.c_str(), (char*)node->children->content);
+            xmlChar *txt = node_text(node);
+            if (!txt)
+            {
+                continue;
+            }
+
+            this->tooltip = dgettext(gettext_domain_name.c_str(), (char*)txt);
         } else if (node_name == "default")
         {
             if (!node->children)
@@ -185,8 +203,13 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
             }
         } else if ((node_name == "type") && (this->type == OPTION_TYPE_DYNAMIC_LIST))
         {
-            char *type = (char*)node->children->content;
-            this->default_value = type;
+            xmlChar *txt = node_text(node);
+            if (!txt)
+            {
+                continue;
+            }
+
+            this->default_value = (char*)txt;
         } else if (node_name == "min")
         {
             if (!node->children)
@@ -272,6 +295,12 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
             {
                 if (n->type == XML_ELEMENT_NODE)
                 {
+                    xmlChar *txt = node_text(n);
+                    if (!txt)
+                    {
+                        continue;
+                    }
+
                     if (this->type == OPTION_TYPE_INT)
                     {
                         int is_value = (std::string((char*)n->name) == "value");
@@ -283,13 +312,13 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
 
                         if (is_value)
                         {
-                            li->value = atoi((char*)n->children->content);
+                            li->value = atoi((char*)txt);
                         }
 
                         if (is_name)
                         {
                             li->name =
-                                dgettext(gettext_domain_name.c_str(), strdup((char*)n->children->content));
+                                dgettext(gettext_domain_name.c_str(), strdup((char*)txt));
                         }
                     } else if (this->type == OPTION_TYPE_STRING)
                     {
@@ -302,7 +331,7 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
 
                         if (is_value)
                         {
-                            ls->value = (char*)n->children->content;
+                            ls->value = (char*)txt;
                             if (std::get<std::string>(this->default_value).empty() &&
                                 (this->str_labels.size() == 1))
                             {
@@ -313,7 +342,7 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
                         if (is_name)
                         {
                             ls->name =
-                                dgettext(gettext_domain_name.c_str(), strdup((char*)n->children->content));
+                                dgettext(gettext_domain_name.c_str(), strdup((char*)txt));
                         }
                     }
                 }
@@ -392,10 +421,22 @@ Plugin*Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *pl
             free(prop);
         } else if (cur_node_name == "_short")
         {
-            plugin->disp_name = (char*)cur_node->children->content;
+            xmlChar *txt = node_text(cur_node);
+            if (!txt)
+            {
+                continue;
+            }
+
+            plugin->disp_name = (char*)txt;
         } else if (cur_node_name == "_long")
         {
-            plugin->tooltip = (char*)cur_node->children->content;
+            xmlChar *txt = node_text(cur_node);
+            if (!txt)
+            {
+                continue;
+            }
+
+            plugin->tooltip = (char*)txt;
         } else if (cur_node_name == "category")
         {
             if (!cur_node->children)
@@ -429,7 +470,13 @@ Plugin*Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *pl
                 std::string node_name = (char*)node->name;
                 if (node_name == "_short")
                 {
-                    group->name = (char*)node->children->content;
+                    xmlChar *txt = node_text(node);
+                    if (!txt)
+                    {
+                        continue;
+                    }
+
+                    group->name = (char*)txt;
                 } else if (node_name == "option")
                 {
                     group->options.push_back(new Option(node, plugin));
@@ -445,7 +492,13 @@ Plugin*Plugin::get_plugin_data(xmlNode *cur_node, Option *main_group, Plugin *pl
 
                         if (std::string((char*)n->name) == "_short")
                         {
-                            subgroup->name = (char*)n->children->content;
+                            xmlChar *txt = node_text(n);
+                            if (!txt)
+                            {
+                                continue;
+                            }
+
+                            subgroup->name = (char*)txt;
                         } else if (std::string((char*)n->name) == "option")
                         {
                             subgroup->options.push_back(new Option(n, plugin));
