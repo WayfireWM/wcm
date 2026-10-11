@@ -272,10 +272,20 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
             {
                 if (n->type == XML_ELEMENT_NODE)
                 {
+                    std::string elem_name = (char*)n->name;
+                    int is_value = (elem_name == "value");
+                    int is_name  = (elem_name == "_name");
+                    if ((is_value || is_name) && !n->children)
+                    {
+                        printf("ERROR: [%s] empty <%s> element in option '%s' "
+                               "description; fix the plugin metadata\n",
+                            plugin->name.c_str(), elem_name.c_str(),
+                            this->name.c_str());
+                        exit(1);
+                    }
+
                     if (this->type == OPTION_TYPE_INT)
                     {
-                        int is_value = (std::string((char*)n->name) == "value");
-                        int is_name  = (std::string((char*)n->name) == "_name");
                         if (!li && (is_value || is_name))
                         {
                             li = std::make_unique<LabeledInt>();
@@ -293,8 +303,6 @@ Option::Option(xmlNode *cur_node, Plugin *plugin)
                         }
                     } else if (this->type == OPTION_TYPE_STRING)
                     {
-                        int is_value = (std::string((char*)n->name) == "value");
-                        int is_name  = (std::string((char*)n->name) == "_name");
                         if (!ls && (is_value || is_name))
                         {
                             ls = std::make_unique<LabeledString>();
